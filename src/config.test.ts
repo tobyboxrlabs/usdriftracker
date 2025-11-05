@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CONFIG, ERC20_ABI, ROC_STATE_ABI } from './config'
+import { CONFIG, ERC20_ABI, MOC_STATE_ABI } from './config'
 
 describe('Config', () => {
   it('has valid RPC endpoint', () => {
@@ -23,14 +23,16 @@ describe('Config', () => {
     expect(ERC20_ABI.length).toBeGreaterThan(0)
   })
 
-  it('has valid ROC_STATE_ABI if ROC_STATE_ADDRESS is set', () => {
-    expect(ROC_STATE_ABI).toBeDefined()
-    expect(Array.isArray(ROC_STATE_ABI)).toBe(true)
+  it('has valid MOC_STATE_ABI', () => {
+    expect(MOC_STATE_ABI).toBeDefined()
+    expect(Array.isArray(MOC_STATE_ABI)).toBe(true)
+    expect(MOC_STATE_ABI.length).toBeGreaterThan(0)
   })
 
-  it('has valid max mintable function name', () => {
-    expect(CONFIG.MAX_MINTABLE_FN).toBeTruthy()
-    expect(typeof CONFIG.MAX_MINTABLE_FN).toBe('string')
+  it('has valid MoC State addresses', () => {
+    expect(CONFIG.MOC_STATE_ADDRESSES).toBeDefined()
+    expect(Array.isArray(CONFIG.MOC_STATE_ADDRESSES)).toBe(true)
+    expect(CONFIG.MOC_STATE_ADDRESSES.length).toBeGreaterThan(0)
   })
 })
 
