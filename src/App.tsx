@@ -321,6 +321,15 @@ function App() {
         18
       )
 
+      // Query MoC price feed for mintable calculation (may differ from RLabs)
+      const rifPriceMocResult = await queryOptionalMetric(
+        provider,
+        CONFIG.RIF_PRICE_FEED_MOC,
+        PRICE_FEED_ABI,
+        async (contract) => await contract.read(),
+        18
+      )
+
       const rifCollateralResult = await queryOptionalMetric(
         provider,
         CONFIG.MOC_V2_CORE,
@@ -329,37 +338,60 @@ function App() {
         18
       )
 
-      // Query maxMintable from MoC State contract with fallback addresses
+      // Calculate USDRIF Mintable using the formula:
+      // 1. Get total RIF collateral (~212m)
+      // 2. Divide by coverage ratio (~5.5) to get Ratio'd RIF amount (~38m)
+      // 3. Multiply by RIF/USD price (~0.0413) to get USD equiv Ratio'd RIF (~1.5m)
+      // 4. Find difference between USD Equiv Ratio'd RIF and already minted USDRIF (~1.5m) => mintable USDRIF (~99k)
       let maxMintable: bigint | null = null
       let formattedMaxMintable: string | null = null
 
-      if (CONFIG.MOC_STATE_ADDRESSES?.length > 0) {
-        for (const mocStateAddress of CONFIG.MOC_STATE_ADDRESSES) {
-          try {
-            const mocStateContract = new ethers.Contract(
-              getChecksummedAddress(mocStateAddress),
-              MOC_STATE_ABI,
-              provider
-            )
-            const absoluteMaxDoc = await mocStateContract.absoluteMaxDoc()
+      if (rifCollateralResult && rifPriceMocResult && formattedMinted) {
+        try {
+          // Query target coverage ratio from MoC V2 Core (calcCtargemaCA returns ~5.5)
+          const targetCoverageResult = await queryOptionalMetric(
+            provider,
+            CONFIG.MOC_V2_CORE,
+            MOC_CORE_ABI,
+            async (contract) => await contract.calcCtargemaCA(),
+            18
+          )
 
-            // Calculate mintable: absoluteMaxDoc - totalSupply
-            // Ensure both are treated as bigint
-            const absoluteMaxDocBigInt = BigInt(absoluteMaxDoc.toString())
-            const totalSupplyBigInt = BigInt(totalSupply.toString())
+          if (targetCoverageResult) {
+            // Step 1: Total RIF Collateral (already have from rifCollateralResult)
+            const totalRifCollateral = parseFloat(rifCollateralResult.formatted) // ~212,057,756
             
-            if (absoluteMaxDocBigInt >= totalSupplyBigInt) {
-              maxMintable = absoluteMaxDocBigInt - totalSupplyBigInt
-              formattedMaxMintable = formatAmount(maxMintable, decimals)
+            // Step 2: Coverage Ratio (target coverage EMA)
+            const coverageRatio = parseFloat(targetCoverageResult.formatted) // ~5.5
+            
+            // Step 3: Ratio'd RIF = Total RIF Collateral / Coverage Ratio
+            const ratioDRif = totalRifCollateral / coverageRatio // ~38,556,864
+            
+            // Step 4: RIF/USD Price (use MoC price feed for mintable calculation)
+            const rifPrice = parseFloat(rifPriceMocResult.formatted) // May differ from RLabs price
+            
+            // Step 5: USD Equiv Ratio'd RIF = Ratio'd RIF × RIF Price
+            const usdEquivRatioDRif = ratioDRif * rifPrice // ~1,592,398
+            
+            // Step 6: Already Minted USDRIF
+            const mintedUsdrif = parseFloat(formattedMinted) // ~1,510,574
+            
+            // Step 7: Mintable USDRIF = USD Equiv Ratio'd RIF - Already Minted
+            const mintableUsdrif = usdEquivRatioDRif - mintedUsdrif
+            
+            // Only set if mintable is positive
+            if (mintableUsdrif > 0) {
+              // Convert back to BigInt with 18 decimals (USDRIF uses 18 decimals)
+              const mintableBigInt = BigInt(Math.floor(mintableUsdrif * 1e18))
+              maxMintable = mintableBigInt
+              formattedMaxMintable = Math.floor(mintableUsdrif).toString()
             } else {
               maxMintable = 0n
               formattedMaxMintable = '0'
             }
-            break // Success, exit fallback loop
-          } catch (error) {
-            console.warn(`Failed to fetch maxMintable from ${mocStateAddress}:`, error)
-            continue // Try next address
           }
+        } catch (error) {
+          console.warn('Failed to calculate USDRIF Mintable:', error)
         }
       }
 
@@ -554,7 +586,7 @@ function App() {
               <MetricDisplay
                 label="USDRIF Mintable"
                 value={tokenData.formattedMaxMintable}
-                unit={tokenData.symbol}
+                unit="USD"
                 isRefreshing={refreshingMetrics.has('maxMintable')}
                 history={history.maxMintable}
               />

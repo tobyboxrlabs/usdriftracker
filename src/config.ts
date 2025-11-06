@@ -76,4 +76,6 @@ export const MOC_CORE_ABI = [
   'function getTotalACavailable() view returns (uint256)',
   'function getLckAC() view returns (uint256)',
   'function acToken() view returns (address)',
+  'function calcCtargemaCA() view returns (uint256)',
+  'function getCglb() view returns (uint256)',
 ] as const
