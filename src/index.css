@@ -216,6 +216,30 @@ body::before {
   z-index: 1;
 }
 
+.metric-refresh-indicator {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-top-color: #00ffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  z-index: 2;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+.metric-content {
+  position: relative;
+  width: 100%;
+}
+
+.metric-value-wrapper {
+  text-align: center;
+  width: 100%;
+}
+
 .metric-value {
   font-family: 'Orbitron', monospace;
   font-size: 3rem;
@@ -227,6 +251,32 @@ body::before {
     0 0 30px rgba(0, 255, 255, 0.5);
   position: relative;
   z-index: 1;
+}
+
+.metric-graph {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.metric-graph-placeholder {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: rgba(0, 255, 255, 0.5);
+  font-family: 'Rajdhani', sans-serif;
+  text-align: center;
+  min-width: 80px;
+  opacity: 0.6;
+}
+
+.mini-line-graph {
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.5));
 }
 
 .metric-disabled {
@@ -284,9 +334,19 @@ body::before {
 
 .footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 30px;
   color: #00ffff;
-  opacity: 0.7;
+  opacity: 0.9;
+}
+
+.footer-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
 }
 
 .footer p {
@@ -301,9 +361,101 @@ body::before {
   padding: 4px 8px;
   border-radius: 4px;
   font-family: 'Rajdhani', monospace;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   word-break: break-all;
   text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  display: inline-block;
+}
+
+.address-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  background: rgba(10, 10, 20, 0.95);
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.05);
+}
+
+.address-table thead {
+  background: rgba(0, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+}
+
+.address-table th {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00ffff;
+  padding: 15px 10px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.address-table th:first-child {
+  width: 30%;
+  text-align: left;
+}
+
+.address-table th:last-child {
+  width: 70%;
+  text-align: left;
+}
+
+.address-table tbody tr {
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.address-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.address-table tbody tr:hover {
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.address-table td {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  color: #00ffff;
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+.address-table td:first-child {
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  text-align: left;
+}
+
+.address-table td code {
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  display: block;
+  text-align: left;
+  word-break: break-all;
+}
+
+.address-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: all 0.3s;
+}
+
+.address-link:hover {
+  opacity: 0.8;
+}
+
+.address-link:hover code {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 @media (max-width: 768px) {
@@ -324,5 +476,51 @@ body::before {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+
+  .address-table {
+    font-size: 0.8rem;
+  }
+
+  .address-table th {
+    font-size: 0.75rem;
+    padding: 10px 8px;
+  }
+
+  .address-table td {
+    font-size: 0.8rem;
+    padding: 10px 8px;
+  }
+
+  .address-table td code {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .metric-content {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .metric-value-wrapper {
+    width: 100%;
+  }
+
+  .metric-graph {
+    position: static;
+    transform: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .metric-graph-placeholder {
+    position: static;
+    transform: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
   }
 }

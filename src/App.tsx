@@ -1,56 +1,229 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { ethers } from 'ethers'
-import { CONFIG, ERC20_ABI, MOC_STATE_ABI } from './config'
+import { CONFIG, ERC20_ABI, MOC_STATE_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
+import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
+import { MiniLineGraph } from './MiniLineGraph'
 import './App.css'
 
+/**
+ * Token metric data structure
+ * Only includes fields that are actively used and displayed
+ */
 interface TokenData {
+  // Token supplies
+  stRIFSupply: string
+  formattedStRIFSupply: string
+  rifproSupply: string
+  formattedRifproSupply: string
   totalSupply: string
   formattedSupply: string
+  minted: string | null
+  formattedMinted: string | null
+  
+  // Price and collateral
+  rifPrice: string | null
+  formattedRifPrice: string | null
+  rifCollateral: string | null
+  formattedRifCollateral: string | null
+  
+  // Minting capacity
   maxMintable: string | null
   formattedMaxMintable: string | null
+  
+  // Token metadata
   symbol: string
   name: string
+  
+  // UI state
   loading: boolean
   error: string | null
   lastUpdated: Date | null
 }
 
-function App() {
-  const [tokenData, setTokenData] = useState<TokenData>({
-    totalSupply: '0',
-    formattedSupply: '0',
-    maxMintable: null,
-    formattedMaxMintable: null,
-    symbol: 'USDRIF',
-    name: 'USDRIF',
-    loading: true,
-    error: null,
-    lastUpdated: null,
-  })
+/**
+ * Initial state for token data
+ */
+const INITIAL_TOKEN_DATA: TokenData = {
+  stRIFSupply: '0',
+  formattedStRIFSupply: '0',
+  rifproSupply: '0',
+  formattedRifproSupply: '0',
+  totalSupply: '0',
+  formattedSupply: '0',
+  minted: null,
+  formattedMinted: null,
+  rifPrice: null,
+  formattedRifPrice: null,
+  rifCollateral: null,
+  formattedRifCollateral: null,
+  maxMintable: null,
+  formattedMaxMintable: null,
+  symbol: 'USDRIF',
+  name: 'USDRIF',
+  loading: true,
+  error: null,
+  lastUpdated: null,
+}
 
-  // Track if component is mounted to prevent state updates after unmount
+/**
+ * Format a numeric string with locale-aware formatting
+ * Handles NaN gracefully by returning the original string
+ */
+const formatNumericValue = (
+  value: string,
+  options: { maximumFractionDigits: number; prefix?: string } = { maximumFractionDigits: 0 }
+): string => {
+  const numValue = parseFloat(value)
+  if (isNaN(numValue)) {
+    return value
+  }
+  const formatted = numValue.toLocaleString(undefined, {
+    maximumFractionDigits: options.maximumFractionDigits,
+  })
+  return options.prefix ? `${options.prefix}${formatted}` : formatted
+}
+
+/**
+ * Metric display component
+ * Renders a single metric with label, value, and unit
+ * Shows "Not Available" state when value is null
+ */
+interface MetricDisplayProps {
+  label: string
+  value: string | null
+  unit: string
+  formatOptions?: { maximumFractionDigits: number; prefix?: string }
+  isRefreshing?: boolean
+  history?: HistoryPoint[]
+}
+
+const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false, history }: MetricDisplayProps) => {
+  if (value === null) {
+    return (
+      <div className="metric metric-disabled">
+        <div className="metric-label">{label}</div>
+        {isRefreshing && <span className="metric-refresh-indicator"></span>}
+        <div className="metric-value">—</div>
+        <div className="metric-unit">Not Available</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="metric">
+      <div className="metric-label">{label}</div>
+      {isRefreshing && <span className="metric-refresh-indicator"></span>}
+      <div className="metric-content">
+        <div className="metric-value-wrapper">
+          <div className="metric-value">
+            {formatNumericValue(value, formatOptions)}
+          </div>
+          <div className="metric-unit">{unit}</div>
+        </div>
+        {history && history.length >= 2 ? (
+          <div className="metric-graph">
+            <MiniLineGraph data={history} />
+          </div>
+        ) : history && history.length === 1 ? (
+          <div className="metric-graph metric-graph-placeholder">
+            <span>Collecting data...</span>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  const [tokenData, setTokenData] = useState<TokenData>(INITIAL_TOKEN_DATA)
+  const [refreshingMetrics, setRefreshingMetrics] = useState<Set<string>>(new Set())
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [history, setHistory] = useState<Record<string, HistoryPoint[]>>({})
+
+  // Track component mount state to prevent state updates after unmount
   const isMountedRef = useRef(true)
 
+  /**
+   * Normalize Ethereum address to checksummed format
+   * Handles invalid checksums by converting to lowercase first
+   */
+  const getChecksummedAddress = useCallback((address: string): string => {
+    try {
+      return ethers.getAddress(address)
+    } catch {
+      return ethers.getAddress(address.toLowerCase())
+    }
+  }, [])
+
+  /**
+   * Format BigInt amount with specified decimals
+   * Returns human-readable string representation
+   */
   const formatAmount = (amount: bigint, decimals: number | bigint): string => {
     if (amount === 0n) {
       return '0'
     }
-    
+
     const decimalsNum = Number(decimals)
     if (decimalsNum < 0 || decimalsNum > 255) {
       throw new Error(`Invalid decimals value: ${decimalsNum}`)
     }
-    
+
     const factor = 10n ** BigInt(decimalsNum)
     const whole = amount / factor
     const frac = amount % factor
-    
+
     if (frac === 0n) {
       return whole.toString()
     }
-    
+
     const fracStr = frac.toString().padStart(decimalsNum, '0').replace(/0+$/, '')
     return fracStr ? `${whole}.${fracStr}` : whole.toString()
+  }
+
+  /**
+   * Get a working RPC provider by trying multiple endpoints
+   * Falls back to alternative endpoints if the primary fails due to CORS
+   */
+  const getWorkingProvider = async (): Promise<ethers.JsonRpcProvider | null> => {
+    const endpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [CONFIG.ROOTSTOCK_RPC]
+    
+    for (const endpoint of endpoints) {
+      try {
+        const provider = new ethers.JsonRpcProvider(endpoint)
+        // Test connection by attempting to get block number
+        await provider.getBlockNumber()
+        return provider
+      } catch (error) {
+        console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
+        continue
+      }
+    }
+    
+    return null
+  }
+
+  /**
+   * Query optional metric from contract
+   * Returns null if query fails, allowing app to continue without the metric
+   */
+  const queryOptionalMetric = async (
+    provider: ethers.Provider,
+    address: string,
+    abi: readonly string[],
+    queryFn: (contract: ethers.Contract) => Promise<bigint>,
+    decimals: number = 18
+  ): Promise<{ raw: bigint; formatted: string } | null> => {
+    try {
+      const checksummedAddress = getChecksummedAddress(address)
+      const contract = new ethers.Contract(checksummedAddress, abi, provider)
+      const raw = await queryFn(contract)
+      const formatted = formatAmount(raw, decimals)
+      return { raw, formatted }
+    } catch (error) {
+      console.warn(`Failed to query metric from ${address}:`, error)
+      return null
+    }
   }
 
   const fetchTokenData = useCallback(async () => {
@@ -59,124 +232,182 @@ function App() {
     }
 
     try {
-      setTokenData(prev => ({ ...prev, loading: true, error: null }))
-      
-      const provider = new ethers.JsonRpcProvider(CONFIG.ROOTSTOCK_RPC)
-      // Normalize address to checksummed format (convert to lowercase first to handle bad checksums)
-      let checksummedAddress: string
-      try {
-        // Try to get checksummed address - if it fails due to bad checksum, normalize to lowercase first
-        checksummedAddress = ethers.getAddress(CONFIG.USDRIF_ADDRESS)
-      } catch {
-        // If checksum is invalid, convert to lowercase then checksum
-        const normalizedAddress = CONFIG.USDRIF_ADDRESS.toLowerCase()
-        checksummedAddress = ethers.getAddress(normalizedAddress)
+      // Mark all metrics as refreshing if not initial load
+      if (!isInitialLoad) {
+        setRefreshingMetrics(new Set([
+          'stRIFSupply',
+          'rifproSupply',
+          'totalSupply',
+          'minted',
+          'rifPrice',
+          'rifCollateral',
+          'maxMintable',
+        ]))
       }
-      const contract = new ethers.Contract(checksummedAddress, ERC20_ABI, provider)
       
-      const [name, symbol, decimalsRaw, totalSupply] = await Promise.all([
-        contract.name(),
-        contract.symbol(),
-        contract.decimals(),
-        contract.totalSupply(),
+      setTokenData(prev => ({ ...prev, loading: true, error: null }))
+
+      // Get a working provider (tries multiple endpoints for CORS issues)
+      const provider = await getWorkingProvider()
+      if (!provider) {
+        throw new Error('Unable to connect to any RSK RPC endpoint. Please check your network connection or configure VITE_ROOTSTOCK_RPC environment variable.')
+      }
+
+      // Setup contract instances
+      const stRIFContract = new ethers.Contract(
+        getChecksummedAddress(CONFIG.USDRIF_ADDRESS),
+        ERC20_ABI,
+        provider
+      )
+      const rifproContract = new ethers.Contract(
+        getChecksummedAddress(CONFIG.RIFPRO_ADDRESS),
+        ERC20_ABI,
+        provider
+      )
+      const oldUSDRIFContract = new ethers.Contract(
+        getChecksummedAddress(CONFIG.USDRIF_OLD_ADDRESS),
+        ERC20_ABI,
+        provider
+      )
+
+      // Fetch all token data in parallel
+      const [
+        stRIFSupply,
+        stRIFDecimalsRaw,
+        rifproSupply,
+        rifproDecimalsRaw,
+        oldUSDRIFSupply,
+        oldUSDRIFDecimalsRaw,
+        name,
+        symbol,
+        decimalsRaw,
+        totalSupply,
+      ] = await Promise.all([
+        stRIFContract.totalSupply(),
+        stRIFContract.decimals(),
+        rifproContract.totalSupply(),
+        rifproContract.decimals(),
+        oldUSDRIFContract.totalSupply(),
+        oldUSDRIFContract.decimals(),
+        stRIFContract.name(),
+        stRIFContract.symbol(),
+        stRIFContract.decimals(),
+        stRIFContract.totalSupply(),
       ])
-      
-      // Check if component is still mounted before updating state
+
+      // Check mount state before continuing
       if (!isMountedRef.current) {
         return
       }
-      
-      // Convert decimals to number (it might be returned as BigInt)
+
+      // Convert decimals to numbers
+      const stRIFDecimals = Number(stRIFDecimalsRaw)
+      const rifproDecimals = Number(rifproDecimalsRaw)
+      const oldUSDRIFDecimals = Number(oldUSDRIFDecimalsRaw)
       const decimals = Number(decimalsRaw)
+
+      // Format token supplies
+      const formattedStRIFSupply = formatAmount(stRIFSupply, stRIFDecimals)
+      const formattedRifproSupply = formatAmount(rifproSupply, rifproDecimals)
       const formattedSupply = formatAmount(totalSupply, decimals)
-      
-      // Fetch max mintable from Money on Chain State contracts
-      // Try multiple contracts in order of priority
+      const formattedMinted = formatAmount(oldUSDRIFSupply, oldUSDRIFDecimals)
+
+      // Query optional metrics (these may fail without breaking the app)
+      const rifPriceResult = await queryOptionalMetric(
+        provider,
+        CONFIG.RIF_PRICE_FEED_RLABS,
+        PRICE_FEED_ABI,
+        async (contract) => await contract.read(),
+        18
+      )
+
+      const rifCollateralResult = await queryOptionalMetric(
+        provider,
+        CONFIG.MOC_V2_CORE,
+        MOC_CORE_ABI,
+        async (contract) => await contract.getTotalACavailable(),
+        18
+      )
+
+      // Query maxMintable from MoC State contract with fallback addresses
       let maxMintable: bigint | null = null
       let formattedMaxMintable: string | null = null
-      
-      const functionNamesToTry = [
-        'absoluteMaxDoc',
-        'absoluteMaxStableToken',
-        'getAbsoluteMaxDoc',
-        'maxDoc',
-        'maxStableToken'
-      ]
-      
-      // Try each MoC State contract address
-      for (const mocStateAddress of CONFIG.MOC_STATE_ADDRESSES) {
-        if (!mocStateAddress) continue
-        
-        try {
-          let mocChecksummedAddress: string
+
+      if (CONFIG.MOC_STATE_ADDRESSES?.length > 0) {
+        for (const mocStateAddress of CONFIG.MOC_STATE_ADDRESSES) {
           try {
-            mocChecksummedAddress = ethers.getAddress(mocStateAddress)
-          } catch {
-            const normalizedMocAddress = mocStateAddress.toLowerCase()
-            mocChecksummedAddress = ethers.getAddress(normalizedMocAddress)
-          }
-          
-          const mocState = new ethers.Contract(mocChecksummedAddress, MOC_STATE_ABI, provider)
-          
-          let absoluteMaxDoc: bigint | null = null
-          
-          // Try each function name until one works
-          for (const fnName of functionNamesToTry) {
-            try {
-              absoluteMaxDoc = await mocState[fnName]()
-              if (absoluteMaxDoc !== null && absoluteMaxDoc !== undefined) {
-                console.log(`✓ Successfully called ${fnName} from MoC State at ${mocChecksummedAddress}`)
-                break
-              }
-            } catch (fnError: any) {
-              // Check if it's a deprecation error - if so, try next function or contract
-              if (fnError?.message?.includes('deprecated') || fnError?.message?.includes('V2')) {
-                console.log(`  Function ${fnName} is deprecated at ${mocChecksummedAddress}, trying next...`)
-                continue
-              }
-              // For other errors, continue trying
-              continue
-            }
-          }
-          
-          if (absoluteMaxDoc !== null && absoluteMaxDoc !== undefined) {
-            // Calculate mintable amount: absoluteMaxDoc - totalSupply
-            if (absoluteMaxDoc >= totalSupply) {
-              maxMintable = absoluteMaxDoc - totalSupply
+            const mocStateContract = new ethers.Contract(
+              getChecksummedAddress(mocStateAddress),
+              MOC_STATE_ABI,
+              provider
+            )
+            const absoluteMaxDoc = await mocStateContract.absoluteMaxDoc()
+
+            // Calculate mintable: absoluteMaxDoc - totalSupply
+            // Ensure both are treated as bigint
+            const absoluteMaxDocBigInt = BigInt(absoluteMaxDoc.toString())
+            const totalSupplyBigInt = BigInt(totalSupply.toString())
+            
+            if (absoluteMaxDocBigInt >= totalSupplyBigInt) {
+              maxMintable = absoluteMaxDocBigInt - totalSupplyBigInt
               formattedMaxMintable = formatAmount(maxMintable, decimals)
-              console.log(`✓ Successfully calculated max mintable: ${formattedMaxMintable}`)
-              break // Success, exit the contract loop
             } else {
-              // If totalSupply exceeds absoluteMaxDoc, mintable is 0
               maxMintable = 0n
               formattedMaxMintable = '0'
-              break
             }
-          }
-        } catch (mocError: any) {
-          // Check if it's specifically a deprecation error
-          if (mocError?.message?.includes('deprecated') || mocError?.message?.includes('V2')) {
-            console.log(`  Contract ${mocStateAddress} is deprecated, trying next contract...`)
-            continue // Try next contract
-          } else {
-            console.warn(`  Failed to query MoC State at ${mocStateAddress}:`, mocError?.message || mocError)
-            continue // Try next contract
+            break // Success, exit fallback loop
+          } catch (error) {
+            console.warn(`Failed to fetch maxMintable from ${mocStateAddress}:`, error)
+            continue // Try next address
           }
         }
       }
-      
-      if (maxMintable === null) {
-        console.warn('⚠ Could not fetch max mintable from any MoC State contract')
-      }
-      
-      // Final check before state update
+
+      // Final mount check before state update
       if (!isMountedRef.current) {
         return
       }
+
+      // Save history and update state
+      const metricKeys = {
+        stRIFSupply: parseFloat(formattedStRIFSupply),
+        rifproSupply: parseFloat(formattedRifproSupply),
+        totalSupply: parseFloat(formattedSupply),
+        minted: parseFloat(formattedMinted),
+        rifPrice: rifPriceResult?.formatted ? parseFloat(rifPriceResult.formatted) : null,
+        rifCollateral: rifCollateralResult?.formatted ? parseFloat(rifCollateralResult.formatted) : null,
+        maxMintable: formattedMaxMintable ? parseFloat(formattedMaxMintable) : null,
+      }
+
+      // Save each metric to history
+      Object.entries(metricKeys).forEach(([key, value]) => {
+        if (value !== null && !isNaN(value)) {
+          saveMetricHistory(key, value)
+        }
+      })
       
+      // Debug: Log history counts
+      const historyCounts = Object.fromEntries(
+        Object.keys(metricKeys).map(key => [key, getMetricHistory(key).length])
+      )
+      console.log('History data points:', historyCounts)
+
+      // Update state with all fetched data
       setTokenData({
+        stRIFSupply: stRIFSupply.toString(),
+        formattedStRIFSupply,
+        rifproSupply: rifproSupply.toString(),
+        formattedRifproSupply,
         totalSupply: totalSupply.toString(),
         formattedSupply,
+        minted: oldUSDRIFSupply.toString(),
+        formattedMinted,
+        rifPrice: rifPriceResult?.raw ? rifPriceResult.raw.toString() : null,
+        formattedRifPrice: rifPriceResult?.formatted || null,
+        rifCollateral: rifCollateralResult?.raw
+          ? rifCollateralResult.raw.toString()
+          : null,
+        formattedRifCollateral: rifCollateralResult?.formatted || null,
         maxMintable: maxMintable ? maxMintable.toString() : null,
         formattedMaxMintable,
         symbol,
@@ -185,31 +416,60 @@ function App() {
         error: null,
         lastUpdated: new Date(),
       })
+      
+      // Update history state
+      setHistory({
+        stRIFSupply: getMetricHistory('stRIFSupply'),
+        rifproSupply: getMetricHistory('rifproSupply'),
+        totalSupply: getMetricHistory('totalSupply'),
+        minted: getMetricHistory('minted'),
+        rifPrice: getMetricHistory('rifPrice'),
+        rifCollateral: getMetricHistory('rifCollateral'),
+        maxMintable: getMetricHistory('maxMintable'),
+      })
+      
+      // Clear refreshing indicators
+      setRefreshingMetrics(new Set())
+      if (isInitialLoad) {
+        setIsInitialLoad(false)
+      }
     } catch (error) {
       console.error('Error fetching token data:', error)
-      
-      // Only update state if component is still mounted
+
       if (isMountedRef.current) {
         setTokenData(prev => ({
           ...prev,
           loading: false,
           error: error instanceof Error ? error.message : 'Failed to fetch token data',
         }))
+        setRefreshingMetrics(new Set())
+        if (isInitialLoad) {
+          setIsInitialLoad(false)
+        }
       }
     }
-  }, [])
+  }, [getChecksummedAddress])
 
   useEffect(() => {
     isMountedRef.current = true
     
-    // Fetch immediately on mount
-    fetchTokenData()
+    // Load initial history
+    setHistory({
+      stRIFSupply: getMetricHistory('stRIFSupply'),
+      rifproSupply: getMetricHistory('rifproSupply'),
+      totalSupply: getMetricHistory('totalSupply'),
+      minted: getMetricHistory('minted'),
+      rifPrice: getMetricHistory('rifPrice'),
+      rifCollateral: getMetricHistory('rifCollateral'),
+      maxMintable: getMetricHistory('maxMintable'),
+    })
     
-    // Set up interval to refresh based on CONFIG.REFRESH_INTERVAL
+    fetchTokenData()
+
     const interval = setInterval(() => {
       fetchTokenData()
     }, CONFIG.REFRESH_INTERVAL)
-    
+
     return () => {
       isMountedRef.current = false
       clearInterval(interval)
@@ -220,13 +480,13 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>USDRIF Tracker</h1>
+          <h1>RIF put to work</h1>
           <p className="subtitle">Real-time token metrics on Rootstock</p>
         </header>
 
         <div className="card">
           <div className="card-header">
-            <h2>{tokenData.name}</h2>
+            <h2>RIF Metrics</h2>
             {tokenData.lastUpdated && (
               <span className="last-updated">
                 Last updated: {tokenData.lastUpdated.toLocaleTimeString()}
@@ -234,7 +494,7 @@ function App() {
             )}
           </div>
 
-          {tokenData.loading ? (
+          {isInitialLoad && tokenData.loading ? (
             <div className="loading">
               <div className="spinner"></div>
               <p>Loading token data...</p>
@@ -248,48 +508,66 @@ function App() {
             </div>
           ) : (
             <div className="metrics">
-              <div className="metric">
-                <div className="metric-label">Total Supply</div>
-                <div className="metric-value">
-                  {(() => {
-                    const value = parseFloat(tokenData.formattedSupply)
-                    return isNaN(value) 
-                      ? tokenData.formattedSupply 
-                      : value.toLocaleString(undefined, {
-                          maximumFractionDigits: 0,
-                        })
-                  })()}
-                </div>
-                <div className="metric-unit">{tokenData.symbol}</div>
-              </div>
-              {tokenData.formattedMaxMintable !== null ? (
-                <div className="metric">
-                  <div className="metric-label">USDRIF Mintable</div>
-                  <div className="metric-value">
-                    {(() => {
-                      const value = parseFloat(tokenData.formattedMaxMintable!)
-                      return isNaN(value)
-                        ? tokenData.formattedMaxMintable!
-                        : value.toLocaleString(undefined, {
-                            maximumFractionDigits: 0,
-                          })
-                    })()}
-                  </div>
-                  <div className="metric-unit">{tokenData.symbol}</div>
-                </div>
-              ) : (
-                <div className="metric metric-disabled">
-                  <div className="metric-label">USDRIF Mintable</div>
-                  <div className="metric-value">—</div>
-                  <div className="metric-unit">Not Available</div>
-                </div>
-              )}
+              <MetricDisplay
+                label="stRIF Supply"
+                value={tokenData.formattedStRIFSupply}
+                unit="stRIF"
+                isRefreshing={refreshingMetrics.has('stRIFSupply')}
+                history={history.stRIFSupply}
+              />
+              <MetricDisplay
+                label="RIFPRO Total Supply"
+                value={tokenData.formattedRifproSupply}
+                unit="RIFP"
+                isRefreshing={refreshingMetrics.has('rifproSupply')}
+                history={history.rifproSupply}
+              />
+              <MetricDisplay
+                label="USDRIF Total Supply"
+                value={tokenData.formattedSupply}
+                unit={tokenData.symbol}
+                isRefreshing={refreshingMetrics.has('totalSupply')}
+                history={history.totalSupply}
+              />
+              <MetricDisplay
+                label="USDRIF Minted"
+                value={tokenData.formattedMinted}
+                unit={tokenData.symbol}
+                isRefreshing={refreshingMetrics.has('minted')}
+                history={history.minted}
+              />
+              <MetricDisplay
+                label="RIF Price"
+                value={tokenData.formattedRifPrice}
+                unit="USD"
+                formatOptions={{ maximumFractionDigits: 6, prefix: '$' }}
+                isRefreshing={refreshingMetrics.has('rifPrice')}
+                history={history.rifPrice}
+              />
+              <MetricDisplay
+                label="RIF Collateral"
+                value={tokenData.formattedRifCollateral}
+                unit="RIF"
+                isRefreshing={refreshingMetrics.has('rifCollateral')}
+                history={history.rifCollateral}
+              />
+              <MetricDisplay
+                label="USDRIF Mintable"
+                value={tokenData.formattedMaxMintable}
+                unit={tokenData.symbol}
+                isRefreshing={refreshingMetrics.has('maxMintable')}
+                history={history.maxMintable}
+              />
             </div>
           )}
 
           <div className="card-footer">
-            <button onClick={fetchTokenData} className="refresh-button" disabled={tokenData.loading}>
-              {tokenData.loading ? 'Refreshing...' : 'Refresh Now'}
+            <button
+              onClick={fetchTokenData}
+              className="refresh-button"
+              disabled={isInitialLoad && tokenData.loading}
+            >
+              {refreshingMetrics.size > 0 ? 'Refreshing...' : 'Refresh Now'}
             </button>
             <p className="info">
               Auto-refreshes every {Math.round(CONFIG.REFRESH_INTERVAL / 1000)} seconds
@@ -298,9 +576,95 @@ function App() {
         </div>
 
         <footer className="footer">
-          <p>
-            Token Address: <code>{CONFIG.USDRIF_ADDRESS}</code>
-          </p>
+          <h3 className="footer-title">Contract Addresses</h3>
+          <table className="address-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>RIF Token</td>
+                <td>
+                  <a
+                    href="https://rootstock.blockscout.com/address/0x2AcC95758f8b5F583470ba265EB685a8F45fC9D5?tab=internal_txns"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>0x2AcC95758f8b5F583470ba265EB685a8F45fC9D5</code>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>stRIF</td>
+                <td>
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.USDRIF_ADDRESS}?tab=internal_txns`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>{CONFIG.USDRIF_ADDRESS}</code>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>USDRIF</td>
+                <td>
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.USDRIF_OLD_ADDRESS}?tab=internal_txns`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>{CONFIG.USDRIF_OLD_ADDRESS}</code>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>RIFPRO</td>
+                <td>
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.RIFPRO_ADDRESS}?tab=internal_txns`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>{CONFIG.RIFPRO_ADDRESS}</code>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>MoC V2 Core (RoC)</td>
+                <td>
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.MOC_V2_CORE}?tab=internal_txns`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>{CONFIG.MOC_V2_CORE}</code>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>RIF Price Feed (RLabs)</td>
+                <td>
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.RIF_PRICE_FEED_RLABS}?tab=internal_txns`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="address-link"
+                  >
+                    <code>{CONFIG.RIF_PRICE_FEED_RLABS}</code>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </footer>
       </div>
     </div>
