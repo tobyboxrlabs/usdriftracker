@@ -294,10 +294,16 @@
 }
 
 .score-submitted {
-  color: #00ff00;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 1rem;
-  margin: 10px 0;
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+  color: #00ffff;
+  margin: 15px 0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+}
+
+.score-submitted.dev-warning {
+  color: #ffaa00;
+  text-shadow: 0 0 5px rgba(255, 170, 0, 0.8);
 }
 
 .game-submit-score-button {
@@ -412,15 +418,6 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-}
-
-.leaderboard-location {
-  font-size: 0.7rem;
-  color: rgba(0, 255, 255, 0.5);
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  margin-top: 2px;
 }
 
 .leaderboard-score {

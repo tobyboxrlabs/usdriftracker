@@ -186,32 +186,65 @@ export default function LightCycleGame() {
   }, [moveCycle, speed, gameOver])
 
   const fetchLeaderboard = useCallback(async () => {
-    // Skip in local development - Vercel serverless functions only work when deployed
-    if (import.meta.env.DEV) {
-      console.log('Skipping leaderboard fetch in local development')
-      // Use localStorage as fallback for local dev
-      try {
-        const localScores = localStorage.getItem('lightCycleLeaderboard')
-        if (localScores) {
-          const parsed = JSON.parse(localScores)
-          setLeaderboard(parsed.sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score).slice(0, 10))
-        }
-      } catch {
-        // Ignore localStorage errors
-      }
-      setLoadingLeaderboard(false)
-      return
-    }
-
     setLoadingLeaderboard(true)
+    
+    // Always use relative path - Vite proxy or vercel dev will handle routing
+    const apiUrl = '/api/scores'
+    
     try {
-      const response = await fetch('/api/scores?limit=10')
-      if (response.ok) {
+      console.log('🔍 Fetching leaderboard from:', apiUrl)
+      const response = await fetch(`${apiUrl}?limit=10`, {
+        // Add credentials for CORS if needed
+        credentials: 'omit',
+      })
+      
+      console.log('📡 Response status:', response.status, response.statusText)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ API error response:', errorText.substring(0, 200))
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      // Check if response is actually JSON before parsing
+      const contentType = response.headers.get('content-type')
+      console.log('📡 Content-Type:', contentType)
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        // Clone response to read text without consuming body
+        const clonedResponse = response.clone()
+        const text = await clonedResponse.text()
+        console.warn('⚠️ API returned non-JSON response. First 200 chars:', text.substring(0, 200))
+        throw new Error('Response is not JSON')
+      }
+      
+      // Try to parse JSON
+      try {
         const data = await response.json()
-        setLeaderboard(data.leaderboard || [])
+        console.log('✅ Successfully fetched leaderboard:', data.leaderboard?.length || 0, 'entries')
+        // Sort by score high to low (ensure correct order)
+        const sorted = (data.leaderboard || []).sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score)
+        setLeaderboard(sorted)
+      } catch (parseError) {
+        console.error('❌ Failed to parse JSON response:', parseError)
+        throw new Error('Invalid JSON response')
       }
     } catch (error) {
-      console.error('Failed to fetch leaderboard:', error)
+      console.error('❌ Failed to fetch leaderboard:', error)
+      
+      // In dev mode, show helpful troubleshooting
+      if (import.meta.env.DEV) {
+        console.warn('⚠️ Local dev: API endpoint not available.')
+        console.warn('   Solutions:')
+        console.warn('   1. Run `vercel dev` (recommended) - runs API locally')
+        console.warn('   2. Or use `vite dev` with vercel dev running on port 3000')
+        console.warn('   3. Make sure REDIS_URL is set in .env.local for local API')
+        console.warn('   Showing empty leaderboard for now.')
+      }
+      
+      // Show empty leaderboard on any error
+      setLeaderboard([])
     } finally {
       setLoadingLeaderboard(false)
     }
@@ -255,42 +288,11 @@ export default function LightCycleGame() {
     console.log('🔍 Getting timezone at submission time:', timezone)
     console.log('🔍 Full location object:', currentLocation)
 
-    // Skip in local development - use localStorage as fallback
+    // In local development, don't save to database but show message
     if (import.meta.env.DEV) {
-      console.log('Skipping score submission in local development, using localStorage')
-      try {
-        const localScores = localStorage.getItem('lightCycleLeaderboard')
-        const scores: LeaderboardEntry[] = localScores ? JSON.parse(localScores) : []
-        
-        // Remove old entries with same name
-        if (name && name.trim() !== '' && name !== 'Anonymous') {
-          const filtered = scores.filter(e => e.playerName !== name)
-          scores.length = 0
-          scores.push(...filtered)
-        }
-        
-        // Add date and time
-        const now = new Date()
-        const date = now.toISOString().split('T')[0]
-        const time = now.toTimeString().split(' ')[0]
-        
-        scores.push({
-          score: finalScore,
-          timestamp: Date.now(),
-          playerName: name || 'Anonymous',
-          date,
-          time,
-          timezone,
-        })
-        // Keep only top 100 scores
-        scores.sort((a, b) => b.score - a.score)
-        localStorage.setItem('lightCycleLeaderboard', JSON.stringify(scores.slice(0, 100)))
-        setScoreSubmitted(true)
-        // Refresh leaderboard
-        await fetchLeaderboard()
-      } catch (error) {
-        console.error('Failed to save score to localStorage:', error)
-      }
+      console.log('⚠️ Local development: Score will NOT be saved to database')
+      setScoreSubmitted(true)
+      // Don't refresh leaderboard since we didn't save anything
       return
     }
 
@@ -426,7 +428,15 @@ export default function LightCycleGame() {
               )}
 
               {scoreSubmitted && (
-                <p className="score-submitted">✓ Score submitted!</p>
+                <>
+                  {import.meta.env.DEV ? (
+                    <p className="score-submitted dev-warning">
+                      ⚠️ Local build: Scores will NOT be saved to the database
+                    </p>
+                  ) : (
+                    <p className="score-submitted">✓ Score submitted!</p>
+                  )}
+                </>
               )}
 
               <button onClick={resetGame} className="game-restart-button">
@@ -504,14 +514,15 @@ export default function LightCycleGame() {
                 <span className="leaderboard-rank">#{index + 1}</span>
                 <div className="leaderboard-player-info">
                   <span className="leaderboard-name">{entry.playerName || 'Anonymous'}</span>
-                  {(entry.date || entry.time) && (
+                  {((entry.date || entry.time) || entry.timezone) && (
                     <span className="leaderboard-date">
-                      {entry.date} {entry.time}
-                    </span>
-                  )}
-                  {entry.timezone && (
-                    <span className="leaderboard-location">
-                      📍 {entry.timezone.replace(/_/g, ' ')}
+                      {entry.date && entry.time && `${entry.date} ${entry.time}`}
+                      {entry.timezone && (
+                        <>
+                          {entry.date || entry.time ? ' • ' : ''}
+                          📍 {entry.timezone.replace(/_/g, ' ')}
+                        </>
+                      )}
                     </span>
                   )}
                 </div>
