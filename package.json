@@ -11,9 +11,14 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
+    "dotenv": "^17.2.3",
     "ethers": "^6.13.0",
+    "ioredis": "^5.8.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.9.5",
+    "redis": "^5.9.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
