@@ -102,6 +102,14 @@ body::before {
   text-transform: uppercase;
 }
 
+.header-meta {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
 .git-hash {
   font-family: 'Rajdhani', monospace;
   font-size: 0.85rem;
@@ -109,8 +117,18 @@ body::before {
   color: #00ffff;
   opacity: 0.5;
   letter-spacing: 1px;
-  margin-top: 8px;
   text-transform: lowercase;
+  margin: 0;
+}
+
+.deployment-count {
+  font-family: 'Rajdhani', monospace;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #00ffff;
+  opacity: 0.5;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 .card {
