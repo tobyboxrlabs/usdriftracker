@@ -102,6 +102,54 @@
     inset 0 0 10px rgba(255, 255, 255, 0.5);
   border: 1px solid #00ffff;
   animation: pulse 0.5s ease-in-out infinite alternate;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Fallback: if icon doesn't load, show a directional arrow */
+.game-cell-cycle::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 4px 8px 4px;
+  border-color: transparent transparent #ffffff transparent;
+  opacity: 0.9;
+  z-index: 5;
+  transition: transform 0.1s ease-out;
+}
+
+.game-cell-cycle[data-direction="UP"]::before {
+  transform: rotate(0deg);
+}
+
+.game-cell-cycle[data-direction="RIGHT"]::before {
+  transform: rotate(90deg);
+}
+
+.game-cell-cycle[data-direction="DOWN"]::before {
+  transform: rotate(180deg);
+}
+
+.game-cell-cycle[data-direction="LEFT"]::before {
+  transform: rotate(-90deg);
+}
+
+.lightcycle-icon {
+  width: 150%;
+  height: 150%;
+  object-fit: contain;
+  position: absolute;
+  z-index: 10;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+  transition: transform 0.1s ease-out;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
 }
 
 .game-cell-trail {
