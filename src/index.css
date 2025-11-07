@@ -80,6 +80,17 @@ body::before {
   text-transform: uppercase;
 }
 
+.git-hash {
+  font-family: 'Rajdhani', monospace;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #00ffff;
+  opacity: 0.5;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  text-transform: lowercase;
+}
+
 .card {
   background: rgba(10, 10, 20, 0.95);
   border: 2px solid #00ffff;
@@ -302,7 +313,8 @@ body::before {
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 16px;
-  background: rgb(10, 10, 20) !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
   border: 2px solid #00ffff;
   border-radius: 6px;
   color: #00ffff;
@@ -318,6 +330,7 @@ body::before {
   z-index: 10000;
   box-shadow: 
     0 0 20px rgba(0, 255, 255, 0.4),
+    inset 0 0 0 1000px #000000,
     inset 0 0 10px rgba(0, 255, 255, 0.1);
   text-align: left;
   letter-spacing: 0.5px;
@@ -326,11 +339,28 @@ body::before {
   -webkit-backdrop-filter: none !important;
   isolation: isolate;
   will-change: opacity;
+  mix-blend-mode: normal;
+  transform-style: preserve-3d;
+  contain: layout style paint;
 }
 
 .metric-help:hover .metric-help-tooltip {
-  opacity: 1;
+  opacity: 1 !important;
   pointer-events: auto;
+}
+
+.metric-help-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: #000000;
+  border-radius: 8px;
+  z-index: -2;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .metric-help-tooltip::after {

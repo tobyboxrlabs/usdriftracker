@@ -515,6 +515,9 @@ function App() {
         <header className="header">
           <h1>RIF PUT TO WORK</h1>
           <p className="subtitle">Real-time token metrics on Rootstock</p>
+          {import.meta.env.VITE_GIT_COMMIT_HASH && (
+            <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
+          )}
         </header>
 
         <div className="card">
