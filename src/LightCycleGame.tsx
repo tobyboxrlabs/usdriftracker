@@ -21,6 +21,7 @@ export default function LightCycleGame() {
   const [cycle, setCycle] = useState<Position>({ x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) })
   const [trail, setTrail] = useState<Position[]>([])
   const [gameOver, setGameOver] = useState(false)
+  const [gameStarted, setGameStarted] = useState(false)
   const [score, setScore] = useState(0)
   const [speed, setSpeed] = useState(INITIAL_SPEED)
   const directionRef = useRef<Direction>('RIGHT')
@@ -44,7 +45,7 @@ export default function LightCycleGame() {
   }, [])
 
   const changeDirection = useCallback((newDir: Direction) => {
-    if (gameOver) return
+    if (gameOver || !gameStarted) return
 
     const currentDir = directionRef.current
 
@@ -58,10 +59,10 @@ export default function LightCycleGame() {
     } else if (newDir === 'RIGHT' && currentDir !== 'LEFT') {
       directionRef.current = 'RIGHT'
     }
-  }, [gameOver])
+  }, [gameOver, gameStarted])
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
-    if (gameOver) return
+    if (gameOver || !gameStarted) return
 
     const key = e.key
     if (key === 'ArrowUp') {
@@ -73,17 +74,17 @@ export default function LightCycleGame() {
     } else if (key === 'ArrowRight') {
       changeDirection('RIGHT')
     }
-  }, [gameOver, changeDirection])
+  }, [gameOver, gameStarted, changeDirection])
 
   // Touch handlers for swipe gestures
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (gameOver) return
+    if (gameOver || !gameStarted) return
     const touch = e.touches[0]
     touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-  }, [gameOver])
+  }, [gameOver, gameStarted])
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (gameOver || !touchStartRef.current) return
+    if (gameOver || !gameStarted || !touchStartRef.current) return
     
     const touch = e.changedTouches[0]
     const deltaX = touch.clientX - touchStartRef.current.x
@@ -111,7 +112,7 @@ export default function LightCycleGame() {
     }
 
     touchStartRef.current = null
-  }, [gameOver, changeDirection])
+  }, [gameOver, gameStarted, changeDirection])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -169,7 +170,7 @@ export default function LightCycleGame() {
   }, [gameOver, trail, score])
 
   useEffect(() => {
-    if (gameOver) {
+    if (gameOver || !gameStarted) {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current)
       }
@@ -183,7 +184,7 @@ export default function LightCycleGame() {
         clearInterval(gameLoopRef.current)
       }
     }
-  }, [moveCycle, speed, gameOver])
+  }, [moveCycle, speed, gameOver, gameStarted])
 
   const fetchLeaderboard = useCallback(async () => {
     setLoadingLeaderboard(true)
@@ -348,11 +349,16 @@ export default function LightCycleGame() {
     fetchLeaderboard()
   }, [fetchLeaderboard])
 
+  const startGame = () => {
+    setGameStarted(true)
+  }
+
   const resetGame = () => {
     setCycle({ x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) })
     directionRef.current = 'RIGHT'
     setTrail([])
     setGameOver(false)
+    setGameStarted(false)
     setScore(0)
     setSpeed(INITIAL_SPEED)
     setScoreSubmitted(false)
@@ -389,10 +395,44 @@ export default function LightCycleGame() {
               <div
                 key={index}
                 className={`game-cell ${isCycle ? 'game-cell-cycle' : ''} ${isTrail ? 'game-cell-trail' : ''}`}
-              />
+                data-direction={isCycle ? directionRef.current : undefined}
+              >
+                {isCycle && (
+                  <img 
+                    src="/lightcycle-icon.png" 
+                    alt="Light Cycle"
+                    className="lightcycle-icon"
+                    style={{
+                      transform: `translate(-50%, -50%) rotate(${
+                        directionRef.current === 'UP' ? '0deg' :
+                        directionRef.current === 'RIGHT' ? '90deg' :
+                        directionRef.current === 'DOWN' ? '180deg' :
+                        '-90deg'
+                      })`
+                    }}
+                    onError={(e) => {
+                      // Hide the image if it fails to load
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
+              </div>
             )
           })}
         </div>
+
+        {!gameStarted && !gameOver && (
+          <div className="game-overlay">
+            <div className="game-over-content">
+              <h2>LIGHT CYCLE</h2>
+              <p>Use arrow keys or swipe to control your cycle</p>
+              <p>Avoid walls and your own trail!</p>
+              <button onClick={startGame} className="game-restart-button">
+                START
+              </button>
+            </div>
+          </div>
+        )}
 
         {gameOver && (
           <div className="game-overlay">
