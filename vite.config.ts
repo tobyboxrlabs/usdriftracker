@@ -26,6 +26,7 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_GIT_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
   },
+  // @ts-expect-error - vitest extends vite config with test property
   test: {
     globals: true,
     environment: 'jsdom',

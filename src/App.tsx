@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { ethers } from 'ethers'
 import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
 import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
@@ -80,6 +81,67 @@ const formatNumericValue = (
 }
 
 /**
+ * Tooltip component that renders via portal to escape parent stacking contexts
+ */
+interface TooltipProps {
+  text: string
+  triggerRef: React.RefObject<HTMLElement>
+  isVisible: boolean
+}
+
+const Tooltip = ({ text, triggerRef, isVisible }: TooltipProps) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const tooltipWidth = 280
+      const tooltipHeight = 120 // approximate
+      
+      setPosition({
+        top: rect.top - tooltipHeight - 10,
+        left: rect.left + rect.width / 2 - tooltipWidth / 2,
+      })
+    }
+  }, [triggerRef])
+
+  useEffect(() => {
+    if (isVisible) {
+      updatePosition()
+      
+      const handleScroll = () => updatePosition()
+      const handleResize = () => updatePosition()
+      
+      window.addEventListener('scroll', handleScroll, true)
+      window.addEventListener('resize', handleResize)
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true)
+        window.removeEventListener('resize', handleResize)
+      }
+    }
+  }, [isVisible, updatePosition])
+
+  if (!isVisible) return null
+
+  return createPortal(
+    <div
+      className="metric-help-tooltip-portal"
+      style={{
+        position: 'fixed',
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        zIndex: 100000,
+      }}
+    >
+      {text}
+      <div className="metric-help-tooltip-arrow"></div>
+    </div>,
+    document.body
+  )
+}
+
+/**
  * Metric display component
  * Renders a single metric with label, value, and unit
  * Shows "Not Available" state when value is null
@@ -95,6 +157,9 @@ interface MetricDisplayProps {
 }
 
 const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false, history, helpText }: MetricDisplayProps) => {
+  const helpIconRef = useRef<HTMLSpanElement>(null)
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false)
+
   if (value === null) {
     return (
       <div className="metric metric-disabled">
@@ -104,10 +169,17 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
         <div className="metric-unit">
           Not Available
           {helpText && (
-            <span className="metric-help">
-              <span className="metric-help-icon">?</span>
-              <span className="metric-help-tooltip">{helpText}</span>
-            </span>
+            <>
+              <span
+                ref={helpIconRef}
+                className="metric-help"
+                onMouseEnter={() => setIsTooltipVisible(true)}
+                onMouseLeave={() => setIsTooltipVisible(false)}
+              >
+                <span className="metric-help-icon">?</span>
+              </span>
+              <Tooltip text={helpText} triggerRef={helpIconRef} isVisible={isTooltipVisible} />
+            </>
           )}
         </div>
       </div>
@@ -126,10 +198,17 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
           <div className="metric-unit">
             {unit}
             {helpText && (
-              <span className="metric-help">
-                <span className="metric-help-icon">?</span>
-                <span className="metric-help-tooltip">{helpText}</span>
-              </span>
+              <>
+                <span
+                  ref={helpIconRef}
+                  className="metric-help"
+                  onMouseEnter={() => setIsTooltipVisible(true)}
+                  onMouseLeave={() => setIsTooltipVisible(false)}
+                >
+                  <span className="metric-help-icon">?</span>
+                </span>
+                <Tooltip text={helpText} triggerRef={helpIconRef} isVisible={isTooltipVisible} />
+              </>
             )}
           </div>
         </div>
@@ -245,17 +324,15 @@ function App() {
     }
 
     try {
-      // Mark all metrics as refreshing if not initial load
-      if (!isInitialLoad) {
-        setRefreshingMetrics(new Set([
-          'stRIFSupply',
-          'rifproSupply',
-          'minted',
-          'rifPrice',
-          'rifCollateral',
-          'maxMintable',
-        ]))
-      }
+      // Mark all metrics as refreshing
+      setRefreshingMetrics(new Set([
+        'stRIFSupply',
+        'rifproSupply',
+        'minted',
+        'rifPrice',
+        'rifCollateral',
+        'maxMintable',
+      ]))
       
       setTokenData(prev => ({ ...prev, loading: true, error: null }))
 
@@ -288,8 +365,8 @@ function App() {
         stRIFDecimalsRaw,
         rifproSupply,
         rifproDecimalsRaw,
-        oldUSDRIFSupply,
-        oldUSDRIFDecimalsRaw,
+        USDRIFSupply,
+        USDRIFDecimalsRaw,
         name,
         symbol,
       ] = await Promise.all([
@@ -311,12 +388,12 @@ function App() {
       // Convert decimals to numbers
       const stRIFDecimals = Number(stRIFDecimalsRaw)
       const rifproDecimals = Number(rifproDecimalsRaw)
-      const oldUSDRIFDecimals = Number(oldUSDRIFDecimalsRaw)
+      const USDRIFDecimals = Number(USDRIFDecimalsRaw)
 
       // Format token supplies
       const formattedStRIFSupply = formatAmount(stRIFSupply, stRIFDecimals)
       const formattedRifproSupply = formatAmount(rifproSupply, rifproDecimals)
-      const formattedMinted = formatAmount(oldUSDRIFSupply, oldUSDRIFDecimals)
+      const formattedMinted = formatAmount(USDRIFSupply, USDRIFDecimals)
 
       // Query optional metrics (these may fail without breaking the app)
       const rifPriceResult = await queryOptionalMetric(
@@ -429,28 +506,28 @@ function App() {
       )
       console.log('History data points:', historyCounts)
 
-      // Update state with all fetched data
-      setTokenData({
-        stRIFSupply: stRIFSupply.toString(),
-        formattedStRIFSupply,
-        rifproSupply: rifproSupply.toString(),
-        formattedRifproSupply,
-        minted: oldUSDRIFSupply.toString(),
-        formattedMinted,
-        rifPrice: rifPriceResult?.raw ? rifPriceResult.raw.toString() : null,
-        formattedRifPrice: rifPriceResult?.formatted || null,
+      // Update state with all fetched data, preserving existing values if new ones aren't available
+      setTokenData(prev => ({
+        stRIFSupply: stRIFSupply ? stRIFSupply.toString() : prev.stRIFSupply,
+        formattedStRIFSupply: formattedStRIFSupply || prev.formattedStRIFSupply,
+        rifproSupply: rifproSupply ? rifproSupply.toString() : prev.rifproSupply,
+        formattedRifproSupply: formattedRifproSupply || prev.formattedRifproSupply,
+        minted: USDRIFSupply ? USDRIFSupply.toString() : prev.minted,
+        formattedMinted: formattedMinted || prev.formattedMinted,
+        rifPrice: rifPriceResult?.raw ? rifPriceResult.raw.toString() : prev.rifPrice,
+        formattedRifPrice: rifPriceResult?.formatted || prev.formattedRifPrice,
         rifCollateral: rifCollateralResult?.raw
           ? rifCollateralResult.raw.toString()
-          : null,
-        formattedRifCollateral: rifCollateralResult?.formatted || null,
-        maxMintable: maxMintable ? maxMintable.toString() : null,
-        formattedMaxMintable,
-        symbol,
-        name,
+          : prev.rifCollateral,
+        formattedRifCollateral: rifCollateralResult?.formatted || prev.formattedRifCollateral,
+        maxMintable: maxMintable ? maxMintable.toString() : prev.maxMintable,
+        formattedMaxMintable: formattedMaxMintable || prev.formattedMaxMintable,
+        symbol: symbol || prev.symbol,
+        name: name || prev.name,
         loading: false,
         error: null,
         lastUpdated: new Date(),
-      })
+      }))
       
       // Update history state
       setHistory({
@@ -513,7 +590,14 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>RIF PUT TO WORK</h1>
+          <div className="header-title-row">
+            <h1>RIF PUT TO WORK</h1>
+            <img 
+              src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzFsMWMxMzQ0bnY2ZTd2ejA2ZjNkamVteG9nNmhtenVja3VrbWZ6aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/B0yg6yWnfVpEA/giphy.gif" 
+              alt="Animated GIF" 
+              className="header-gif"
+            />
+          </div>
           <p className="subtitle">Real-time token metrics on Rootstock</p>
           {import.meta.env.VITE_GIT_COMMIT_HASH && (
             <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
@@ -530,12 +614,7 @@ function App() {
             )}
           </div>
 
-          {isInitialLoad && tokenData.loading ? (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Loading token data...</p>
-            </div>
-          ) : tokenData.error ? (
+          {tokenData.error ? (
             <div className="error">
               <p>⚠️ Error: {tokenData.error}</p>
               <button onClick={fetchTokenData} className="retry-button">
@@ -600,7 +679,7 @@ function App() {
             <button
               onClick={fetchTokenData}
               className="refresh-button"
-              disabled={isInitialLoad && tokenData.loading}
+              disabled={refreshingMetrics.size > 0}
             >
               {refreshingMetrics.size > 0 ? 'Refreshing...' : 'Refresh Now'}
             </button>
