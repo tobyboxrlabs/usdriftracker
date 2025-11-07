@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { ethers } from 'ethers'
-import { CONFIG, ERC20_ABI, MOC_STATE_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
+import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
 import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
 import { MiniLineGraph } from './MiniLineGraph'
 import './App.css'
@@ -292,7 +292,6 @@ function App() {
         oldUSDRIFDecimalsRaw,
         name,
         symbol,
-        decimalsRaw,
       ] = await Promise.all([
         stRIFContract.totalSupply(),
         stRIFContract.decimals(),
@@ -302,7 +301,6 @@ function App() {
         oldUSDRIFContract.decimals(),
         stRIFContract.name(),
         stRIFContract.symbol(),
-        stRIFContract.decimals(),
       ])
 
       // Check mount state before continuing
@@ -314,7 +312,6 @@ function App() {
       const stRIFDecimals = Number(stRIFDecimalsRaw)
       const rifproDecimals = Number(rifproDecimalsRaw)
       const oldUSDRIFDecimals = Number(oldUSDRIFDecimalsRaw)
-      const decimals = Number(decimalsRaw)
 
       // Format token supplies
       const formattedStRIFSupply = formatAmount(stRIFSupply, stRIFDecimals)
