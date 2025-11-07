@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Routes, Route, Link } from 'react-router-dom'
 import { ethers } from 'ethers'
 import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
 import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
 import { MiniLineGraph } from './MiniLineGraph'
+import LightCycleGame from './LightCycleGame'
 import './App.css'
 
 /**
@@ -633,22 +635,26 @@ function App() {
   }, [fetchTokenData, fetchDeploymentCount])
 
   return (
-    <div className="app">
-      <div className="container">
-        <header className="header">
-          <div className="header-title-row">
-            <h1>RIF PUT TO WORK</h1>
-          </div>
-          <p className="subtitle">Real-time token metrics on Rootstock</p>
-          <div className="header-meta">
-            {import.meta.env.VITE_GIT_COMMIT_HASH && (
-              <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
-            )}
-            {deploymentCount !== null && (
-              <p className="deployment-count">Deployments: {deploymentCount} 😅</p>
-            )}
-          </div>
-        </header>
+    <Routes>
+      <Route path="/game" element={<LightCycleGame />} />
+      <Route path="/" element={
+        <div className="app">
+          <div className="container">
+            <header className="header">
+              <div className="header-title-row">
+                <h1>RIF PUT TO WORK</h1>
+              </div>
+              <p className="subtitle">Real-time token metrics on Rootstock</p>
+              <div className="header-meta">
+                {import.meta.env.VITE_GIT_COMMIT_HASH && (
+                  <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
+                )}
+                {deploymentCount !== null && (
+                  <p className="deployment-count">Deployments: {deploymentCount} 😅</p>
+                )}
+              </div>
+              <Link to="/game" className="game-link">Play Light Cycle →</Link>
+            </header>
 
         <div className="card">
           <div className="card-header">
@@ -833,8 +839,10 @@ function App() {
             </tbody>
           </table>
         </footer>
+        </div>
       </div>
-    </div>
+      } />
+    </Routes>
   )
 }
 
