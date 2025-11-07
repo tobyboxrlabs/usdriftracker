@@ -75,10 +75,8 @@ async function showDatabaseContents() {
               console.log(`   ${i + 1}. ${entry.playerName || 'Anonymous'}`)
               console.log(`      Score: ${entry.score.toLocaleString()}`)
               console.log(`      Date: ${entry.date} ${entry.time}`)
-              if (entry.location) {
-                const loc = entry.location
-                const locStr = [loc.city, loc.country].filter(Boolean).join(', ')
-                if (locStr) console.log(`      Location: 📍 ${locStr}`)
+              if (entry.location && entry.location.timezone) {
+                console.log(`      Location: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
               }
               console.log(`      Key: ${scoreId}`)
               console.log(`      Sorted Set Score: ${score}`)
@@ -117,16 +115,8 @@ async function showDatabaseContents() {
             console.log(`   └─ Player: ${entry.playerName || 'Anonymous'}`)
             console.log(`   └─ Score: ${entry.score.toLocaleString()}`)
             console.log(`   └─ Date: ${entry.date} ${entry.time}`)
-            if (entry.location) {
-              const loc = entry.location
-              const locStr = [loc.city, loc.country].filter(Boolean).join(', ')
-              if (locStr) {
-                console.log(`   └─ Location: 📍 ${locStr}`)
-              } else if (loc.latitude && loc.longitude) {
-                console.log(`   └─ Location: 📍 ${loc.latitude}, ${loc.longitude}`)
-              } else {
-                console.log(`   └─ Location: 📍 (coordinates only)`)
-              }
+            if (entry.location && entry.location.timezone) {
+              console.log(`   └─ Location: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
             } else {
               console.log(`   └─ Location: (not provided)`)
             }

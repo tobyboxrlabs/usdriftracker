@@ -666,11 +666,16 @@ function App() {
               />
               <h2>RIF Metrics</h2>
             </div>
-            {tokenData.lastUpdated && (
-              <span className="last-updated">
-                Last updated: {tokenData.lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
+            {tokenData.lastUpdated && (() => {
+              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+              const timeString = tokenData.lastUpdated.toLocaleTimeString()
+              const timezoneDisplay = timezone.replace(/_/g, ' ')
+              return (
+                <span className="last-updated">
+                  Last updated: {timeString} ({timezoneDisplay})
+                </span>
+              )
+            })()}
           </div>
 
           {tokenData.error ? (

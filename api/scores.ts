@@ -7,10 +7,8 @@ interface ScoreEntry {
   date: string // ISO date string
   time: string // Time string (HH:MM:SS)
   location?: {
-    latitude?: number
-    longitude?: number
-    city?: string
-    country?: string
+    timezone?: string
+    locale?: string
   }
 }
 
@@ -79,8 +77,10 @@ async function saveScore(score: number, playerName?: string, location?: ScoreEnt
     playerName: playerName || 'Anonymous',
     date,
     time,
-    location,
+    location: location || undefined, // Explicitly set to undefined if null/empty
   }
+  
+  console.log('Entry being saved:', JSON.stringify(entry, null, 2))
 
   if (redisClient) {
     try {
@@ -240,10 +240,14 @@ export default async function handler(
       }
 
       console.log('Saving score:', { score, playerName, hasLocation: !!location })
+      console.log('Location data received:', location)
+      console.log('Location type:', typeof location)
       console.log('Redis URL available:', !!process.env.REDIS_URL)
       console.log('KV REST API URL available:', !!process.env.KV_REST_API_URL)
 
       await saveScore(score, playerName, location)
+      
+      console.log('Score saved successfully')
 
       return res.status(200).json({ success: true })
     } catch (error) {
