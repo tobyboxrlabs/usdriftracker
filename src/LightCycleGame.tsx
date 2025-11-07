@@ -248,8 +248,28 @@ export default function LightCycleGame() {
     }
   }, [])
 
+  // Helper to get current timezone/locale (always fresh, doesn't rely on state)
+  const getCurrentLocation = useCallback(() => {
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const locale = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language
+      return { timezone, locale }
+    } catch (error) {
+      console.error('Could not get timezone/locale:', error)
+      try {
+        return { locale: navigator.language }
+      } catch (e) {
+        return null
+      }
+    }
+  }, [])
+
   const submitScore = useCallback(async (finalScore: number, name?: string) => {
     if (scoreSubmitted) return
+
+    // Get location directly (don't rely on state which might be null)
+    const currentLocation = getCurrentLocation()
+    console.log('Getting location at submission time:', currentLocation)
 
     // Skip in local development - use localStorage as fallback
     if (import.meta.env.DEV) {
@@ -276,7 +296,7 @@ export default function LightCycleGame() {
           playerName: name || 'Anonymous',
           date,
           time,
-          location: userLocation || undefined,
+          location: currentLocation || undefined,
         })
         // Keep only top 100 scores
         scores.sort((a, b) => b.score - a.score)
@@ -294,8 +314,8 @@ export default function LightCycleGame() {
       console.log('Submitting score with location:', { 
         score: finalScore, 
         playerName: name, 
-        hasLocation: !!userLocation,
-        location: userLocation 
+        hasLocation: !!currentLocation,
+        location: currentLocation 
       })
       
       // Ensure location is included if it exists
@@ -309,12 +329,12 @@ export default function LightCycleGame() {
       }
       
       // Only add location if it has valid data
-      if (userLocation && (userLocation.timezone || userLocation.locale)) {
-        requestBody.location = userLocation
+      if (currentLocation && (currentLocation.timezone || currentLocation.locale)) {
+        requestBody.location = currentLocation
       }
       
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2))
-      console.log('userLocation state:', userLocation)
+      console.log('Current location:', currentLocation)
       
       const response = await fetch('/api/scores', {
         method: 'POST',
