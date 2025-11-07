@@ -34,9 +34,24 @@ async function getRedisClient() {
         maxRetriesPerRequest: 3,
         enableReadyCheck: false,
         lazyConnect: true,
+        connectTimeout: 10000,
+        retryStrategy: (times) => {
+          if (times > 3) {
+            return null // Stop retrying
+          }
+          return Math.min(times * 200, 2000)
+        },
+        // Important for serverless: connection settings
+        keepAlive: 30000,
       })
-      await redis.connect()
-      return { type: 'redis', client: redis }
+      
+      try {
+        await redis.connect()
+        return { type: 'redis', client: redis }
+      } catch (connectError) {
+        console.error('Failed to connect to Redis:', connectError)
+        throw connectError
+      }
     }
     
     return null
@@ -116,7 +131,11 @@ async function saveScore(score: number, playerName?: string, location?: ScoreEnt
         // External Redis - need to JSON stringify
         await client.set(scoreId, JSON.stringify(entry))
         await client.zadd('leaderboard', score, scoreId)
-        await client.zremrangebyrank('leaderboard', 0, -1001)
+        // Keep only top 1000 scores (remove from index 0 to -1001, keeping last 1000)
+        const totalScores = await client.zcard('leaderboard')
+        if (totalScores > 1000) {
+          await client.zremrangebyrank('leaderboard', 0, totalScores - 1001)
+        }
       }
     } catch (error) {
       console.error('Error saving to Redis, falling back to memory:', error)
@@ -214,20 +233,30 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
-      const { score, playerName } = req.body
+      const { score, playerName, location } = req.body
 
       if (typeof score !== 'number' || score < 0) {
         return res.status(400).json({ error: 'Invalid score' })
       }
+
+      console.log('Saving score:', { score, playerName, hasLocation: !!location })
+      console.log('Redis URL available:', !!process.env.REDIS_URL)
+      console.log('KV REST API URL available:', !!process.env.KV_REST_API_URL)
 
       await saveScore(score, playerName, location)
 
       return res.status(200).json({ success: true })
     } catch (error) {
       console.error('Error saving score:', error)
+      if (error instanceof Error) {
+        console.error('Error name:', error.name)
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+      }
       return res.status(500).json({ 
         error: 'Failed to save score',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : String(error)) : undefined
       })
     }
   }
