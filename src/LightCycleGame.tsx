@@ -52,9 +52,12 @@ export default function LightCycleGame() {
   // Get user location on mount
   useEffect(() => {
     if ('geolocation' in navigator) {
+      console.log('Geolocation API available, requesting location...')
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          console.log('Location permission granted, getting coordinates...')
           const { latitude, longitude } = position.coords
+          console.log('Coordinates:', { latitude, longitude })
           
           // Try to get city/country from reverse geocoding
           let city: string | undefined
@@ -69,24 +72,36 @@ export default function LightCycleGame() {
               const data = await response.json()
               city = data.city || data.locality
               country = data.countryName
+              console.log('Reverse geocoding result:', { city, country })
             }
           } catch (error) {
             // Ignore geocoding errors, we'll just use lat/long
             console.log('Could not fetch location details:', error)
           }
           
-          setUserLocation({ latitude, longitude, city, country })
+          const location = { latitude, longitude, city, country }
+          console.log('Setting user location:', location)
+          setUserLocation(location)
         },
         (error) => {
-          console.log('Location access denied or unavailable:', error)
+          console.log('Location access error:', error)
+          if (error.code === 1) {
+            console.log('Location permission denied by user')
+          } else if (error.code === 2) {
+            console.log('Location unavailable (possibly incognito mode)')
+          } else if (error.code === 3) {
+            console.log('Location request timed out')
+          }
           // Don't set location if user denies or it's unavailable
         },
         {
           enableHighAccuracy: false,
-          timeout: 5000,
+          timeout: 10000, // Increased timeout
           maximumAge: 300000 // Cache for 5 minutes
         }
       )
+    } else {
+      console.log('Geolocation API not available in this browser')
     }
   }, [])
 
@@ -307,6 +322,13 @@ export default function LightCycleGame() {
     }
 
     try {
+      console.log('Submitting score with location:', { 
+        score: finalScore, 
+        playerName: name, 
+        hasLocation: !!userLocation,
+        location: userLocation 
+      })
+      
       const response = await fetch('/api/scores', {
         method: 'POST',
         headers: {

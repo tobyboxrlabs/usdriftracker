@@ -120,7 +120,15 @@ async function showDatabaseContents() {
             if (entry.location) {
               const loc = entry.location
               const locStr = [loc.city, loc.country].filter(Boolean).join(', ')
-              if (locStr) console.log(`   └─ Location: 📍 ${locStr}`)
+              if (locStr) {
+                console.log(`   └─ Location: 📍 ${locStr}`)
+              } else if (loc.latitude && loc.longitude) {
+                console.log(`   └─ Location: 📍 ${loc.latitude}, ${loc.longitude}`)
+              } else {
+                console.log(`   └─ Location: 📍 (coordinates only)`)
+              }
+            } else {
+              console.log(`   └─ Location: (not provided)`)
             }
             console.log()
           } catch (e) {
