@@ -571,12 +571,26 @@ function App() {
     }
 
     try {
+      console.log('Fetching deployment count from /api/analytics...')
       const response = await fetch('/api/analytics')
+      console.log('Response status:', response.status, response.statusText)
+      
       if (response.ok) {
-        const data = await response.json()
-        console.log('Deployment count response:', data)
-        if (data.totalDeployments !== undefined) {
-          setDeploymentCount(data.totalDeployments)
+        const contentType = response.headers.get('content-type')
+        console.log('Content-Type:', contentType)
+        
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          console.log('Deployment count response:', data)
+          if (data.totalDeployments !== undefined) {
+            setDeploymentCount(data.totalDeployments)
+            console.log('Set deployment count to:', data.totalDeployments)
+          } else {
+            console.warn('Response missing totalDeployments field:', data)
+          }
+        } else {
+          const text = await response.text()
+          console.error('Unexpected content type. Response:', text.substring(0, 200))
         }
       } else {
         console.error('Failed to fetch deployment count:', response.status, response.statusText)
@@ -585,6 +599,10 @@ function App() {
       }
     } catch (error) {
       console.error('Failed to fetch deployment count:', error)
+      if (error instanceof Error) {
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+      }
     }
   }, [])
 
@@ -627,7 +645,7 @@ function App() {
               <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
             )}
             {deploymentCount !== null && (
-              <p className="deployment-count">Deployments: {deploymentCount}</p>
+              <p className="deployment-count">Deployments: {deploymentCount} 😅</p>
             )}
           </div>
         </header>
