@@ -15,10 +15,8 @@ type LeaderboardEntry = {
   date?: string
   time?: string
   location?: {
-    latitude?: number
-    longitude?: number
-    city?: string
-    country?: string
+    timezone?: string
+    locale?: string
   }
 }
 
@@ -36,7 +34,7 @@ export default function LightCycleGame() {
   const [playerName, setPlayerName] = useState('')
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
-  const [userLocation, setUserLocation] = useState<{ latitude?: number; longitude?: number; city?: string; country?: string } | null>(null)
+  const [userLocation, setUserLocation] = useState<{ timezone?: string; locale?: string } | null>(null)
 
   // Detect mobile device
   useEffect(() => {
@@ -49,59 +47,27 @@ export default function LightCycleGame() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Get user location on mount
+  // Get user timezone and locale on mount (no permissions needed)
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      console.log('Geolocation API available, requesting location...')
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          console.log('Location permission granted, getting coordinates...')
-          const { latitude, longitude } = position.coords
-          console.log('Coordinates:', { latitude, longitude })
-          
-          // Try to get city/country from reverse geocoding
-          let city: string | undefined
-          let country: string | undefined
-          
-          try {
-            // Use a free reverse geocoding service
-            const response = await fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-            )
-            if (response.ok) {
-              const data = await response.json()
-              city = data.city || data.locality
-              country = data.countryName
-              console.log('Reverse geocoding result:', { city, country })
-            }
-          } catch (error) {
-            // Ignore geocoding errors, we'll just use lat/long
-            console.log('Could not fetch location details:', error)
-          }
-          
-          const location = { latitude, longitude, city, country }
-          console.log('Setting user location:', location)
-          setUserLocation(location)
-        },
-        (error) => {
-          console.log('Location access error:', error)
-          if (error.code === 1) {
-            console.log('Location permission denied by user')
-          } else if (error.code === 2) {
-            console.log('Location unavailable (possibly incognito mode)')
-          } else if (error.code === 3) {
-            console.log('Location request timed out')
-          }
-          // Don't set location if user denies or it's unavailable
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 10000, // Increased timeout
-          maximumAge: 300000 // Cache for 5 minutes
-        }
-      )
-    } else {
-      console.log('Geolocation API not available in this browser')
+    try {
+      // Get timezone (e.g., "America/New_York", "Europe/London")
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      
+      // Get locale (e.g., "en-US", "en-GB")
+      const locale = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language
+      
+      const location = { timezone, locale }
+      console.log('User timezone/locale:', location)
+      setUserLocation(location)
+    } catch (error) {
+      console.log('Could not get timezone/locale:', error)
+      // Fallback to just locale if timezone fails
+      try {
+        const locale = navigator.language
+        setUserLocation({ locale })
+      } catch (e) {
+        // Ignore if both fail
+      }
     }
   }, [])
 
@@ -518,9 +484,9 @@ export default function LightCycleGame() {
                       {entry.date} {entry.time}
                     </span>
                   )}
-                  {entry.location && (entry.location.city || entry.location.country) && (
+                  {entry.location && entry.location.timezone && (
                     <span className="leaderboard-location">
-                      📍 {entry.location.city || ''}{entry.location.city && entry.location.country ? ', ' : ''}{entry.location.country || ''}
+                      📍 {entry.location.timezone.replace(/_/g, ' ')}
                     </span>
                   )}
                 </div>
