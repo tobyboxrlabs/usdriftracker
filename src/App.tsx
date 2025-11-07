@@ -601,18 +601,18 @@ function App() {
 
         <div className="card">
           <div className="card-header">
-            <h2>RIF Metrics</h2>
+            <div className="card-header-title-row">
+              <img 
+                src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzFsMWMxMzQ0bnY2ZTd2ejA2ZjNkamVteG9nNmhtenVja3VrbWZ6aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/B0yg6yWnfVpEA/giphy.gif" 
+                alt="Animated GIF" 
+                className="header-gif"
+              />
+              <h2>RIF Metrics</h2>
+            </div>
             {tokenData.lastUpdated && (
-              <div className="last-updated-container">
-                <img 
-                  src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzFsMWMxMzQ0bnY2ZTd2ejA2ZjNkamVteG9nNmhtenVja3VrbWZ6aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/B0yg6yWnfVpEA/giphy.gif" 
-                  alt="Animated GIF" 
-                  className="header-gif"
-                />
-                <span className="last-updated">
-                  Last updated: {tokenData.lastUpdated.toLocaleTimeString()}
-                </span>
-              </div>
+              <span className="last-updated">
+                Last updated: {tokenData.lastUpdated.toLocaleTimeString()}
+              </span>
             )}
           </div>
 
