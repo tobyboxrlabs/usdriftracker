@@ -27,22 +27,11 @@ export default function LightCycleGame() {
   const directionRef = useRef<Direction>('RIGHT')
   const gameLoopRef = useRef<number>()
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [playerName, setPlayerName] = useState('')
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                  (window.innerWidth <= 768 && 'ontouchstart' in window))
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   const changeDirection = useCallback((newDir: Direction) => {
     if (gameOver || !gameStarted) return
@@ -396,6 +385,7 @@ export default function LightCycleGame() {
                 key={index}
                 className={`game-cell ${isCycle ? 'game-cell-cycle' : ''} ${isTrail ? 'game-cell-trail' : ''}`}
                 data-direction={isCycle ? directionRef.current : undefined}
+                data-game-running={isCycle && gameStarted && !gameOver ? 'true' : undefined}
               >
                 {isCycle && gameStarted && !gameOver && (
                   <img 

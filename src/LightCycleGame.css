@@ -109,8 +109,8 @@
   overflow: visible;
 }
 
-/* Fallback: if icon doesn't load, show a directional arrow */
-.game-cell-cycle::before {
+/* Fallback: if icon doesn't load, show a directional arrow (only when game is running) */
+.game-cell-cycle[data-game-running="true"]::before {
   content: '';
   position: absolute;
   width: 0;
