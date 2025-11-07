@@ -26,6 +26,17 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_GIT_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
   },
+  // Note: When using 'vercel dev', it handles API routes automatically
+  // This proxy is only needed if using 'vite dev' separately
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'http://localhost:3000',
+  //       changeOrigin: true,
+  //       secure: false,
+  //     },
+  //   },
+  // },
   // @ts-expect-error - vitest extends vite config with test property
   test: {
     globals: true,
