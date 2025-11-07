@@ -57,16 +57,19 @@ export default function LightCycleGame() {
       const locale = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language
       
       const location = { timezone, locale }
-      console.log('User timezone/locale:', location)
+      console.log('✅ User timezone/locale detected:', location)
       setUserLocation(location)
     } catch (error) {
-      console.log('Could not get timezone/locale:', error)
+      console.error('❌ Could not get timezone/locale:', error)
       // Fallback to just locale if timezone fails
       try {
         const locale = navigator.language
+        console.log('⚠️  Fallback: Using locale only:', locale)
         setUserLocation({ locale })
       } catch (e) {
-        // Ignore if both fail
+        console.error('❌ Could not get locale either:', e)
+        // Set to null if both fail
+        setUserLocation(null)
       }
     }
   }, [])
@@ -295,16 +298,20 @@ export default function LightCycleGame() {
         location: userLocation 
       })
       
+      const requestBody = {
+        score: finalScore,
+        playerName: name || 'Anonymous',
+        location: userLocation || undefined,
+      }
+      
+      console.log('Request body being sent:', JSON.stringify(requestBody, null, 2))
+      
       const response = await fetch('/api/scores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          score: finalScore,
-          playerName: name || 'Anonymous',
-          location: userLocation || undefined,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (response.ok) {

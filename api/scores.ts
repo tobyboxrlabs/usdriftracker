@@ -77,10 +77,11 @@ async function saveScore(score: number, playerName?: string, location?: ScoreEnt
     playerName: playerName || 'Anonymous',
     date,
     time,
-    location: location || undefined, // Explicitly set to undefined if null/empty
+    location: location && (location.timezone || location.locale) ? location : undefined,
   }
   
   console.log('Entry being saved:', JSON.stringify(entry, null, 2))
+  console.log('Location in entry:', entry.location)
 
   if (redisClient) {
     try {
