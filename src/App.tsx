@@ -15,8 +15,6 @@ interface TokenData {
   formattedStRIFSupply: string
   rifproSupply: string
   formattedRifproSupply: string
-  totalSupply: string
-  formattedSupply: string
   minted: string | null
   formattedMinted: string | null
   
@@ -48,8 +46,6 @@ const INITIAL_TOKEN_DATA: TokenData = {
   formattedStRIFSupply: '0',
   rifproSupply: '0',
   formattedRifproSupply: '0',
-  totalSupply: '0',
-  formattedSupply: '0',
   minted: null,
   formattedMinted: null,
   rifPrice: null,
@@ -95,16 +91,25 @@ interface MetricDisplayProps {
   formatOptions?: { maximumFractionDigits: number; prefix?: string }
   isRefreshing?: boolean
   history?: HistoryPoint[]
+  helpText?: string
 }
 
-const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false, history }: MetricDisplayProps) => {
+const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false, history, helpText }: MetricDisplayProps) => {
   if (value === null) {
     return (
       <div className="metric metric-disabled">
         <div className="metric-label">{label}</div>
         {isRefreshing && <span className="metric-refresh-indicator"></span>}
         <div className="metric-value">—</div>
-        <div className="metric-unit">Not Available</div>
+        <div className="metric-unit">
+          Not Available
+          {helpText && (
+            <span className="metric-help">
+              <span className="metric-help-icon">?</span>
+              <span className="metric-help-tooltip">{helpText}</span>
+            </span>
+          )}
+        </div>
       </div>
     )
   }
@@ -118,7 +123,15 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
           <div className="metric-value">
             {formatNumericValue(value, formatOptions)}
           </div>
-          <div className="metric-unit">{unit}</div>
+          <div className="metric-unit">
+            {unit}
+            {helpText && (
+              <span className="metric-help">
+                <span className="metric-help-icon">?</span>
+                <span className="metric-help-tooltip">{helpText}</span>
+              </span>
+            )}
+          </div>
         </div>
         {history && history.length >= 2 ? (
           <div className="metric-graph">
@@ -237,7 +250,6 @@ function App() {
         setRefreshingMetrics(new Set([
           'stRIFSupply',
           'rifproSupply',
-          'totalSupply',
           'minted',
           'rifPrice',
           'rifCollateral',
@@ -281,7 +293,6 @@ function App() {
         name,
         symbol,
         decimalsRaw,
-        totalSupply,
       ] = await Promise.all([
         stRIFContract.totalSupply(),
         stRIFContract.decimals(),
@@ -292,7 +303,6 @@ function App() {
         stRIFContract.name(),
         stRIFContract.symbol(),
         stRIFContract.decimals(),
-        stRIFContract.totalSupply(),
       ])
 
       // Check mount state before continuing
@@ -309,7 +319,6 @@ function App() {
       // Format token supplies
       const formattedStRIFSupply = formatAmount(stRIFSupply, stRIFDecimals)
       const formattedRifproSupply = formatAmount(rifproSupply, rifproDecimals)
-      const formattedSupply = formatAmount(totalSupply, decimals)
       const formattedMinted = formatAmount(oldUSDRIFSupply, oldUSDRIFDecimals)
 
       // Query optional metrics (these may fail without breaking the app)
@@ -404,7 +413,6 @@ function App() {
       const metricKeys = {
         stRIFSupply: parseFloat(formattedStRIFSupply),
         rifproSupply: parseFloat(formattedRifproSupply),
-        totalSupply: parseFloat(formattedSupply),
         minted: parseFloat(formattedMinted),
         rifPrice: rifPriceResult?.formatted ? parseFloat(rifPriceResult.formatted) : null,
         rifCollateral: rifCollateralResult?.formatted ? parseFloat(rifCollateralResult.formatted) : null,
@@ -430,8 +438,6 @@ function App() {
         formattedStRIFSupply,
         rifproSupply: rifproSupply.toString(),
         formattedRifproSupply,
-        totalSupply: totalSupply.toString(),
-        formattedSupply,
         minted: oldUSDRIFSupply.toString(),
         formattedMinted,
         rifPrice: rifPriceResult?.raw ? rifPriceResult.raw.toString() : null,
@@ -453,7 +459,6 @@ function App() {
       setHistory({
         stRIFSupply: getMetricHistory('stRIFSupply'),
         rifproSupply: getMetricHistory('rifproSupply'),
-        totalSupply: getMetricHistory('totalSupply'),
         minted: getMetricHistory('minted'),
         rifPrice: getMetricHistory('rifPrice'),
         rifCollateral: getMetricHistory('rifCollateral'),
@@ -489,7 +494,6 @@ function App() {
     setHistory({
       stRIFSupply: getMetricHistory('stRIFSupply'),
       rifproSupply: getMetricHistory('rifproSupply'),
-      totalSupply: getMetricHistory('totalSupply'),
       minted: getMetricHistory('minted'),
       rifPrice: getMetricHistory('rifPrice'),
       rifCollateral: getMetricHistory('rifCollateral'),
@@ -512,7 +516,7 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>RIF put to work</h1>
+          <h1>RIF PUT TO WORK</h1>
           <p className="subtitle">Real-time token metrics on Rootstock</p>
         </header>
 
@@ -541,11 +545,12 @@ function App() {
           ) : (
             <div className="metrics">
               <MetricDisplay
-                label="stRIF Supply"
+                label="Staked RIF in Collective"
                 value={tokenData.formattedStRIFSupply}
                 unit="stRIF"
                 isRefreshing={refreshingMetrics.has('stRIFSupply')}
                 history={history.stRIFSupply}
+                helpText="Sourced from the stRIF token contract (totalSupply). Represents the total amount of RIF tokens staked in the collective."
               />
               <MetricDisplay
                 label="RIFPRO Total Supply"
@@ -553,20 +558,15 @@ function App() {
                 unit="RIFP"
                 isRefreshing={refreshingMetrics.has('rifproSupply')}
                 history={history.rifproSupply}
-              />
-              <MetricDisplay
-                label="USDRIF Total Supply"
-                value={tokenData.formattedSupply}
-                unit={tokenData.symbol}
-                isRefreshing={refreshingMetrics.has('totalSupply')}
-                history={history.totalSupply}
+                helpText="Sourced from the RIFPRO token contract (totalSupply). Represents the total supply of RIFPRO tokens in circulation."
               />
               <MetricDisplay
                 label="USDRIF Minted"
                 value={tokenData.formattedMinted}
-                unit={tokenData.symbol}
+                unit="USD"
                 isRefreshing={refreshingMetrics.has('minted')}
                 history={history.minted}
+                helpText="Sourced from the old USDRIF token contract (totalSupply). Represents the total amount of USDRIF tokens that have been minted."
               />
               <MetricDisplay
                 label="RIF Price"
@@ -575,6 +575,7 @@ function App() {
                 formatOptions={{ maximumFractionDigits: 6, prefix: '$' }}
                 isRefreshing={refreshingMetrics.has('rifPrice')}
                 history={history.rifPrice}
+                helpText="Sourced from the RLabs price feed oracle (0xbed51d83cc4676660e3fc3819dfad8238549b975) using the read() function. Represents the current RIF/USD price."
               />
               <MetricDisplay
                 label="RIF Collateral"
@@ -582,6 +583,7 @@ function App() {
                 unit="RIF"
                 isRefreshing={refreshingMetrics.has('rifCollateral')}
                 history={history.rifCollateral}
+                helpText="Sourced from MoC V2 Core contract (0xA27024Ed70035E46dba712609fc2Afa1c97aA36A) using getTotalACavailable(). Represents the total RIF collateral available in the system (~212M RIF)."
               />
               <MetricDisplay
                 label="USDRIF Mintable"
@@ -589,6 +591,7 @@ function App() {
                 unit="USD"
                 isRefreshing={refreshingMetrics.has('maxMintable')}
                 history={history.maxMintable}
+                helpText="Calculated using: (Total RIF Collateral ÷ Coverage Ratio) × RIF Price - Already Minted USDRIF. Coverage ratio sourced from MoC V2 Core calcCtargemaCA() (~5.5). RIF price from MoC price feed for calculation."
               />
             </div>
           )}
