@@ -298,13 +298,23 @@ export default function LightCycleGame() {
         location: userLocation 
       })
       
-      const requestBody = {
+      // Ensure location is included if it exists
+      const requestBody: {
+        score: number
+        playerName: string
+        location?: { timezone?: string; locale?: string }
+      } = {
         score: finalScore,
         playerName: name || 'Anonymous',
-        location: userLocation || undefined,
+      }
+      
+      // Only add location if it has valid data
+      if (userLocation && (userLocation.timezone || userLocation.locale)) {
+        requestBody.location = userLocation
       }
       
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2))
+      console.log('userLocation state:', userLocation)
       
       const response = await fetch('/api/scores', {
         method: 'POST',
