@@ -24,7 +24,6 @@ type LeaderboardEntry = {
 
 export default function LightCycleGame() {
   const [cycle, setCycle] = useState<Position>({ x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) })
-  const [direction, setDirection] = useState<Direction>('RIGHT')
   const [trail, setTrail] = useState<Position[]>([])
   const [gameOver, setGameOver] = useState(false)
   const [score, setScore] = useState(0)
@@ -99,16 +98,12 @@ export default function LightCycleGame() {
     // Prevent reversing into itself
     if (newDir === 'UP' && currentDir !== 'DOWN') {
       directionRef.current = 'UP'
-      setDirection('UP')
     } else if (newDir === 'DOWN' && currentDir !== 'UP') {
       directionRef.current = 'DOWN'
-      setDirection('DOWN')
     } else if (newDir === 'LEFT' && currentDir !== 'RIGHT') {
       directionRef.current = 'LEFT'
-      setDirection('LEFT')
     } else if (newDir === 'RIGHT' && currentDir !== 'LEFT') {
       directionRef.current = 'RIGHT'
-      setDirection('RIGHT')
     }
   }, [gameOver])
 
@@ -340,7 +335,6 @@ export default function LightCycleGame() {
 
   const resetGame = () => {
     setCycle({ x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) })
-    setDirection('RIGHT')
     directionRef.current = 'RIGHT'
     setTrail([])
     setGameOver(false)
