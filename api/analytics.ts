@@ -3,21 +3,51 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const apiToken = process.env.VERCEL_API_TOKEN
+  // Try multiple possible environment variable names
+  const apiToken = process.env.VERCEL_API_TOKEN || process.env.VITE_VERCEL_API_TOKEN
+  
   if (!apiToken) {
-    return res.status(500).json({ error: 'Vercel API token not configured' })
+    console.error('VERCEL_API_TOKEN environment variable not found')
+    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('VERCEL') || k.includes('TOKEN')))
+    return res.status(500).json({ 
+      error: 'Vercel API token not configured',
+      message: 'Please set VERCEL_API_TOKEN in Vercel project settings → Environment Variables'
+    })
   }
 
   try {
-    // Get project ID from environment (Vercel provides this automatically)
-    const projectId = process.env.VERCEL_PROJECT_ID
+    const baseUrl = 'https://api.vercel.com'
+    
+    // Get project ID - try environment first, then fetch from API
+    let projectId = process.env.VERCEL_PROJECT_ID
     const teamId = process.env.VERCEL_TEAM_ID
 
+    // If project ID not in env, fetch it from projects API
     if (!projectId) {
-      return res.status(500).json({ error: 'Project ID not found' })
+      const projectsUrl = teamId 
+        ? `${baseUrl}/v9/projects?teamId=${teamId}&limit=1`
+        : `${baseUrl}/v9/projects?limit=1`
+      
+      const projectsResponse = await fetch(projectsUrl, {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      })
+
+      if (projectsResponse.ok) {
+        const projectsData = await projectsResponse.json()
+        if (projectsData.projects && projectsData.projects.length > 0) {
+          projectId = projectsData.projects[0].id
+        }
+      }
     }
 
-    const baseUrl = 'https://api.vercel.com'
+    if (!projectId) {
+      return res.status(500).json({ 
+        error: 'Project ID not found',
+        message: 'Could not determine project ID from environment or API'
+      })
+    }
     
     // Fetch deployments to get count
     let deploymentsUrl = `${baseUrl}/v6/deployments?projectId=${projectId}&limit=100`
