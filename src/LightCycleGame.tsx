@@ -397,7 +397,7 @@ export default function LightCycleGame() {
                 className={`game-cell ${isCycle ? 'game-cell-cycle' : ''} ${isTrail ? 'game-cell-trail' : ''}`}
                 data-direction={isCycle ? directionRef.current : undefined}
               >
-                {isCycle && (
+                {isCycle && gameStarted && !gameOver && (
                   <img 
                     src="/lightcycle-icon.png" 
                     alt="Light Cycle"
@@ -487,21 +487,8 @@ export default function LightCycleGame() {
         )}
       </div>
 
-      <div className="game-instructions">
-        {isMobile ? (
-          <>
-            <p>Swipe or use buttons to control your light cycle</p>
-            <p>Avoid walls and your own trail!</p>
-          </>
-        ) : (
-          <>
-            <p>Use arrow keys to control your light cycle</p>
-            <p>Avoid walls and your own trail!</p>
-          </>
-        )}
-      </div>
 
-      {isMobile && !gameOver && (
+      {!gameOver && (
         <div className="game-controls">
           <div className="game-controls-row">
             <button 
