@@ -71,8 +71,12 @@ body::before {
   height: auto;
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-  position: absolute;
-  right: 0;
+}
+
+.last-updated-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .header h1 {
