@@ -6,10 +6,7 @@ interface ScoreEntry {
   playerName?: string
   date: string // ISO date string
   time: string // Time string (HH:MM:SS)
-  location?: {
-    timezone?: string
-    locale?: string
-  }
+  timezone?: string
 }
 
 // In-memory fallback store (resets on deployment)
@@ -68,7 +65,7 @@ function getDateAndTime(): { date: string; time: string } {
 }
 
 // Helper to save scores to Redis or fallback
-async function saveScore(score: number, playerName?: string, location?: ScoreEntry['location']): Promise<void> {
+async function saveScore(score: number, playerName?: string, timezone?: string): Promise<void> {
   const redisClient = await getRedisClient()
   const { date, time } = getDateAndTime()
   const entry: ScoreEntry = {
@@ -77,11 +74,11 @@ async function saveScore(score: number, playerName?: string, location?: ScoreEnt
     playerName: playerName || 'Anonymous',
     date,
     time,
-    location: location && (location.timezone || location.locale) ? location : undefined,
+    timezone: timezone || undefined,
   }
   
   console.log('Entry being saved:', JSON.stringify(entry, null, 2))
-  console.log('Location in entry:', entry.location)
+  console.log('Timezone in entry:', entry.timezone)
 
   if (redisClient) {
     try {
@@ -234,19 +231,19 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
-      const { score, playerName, location } = req.body
+      const { score, playerName, timezone } = req.body
 
       if (typeof score !== 'number' || score < 0) {
         return res.status(400).json({ error: 'Invalid score' })
       }
 
-      console.log('Saving score:', { score, playerName, hasLocation: !!location })
-      console.log('Location data received:', location)
-      console.log('Location type:', typeof location)
+      console.log('Saving score:', { score, playerName, hasTimezone: !!timezone })
+      console.log('Timezone received:', timezone)
+      console.log('Timezone type:', typeof timezone)
       console.log('Redis URL available:', !!process.env.REDIS_URL)
       console.log('KV REST API URL available:', !!process.env.KV_REST_API_URL)
 
-      await saveScore(score, playerName, location)
+      await saveScore(score, playerName, timezone)
       
       console.log('Score saved successfully')
 

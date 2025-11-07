@@ -14,10 +14,7 @@ type LeaderboardEntry = {
   playerName?: string
   date?: string
   time?: string
-  location?: {
-    timezone?: string
-    locale?: string
-  }
+  timezone?: string
 }
 
 export default function LightCycleGame() {
@@ -223,28 +220,40 @@ export default function LightCycleGame() {
   // Helper to get current timezone/locale (always fresh, doesn't rely on state)
   const getCurrentLocation = useCallback(() => {
     try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      const locale = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language
-      return { timezone, locale }
-    } catch (error) {
-      console.error('Could not get timezone/locale:', error)
-      try {
-        return { locale: navigator.language }
-      } catch (e) {
-        return null
+      const resolvedOptions = Intl.DateTimeFormat().resolvedOptions()
+      const timezone = resolvedOptions.timeZone
+      const locale = resolvedOptions.locale || navigator.language
+      
+      if (timezone && locale) {
+        return { timezone, locale }
+      } else if (timezone) {
+        return { timezone, locale: navigator.language || 'en' }
+      } else if (locale) {
+        return { locale }
       }
+    } catch (error) {
+      console.error('❌ Error getting timezone/locale:', error)
+    }
+    
+    // Final fallback
+    try {
+      const locale = navigator.language || 'en'
+      console.warn('⚠️ Using locale fallback only:', locale)
+      return { locale }
+    } catch (e) {
+      console.error('❌ Could not get locale fallback:', e)
+      return null
     }
   }, [])
 
   const submitScore = useCallback(async (finalScore: number, name?: string) => {
     if (scoreSubmitted) return
 
-    // Get location directly (don't rely on state which might be null)
+    // Get timezone directly (don't rely on state which might be null)
     const currentLocation = getCurrentLocation()
-    console.log('🔍 Getting location at submission time:', currentLocation)
-    console.log('🔍 Location type:', typeof currentLocation)
-    console.log('🔍 Location has timezone:', currentLocation?.timezone)
-    console.log('🔍 Location has locale:', currentLocation?.locale)
+    const timezone = currentLocation?.timezone || undefined
+    console.log('🔍 Getting timezone at submission time:', timezone)
+    console.log('🔍 Full location object:', currentLocation)
 
     // Skip in local development - use localStorage as fallback
     if (import.meta.env.DEV) {
@@ -271,7 +280,7 @@ export default function LightCycleGame() {
           playerName: name || 'Anonymous',
           date,
           time,
-          location: currentLocation || undefined,
+          timezone,
         })
         // Keep only top 100 scores
         scores.sort((a, b) => b.score - a.score)
@@ -286,31 +295,31 @@ export default function LightCycleGame() {
     }
 
     try {
-      console.log('Submitting score with location:', { 
+      console.log('Submitting score with timezone:', { 
         score: finalScore, 
         playerName: name, 
-        hasLocation: !!currentLocation,
-        location: currentLocation 
+        hasTimezone: !!timezone,
+        timezone: timezone 
       })
       
-      // Ensure location is included if it exists
+      // Ensure timezone is included if it exists
       const requestBody: {
         score: number
         playerName: string
-        location?: { timezone?: string; locale?: string }
+        timezone?: string
       } = {
         score: finalScore,
         playerName: name || 'Anonymous',
       }
       
-      // Only add location if it has valid data
-      if (currentLocation && (currentLocation.timezone || currentLocation.locale)) {
-        requestBody.location = currentLocation
+      // Only add timezone if it exists
+      if (timezone) {
+        requestBody.timezone = timezone
       }
       
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2))
-      console.log('Current location:', currentLocation)
-      console.log('Request body includes location:', 'location' in requestBody)
+      console.log('Timezone:', timezone)
+      console.log('Request body includes timezone:', 'timezone' in requestBody)
       
       const response = await fetch('/api/scores', {
         method: 'POST',
@@ -500,9 +509,9 @@ export default function LightCycleGame() {
                       {entry.date} {entry.time}
                     </span>
                   )}
-                  {entry.location && entry.location.timezone && (
+                  {entry.timezone && (
                     <span className="leaderboard-location">
-                      📍 {entry.location.timezone.replace(/_/g, ' ')}
+                      📍 {entry.timezone.replace(/_/g, ' ')}
                     </span>
                   )}
                 </div>
