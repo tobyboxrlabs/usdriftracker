@@ -231,6 +231,7 @@ function App() {
   const [refreshingMetrics, setRefreshingMetrics] = useState<Set<string>>(new Set())
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [history, setHistory] = useState<Record<string, HistoryPoint[]>>({})
+  const [deploymentCount, setDeploymentCount] = useState<number | null>(null)
 
   // Track component mount state to prevent state updates after unmount
   const isMountedRef = useRef(true)
@@ -561,6 +562,32 @@ function App() {
     }
   }, [getChecksummedAddress])
 
+  // Fetch deployment count (only in production, as Vercel functions don't work in local dev)
+  const fetchDeploymentCount = useCallback(async () => {
+    // Skip in local development - Vercel serverless functions only work when deployed
+    if (import.meta.env.DEV) {
+      console.log('Skipping deployment count fetch in local development')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/analytics')
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Deployment count response:', data)
+        if (data.totalDeployments !== undefined) {
+          setDeploymentCount(data.totalDeployments)
+        }
+      } else {
+        console.error('Failed to fetch deployment count:', response.status, response.statusText)
+        const errorText = await response.text()
+        console.error('Error details:', errorText)
+      }
+    } catch (error) {
+      console.error('Failed to fetch deployment count:', error)
+    }
+  }, [])
+
   useEffect(() => {
     isMountedRef.current = true
     
@@ -575,6 +602,7 @@ function App() {
     })
     
     fetchTokenData()
+    fetchDeploymentCount()
 
     const interval = setInterval(() => {
       fetchTokenData()
@@ -584,7 +612,7 @@ function App() {
       isMountedRef.current = false
       clearInterval(interval)
     }
-  }, [fetchTokenData])
+  }, [fetchTokenData, fetchDeploymentCount])
 
   return (
     <div className="app">
@@ -594,9 +622,14 @@ function App() {
             <h1>RIF PUT TO WORK</h1>
           </div>
           <p className="subtitle">Real-time token metrics on Rootstock</p>
-          {import.meta.env.VITE_GIT_COMMIT_HASH && (
-            <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
-          )}
+          <div className="header-meta">
+            {import.meta.env.VITE_GIT_COMMIT_HASH && (
+              <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
+            )}
+            {deploymentCount !== null && (
+              <p className="deployment-count">Deployments: {deploymentCount}</p>
+            )}
+          </div>
         </header>
 
         <div className="card">
