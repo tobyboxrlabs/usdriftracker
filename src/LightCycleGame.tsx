@@ -34,7 +34,6 @@ export default function LightCycleGame() {
   const [playerName, setPlayerName] = useState('')
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
-  const [userLocation, setUserLocation] = useState<{ timezone?: string; locale?: string } | null>(null)
 
   // Detect mobile device
   useEffect(() => {
@@ -45,33 +44,6 @@ export default function LightCycleGame() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Get user timezone and locale on mount (no permissions needed)
-  useEffect(() => {
-    try {
-      // Get timezone (e.g., "America/New_York", "Europe/London")
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      
-      // Get locale (e.g., "en-US", "en-GB")
-      const locale = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language
-      
-      const location = { timezone, locale }
-      console.log('✅ User timezone/locale detected:', location)
-      setUserLocation(location)
-    } catch (error) {
-      console.error('❌ Could not get timezone/locale:', error)
-      // Fallback to just locale if timezone fails
-      try {
-        const locale = navigator.language
-        console.log('⚠️  Fallback: Using locale only:', locale)
-        setUserLocation({ locale })
-      } catch (e) {
-        console.error('❌ Could not get locale either:', e)
-        // Set to null if both fail
-        setUserLocation(null)
-      }
-    }
   }, [])
 
   const changeDirection = useCallback((newDir: Direction) => {
@@ -269,7 +241,10 @@ export default function LightCycleGame() {
 
     // Get location directly (don't rely on state which might be null)
     const currentLocation = getCurrentLocation()
-    console.log('Getting location at submission time:', currentLocation)
+    console.log('🔍 Getting location at submission time:', currentLocation)
+    console.log('🔍 Location type:', typeof currentLocation)
+    console.log('🔍 Location has timezone:', currentLocation?.timezone)
+    console.log('🔍 Location has locale:', currentLocation?.locale)
 
     // Skip in local development - use localStorage as fallback
     if (import.meta.env.DEV) {
@@ -335,6 +310,7 @@ export default function LightCycleGame() {
       
       console.log('Request body being sent:', JSON.stringify(requestBody, null, 2))
       console.log('Current location:', currentLocation)
+      console.log('Request body includes location:', 'location' in requestBody)
       
       const response = await fetch('/api/scores', {
         method: 'POST',
@@ -348,11 +324,14 @@ export default function LightCycleGame() {
         setScoreSubmitted(true)
         // Refresh leaderboard after submitting
         await fetchLeaderboard()
+      } else {
+        const errorText = await response.text()
+        console.error('Failed to submit score. Response:', response.status, errorText)
       }
     } catch (error) {
       console.error('Failed to submit score:', error)
     }
-  }, [scoreSubmitted, fetchLeaderboard])
+  }, [scoreSubmitted, fetchLeaderboard, getCurrentLocation])
 
   useEffect(() => {
     fetchLeaderboard()
