@@ -698,7 +698,7 @@ function App() {
               <MetricDisplay
                 label="RIFPRO Total Supply"
                 value={tokenData.formattedRifproSupply}
-                unit="RIFP"
+                unit="RIFPRO"
                 isRefreshing={refreshingMetrics.has('rifproSupply')}
                 history={history.rifproSupply}
                 helpText="Sourced from the RIFPRO token contract (totalSupply). Represents the total supply of RIFPRO tokens in circulation."
@@ -721,9 +721,9 @@ function App() {
                 helpText="Sourced from the RLabs price feed oracle (0xbed51d83cc4676660e3fc3819dfad8238549b975) using the read() function. Represents the current RIF/USD price."
               />
               <MetricDisplay
-                label="RIF Collateral"
+                label="RIF Collateral Backing USDRIF"
                 value={tokenData.formattedRifCollateral}
-                unit="RIF"
+                unit="RIFPROF"
                 isRefreshing={refreshingMetrics.has('rifCollateral')}
                 history={history.rifCollateral}
                 helpText="Sourced from MoC V2 Core contract (0xA27024Ed70035E46dba712609fc2Afa1c97aA36A) using getTotalACavailable(). Represents the total RIF collateral available in the system (~212M RIF)."
