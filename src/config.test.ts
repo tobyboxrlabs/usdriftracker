@@ -7,9 +7,9 @@ describe('Config', () => {
     expect(typeof CONFIG.ROOTSTOCK_RPC).toBe('string')
   })
 
-  it('has valid USDRIF address', () => {
-    expect(CONFIG.USDRIF_ADDRESS).toBeTruthy()
-    expect(CONFIG.USDRIF_ADDRESS).toMatch(/^0x[a-fA-F0-9]{40}$/)
+  it('has valid stRIF address', () => {
+    expect(CONFIG.STRIF_ADDRESS).toBeTruthy()
+    expect(CONFIG.STRIF_ADDRESS).toMatch(/^0x[a-fA-F0-9]{40}$/)
   })
 
   it('has valid refresh interval', () => {

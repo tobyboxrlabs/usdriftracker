@@ -347,7 +347,7 @@ function App() {
 
       // Setup contract instances
       const stRIFContract = new ethers.Contract(
-        getChecksummedAddress(CONFIG.USDRIF_ADDRESS),
+        getChecksummedAddress(CONFIG.STRIF_ADDRESS),
         ERC20_ABI,
         provider
       )
@@ -357,7 +357,7 @@ function App() {
         provider
       )
       const oldUSDRIFContract = new ethers.Contract(
-        getChecksummedAddress(CONFIG.USDRIF_OLD_ADDRESS),
+        getChecksummedAddress(CONFIG.USDRIF_ADDRESS),
         ERC20_ABI,
         provider
       )
@@ -780,12 +780,12 @@ function App() {
                 <td>stRIF</td>
                 <td>
                   <a
-                    href={`https://rootstock.blockscout.com/address/${CONFIG.USDRIF_ADDRESS}?tab=internal_txns`}
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.STRIF_ADDRESS}?tab=internal_txns`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="address-link"
                   >
-                    <code>{CONFIG.USDRIF_ADDRESS}</code>
+                    <code>{CONFIG.STRIF_ADDRESS}</code>
                   </a>
                 </td>
               </tr>
@@ -793,12 +793,12 @@ function App() {
                 <td>USDRIF</td>
                 <td>
                   <a
-                    href={`https://rootstock.blockscout.com/address/${CONFIG.USDRIF_OLD_ADDRESS}?tab=internal_txns`}
+                    href={`https://rootstock.blockscout.com/address/${CONFIG.USDRIF_ADDRESS}?tab=internal_txns`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="address-link"
                   >
-                    <code>{CONFIG.USDRIF_OLD_ADDRESS}</code>
+                    <code>{CONFIG.USDRIF_ADDRESS}</code>
                   </a>
                 </td>
               </tr>
