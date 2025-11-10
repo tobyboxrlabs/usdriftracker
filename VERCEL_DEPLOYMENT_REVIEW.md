@@ -81,8 +81,8 @@ All browser APIs are properly guarded or used only in client-side contexts.
 
 ### Recommended Vercel Environment Variables:
 - `VITE_ROOTSTOCK_RPC` (optional, has default)
+- `VITE_STRIF_ADDRESS` (optional, has default)
 - `VITE_USDRIF_ADDRESS` (optional, has default)
-- `VITE_USDRIF_OLD_ADDRESS` (optional, has default)
 - `VITE_RIFPRO_ADDRESS` (optional, has default)
 - `VITE_MOC_STATE_ADDRESS` (optional, has default)
 

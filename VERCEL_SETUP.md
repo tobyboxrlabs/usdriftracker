@@ -71,7 +71,7 @@ vercel --prod
 
 If you need to set any environment variables:
 1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-2. Add any `VITE_*` variables (e.g., `VITE_ROOTSTOCK_RPC`, `VITE_USDRIF_ADDRESS`)
+2. Add any `VITE_*` variables (e.g., `VITE_ROOTSTOCK_RPC`, `VITE_STRIF_ADDRESS`)
 3. Redeploy after adding variables
 
 ### Step 6: Automatic Deployments

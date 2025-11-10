@@ -12,10 +12,10 @@ export const CONFIG = {
   ],
   
   // stRIF token address (mainnet) - will be checksummed when used
-  USDRIF_ADDRESS: import.meta.env.VITE_USDRIF_ADDRESS || '0x5db91e24BD32059584bbDb831A901f1199f3d459',
+  STRIF_ADDRESS: import.meta.env.VITE_STRIF_ADDRESS || '0x5db91e24BD32059584bbDb831A901f1199f3d459',
   
   // USDRIF token address - used for USDRIF Minted metric - will be checksummed when used
-  USDRIF_OLD_ADDRESS: import.meta.env.VITE_USDRIF_OLD_ADDRESS || '0x3A15461d8AE0f0Fb5fA2629e9dA7D66A794a6E37',
+  USDRIF_ADDRESS: import.meta.env.VITE_USDRIF_ADDRESS || '0x3A15461d8AE0f0Fb5fA2629e9dA7D66A794a6E37',
   
   // RIFPRO token address (for future metrics) - will be checksummed when used
   RIFPRO_ADDRESS: import.meta.env.VITE_RIFPRO_ADDRESS || '0xF4d27C56595eD59B66cC7f03CFF5193E4Bd74a61',
