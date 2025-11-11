@@ -1,4 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { 
+  logError, 
+  logWarning, 
+  logInfo, 
+  createErrorResponse, 
+  generateRequestId,
+  type ErrorLogContext 
+} from './errorLogger'
 
 interface ScoreEntry {
   score: number
@@ -220,10 +228,24 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  // Generate unique request ID for tracking
+  const requestId = generateRequestId()
+  
+  // Create context for logging
+  const context: ErrorLogContext = {
+    endpoint: '/api/scores',
+    method: req.method || 'UNKNOWN',
+    userAgent: req.headers['user-agent'],
+    ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
+  }
+  
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  
+  // Add request ID to response headers for tracking
+  res.setHeader('X-Request-ID', requestId)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -233,51 +255,73 @@ export default async function handler(
     try {
       const { score, playerName, timezone } = req.body
 
+      // Input validation
       if (typeof score !== 'number' || score < 0) {
-        return res.status(400).json({ error: 'Invalid score' })
+        logWarning('Invalid score submitted', context, requestId)
+        return res.status(400).json({ 
+          error: 'Invalid input',
+          message: 'Score must be a positive number',
+          requestId 
+        })
       }
 
-      console.log('Saving score:', { score, playerName, hasTimezone: !!timezone })
-      console.log('Timezone received:', timezone)
-      console.log('Timezone type:', typeof timezone)
-      console.log('Redis URL available:', !!process.env.REDIS_URL)
-      console.log('KV REST API URL available:', !!process.env.KV_REST_API_URL)
+      // Log the operation (structured logging)
+      logInfo('Score submission attempt', context, requestId, {
+        hasPlayerName: !!playerName,
+        hasTimezone: !!timezone,
+        score,
+      })
 
       await saveScore(score, playerName, timezone)
       
-      console.log('Score saved successfully')
+      logInfo('Score saved successfully', context, requestId, { score, playerName: playerName || 'Anonymous' })
 
-      return res.status(200).json({ success: true })
+      return res.status(200).json({ success: true, requestId })
     } catch (error) {
-      console.error('Error saving score:', error)
-      if (error instanceof Error) {
-        console.error('Error name:', error.name)
-        console.error('Error message:', error.message)
-        console.error('Error stack:', error.stack)
-      }
-      return res.status(500).json({ 
-        error: 'Failed to save score',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : String(error)) : undefined
-      })
+      // Log detailed error server-side
+      logError(error, { ...context, operation: 'saveScore' }, requestId)
+      
+      // Return safe error response to client
+      const errorResponse = createErrorResponse(
+        error,
+        requestId,
+        'Failed to save score. Please try again later.'
+      )
+      
+      return res.status(500).json(errorResponse)
     }
   }
 
   if (req.method === 'GET') {
     try {
       const limit = parseInt(req.query.limit as string) || 10
-      const leaderboard = await getLeaderboard(Math.min(limit, 100))
+      const sanitizedLimit = Math.min(Math.max(1, limit), 100)
+      
+      logInfo('Leaderboard fetch', context, requestId, { limit: sanitizedLimit })
+      
+      const leaderboard = await getLeaderboard(sanitizedLimit)
 
-      return res.status(200).json({ leaderboard })
+      return res.status(200).json({ leaderboard, requestId })
     } catch (error) {
-      console.error('Error fetching leaderboard:', error)
-      return res.status(500).json({ 
-        error: 'Failed to fetch leaderboard',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      })
+      // Log detailed error server-side
+      logError(error, { ...context, operation: 'getLeaderboard' }, requestId)
+      
+      // Return safe error response to client
+      const errorResponse = createErrorResponse(
+        error,
+        requestId,
+        'Failed to fetch leaderboard. Please try again later.'
+      )
+      
+      return res.status(500).json(errorResponse)
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' })
+  logWarning('Method not allowed', context, requestId)
+  return res.status(405).json({ 
+    error: 'Method not allowed',
+    message: `Method ${req.method} is not supported for this endpoint`,
+    requestId 
+  })
 }
 
