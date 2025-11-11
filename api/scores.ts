@@ -103,7 +103,8 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
         if (type === 'vercel-kv') {
           allScoreIds = await client.zrange('leaderboard', 0, -1) as string[]
         } else {
-          allScoreIds = await client.zrange('leaderboard', 0, -1) as string[]
+          // External Redis (ioredis)
+          allScoreIds = await (client as any).zrange('leaderboard', 0, -1) as string[]
         }
         
         // Check each entry and remove if it has the same player name
@@ -134,9 +135,15 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
       const scoreId = `score:${Date.now()}:${Math.random().toString(36).substring(7)}`
       
       if (type === 'vercel-kv') {
-        await client.set(scoreId, entry)
-        await client.zadd('leaderboard', { score: score, member: scoreId })
-        await client.zremrangebyrank('leaderboard', 0, -1001)
+        // Vercel KV accepts JSON-serializable values directly
+        await client.set(scoreId, entry as any)
+        // Vercel KV zadd syntax: zadd(key, { score, member })
+        await client.zadd('leaderboard', { score, member: scoreId } as any)
+        // Keep only top 1000 scores
+        const totalScores = await client.zcard('leaderboard')
+        if (totalScores > 1000) {
+          await client.zremrangebyrank('leaderboard', 0, totalScores - 1001)
+        }
       } else {
         // External Redis - need to JSON stringify
         await client.set(scoreId, JSON.stringify(entry))
@@ -184,9 +191,18 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
       // Get top scores from sorted set (reverse order = highest first)
       let scoreIds: string[] = []
       if (type === 'vercel-kv') {
-        scoreIds = await client.zrange('leaderboard', 0, limit - 1, { rev: true, withScores: false }) as string[]
+        // Vercel KV: Get all scores, then sort and take top N
+        // Sorted sets are ordered by score, so we need to get all and reverse
+        const totalScores = await client.zcard('leaderboard')
+        if (totalScores > 0) {
+          // Get all scores (they come in ascending order by score)
+          const allScoreIds = await client.zrange('leaderboard', 0, -1) as string[]
+          // Reverse to get highest scores first, then take top N
+          scoreIds = allScoreIds.reverse().slice(0, limit)
+        }
       } else {
-        scoreIds = await client.zrevrange('leaderboard', 0, limit - 1) as string[]
+        // External Redis (ioredis) - use zrevrange for reverse order
+        scoreIds = await (client as any).zrevrange('leaderboard', 0, limit - 1) as string[]
       }
       
       console.log(`[getLeaderboard] Found ${scoreIds.length} score IDs in leaderboard`)
@@ -240,100 +256,121 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // Generate unique request ID for tracking
-  const requestId = generateRequestId()
-  
-  // Create context for logging
-  const context: ErrorLogContext = {
-    endpoint: '/api/scores',
-    method: req.method || 'UNKNOWN',
-    userAgent: req.headers['user-agent'],
-    ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
-  }
-  
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-  
-  // Add request ID to response headers for tracking
-  res.setHeader('X-Request-ID', requestId)
+  // Top-level error handler to catch any initialization errors
+  try {
+    // Generate unique request ID for tracking
+    const requestId = generateRequestId()
+    
+    // Create context for logging
+    const context: ErrorLogContext = {
+      endpoint: '/api/scores',
+      method: req.method || 'UNKNOWN',
+      userAgent: req.headers['user-agent'],
+      ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
+    }
+    
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    
+    // Add request ID to response headers for tracking
+    res.setHeader('X-Request-ID', requestId)
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end()
+    }
 
-  if (req.method === 'POST') {
-    try {
-      const { score, playerName, timezone } = req.body
+    if (req.method === 'POST') {
+      try {
+        const { score, playerName, timezone } = req.body
 
-      // Input validation
-      if (typeof score !== 'number' || score < 0) {
-        logWarning('Invalid score submitted', context, requestId)
-        return res.status(400).json({ 
-          error: 'Invalid input',
-          message: 'Score must be a positive number',
-          requestId 
+        // Input validation
+        if (typeof score !== 'number' || score < 0) {
+          logWarning('Invalid score submitted', context, requestId)
+          return res.status(400).json({ 
+            error: 'Invalid input',
+            message: 'Score must be a positive number',
+            requestId 
+          })
+        }
+
+        // Log the operation (structured logging)
+        logInfo('Score submission attempt', context, requestId, {
+          hasPlayerName: !!playerName,
+          hasTimezone: !!timezone,
+          score,
         })
+
+        await saveScore(score, playerName, timezone)
+        
+        logInfo('Score saved successfully', context, requestId, { score, playerName: playerName || 'Anonymous' })
+
+        return res.status(200).json({ success: true, requestId })
+      } catch (error) {
+        // Log detailed error server-side
+        logError(error, { ...context, operation: 'saveScore' }, requestId)
+        
+        // Return safe error response to client
+        const errorResponse = createErrorResponse(
+          error,
+          requestId,
+          'Failed to save score. Please try again later.'
+        )
+        
+        return res.status(500).json(errorResponse)
       }
-
-      // Log the operation (structured logging)
-      logInfo('Score submission attempt', context, requestId, {
-        hasPlayerName: !!playerName,
-        hasTimezone: !!timezone,
-        score,
-      })
-
-      await saveScore(score, playerName, timezone)
-      
-      logInfo('Score saved successfully', context, requestId, { score, playerName: playerName || 'Anonymous' })
-
-      return res.status(200).json({ success: true, requestId })
-    } catch (error) {
-      // Log detailed error server-side
-      logError(error, { ...context, operation: 'saveScore' }, requestId)
-      
-      // Return safe error response to client
-      const errorResponse = createErrorResponse(
-        error,
-        requestId,
-        'Failed to save score. Please try again later.'
-      )
-      
-      return res.status(500).json(errorResponse)
     }
-  }
 
-  if (req.method === 'GET') {
+    if (req.method === 'GET') {
+      try {
+        const limit = parseInt(req.query.limit as string) || 10
+        const sanitizedLimit = Math.min(Math.max(1, limit), 100)
+        
+        logInfo('Leaderboard fetch', context, requestId, { limit: sanitizedLimit })
+        
+        const leaderboard = await getLeaderboard(sanitizedLimit)
+
+        return res.status(200).json({ leaderboard, requestId })
+      } catch (error) {
+        // Log detailed error server-side
+        logError(error, { ...context, operation: 'getLeaderboard' }, requestId)
+        
+        // Return safe error response to client
+        const errorResponse = createErrorResponse(
+          error,
+          requestId,
+          'Failed to fetch leaderboard. Please try again later.'
+        )
+        
+        return res.status(500).json(errorResponse)
+      }
+    }
+
+    logWarning('Method not allowed', context, requestId)
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      message: `Method ${req.method} is not supported for this endpoint`,
+      requestId 
+    })
+  } catch (topLevelError) {
+    // Catch any errors that occur before we can set up proper error handling
+    console.error('[scores] Top-level error:', topLevelError)
+    const errorMessage = topLevelError instanceof Error ? topLevelError.message : String(topLevelError)
+    const errorStack = topLevelError instanceof Error ? topLevelError.stack : undefined
+    
+    // Try to set CORS headers even on error
     try {
-      const limit = parseInt(req.query.limit as string) || 10
-      const sanitizedLimit = Math.min(Math.max(1, limit), 100)
-      
-      logInfo('Leaderboard fetch', context, requestId, { limit: sanitizedLimit })
-      
-      const leaderboard = await getLeaderboard(sanitizedLimit)
-
-      return res.status(200).json({ leaderboard, requestId })
-    } catch (error) {
-      // Log detailed error server-side
-      logError(error, { ...context, operation: 'getLeaderboard' }, requestId)
-      
-      // Return safe error response to client
-      const errorResponse = createErrorResponse(
-        error,
-        requestId,
-        'Failed to fetch leaderboard. Please try again later.'
-      )
-      
-      return res.status(500).json(errorResponse)
-    }
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Content-Type', 'application/json')
+    } catch {}
+    
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred',
+      requestId: `error_${Date.now()}`,
+      ...(process.env.NODE_ENV === 'development' && { details: errorMessage, stack: errorStack })
+    })
   }
-
-  logWarning('Method not allowed', context, requestId)
-  return res.status(405).json({ 
-    error: 'Method not allowed',
-    message: `Method ${req.method} is not supported for this endpoint`,
-    requestId 
-  })
 }
 
