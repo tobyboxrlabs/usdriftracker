@@ -198,13 +198,18 @@ export function checkErrorRateLimit(
 
 /**
  * Clean up old rate limit entries periodically
+ * Skip in serverless environments (Vercel) where each invocation is stateless
  */
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, record] of rateLimitMap.entries()) {
-    if (now > record.resetTime) {
-      rateLimitMap.delete(key)
+if (typeof process !== 'undefined' && !process.env.VERCEL) {
+  // Only set up interval in non-serverless environments
+  // In serverless, rate limit map will reset on each invocation anyway
+  setInterval(() => {
+    const now = Date.now()
+    for (const [key, record] of rateLimitMap.entries()) {
+      if (now > record.resetTime) {
+        rateLimitMap.delete(key)
+      }
     }
-  }
-}, 300000) // Clean up every 5 minutes
+  }, 300000) // Clean up every 5 minutes
+}
 
