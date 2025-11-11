@@ -1,21 +1,55 @@
+import { 
+  logError, 
+  logWarning, 
+  logInfo, 
+  createErrorResponse, 
+  generateRequestId,
+  type ErrorLogContext 
+} from './errorLogger'
+
 export default async function handler(req: any, res: any) {
+  // Generate unique request ID for tracking
+  const requestId = generateRequestId()
+  
+  // Create context for logging
+  const context: ErrorLogContext = {
+    endpoint: '/api/analytics',
+    method: req.method || 'UNKNOWN',
+    userAgent: req.headers['user-agent'],
+    ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
+  }
+  
+  // Add request ID to response headers
+  res.setHeader('X-Request-ID', requestId)
+  
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    logWarning('Method not allowed', context, requestId)
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      message: 'Only GET requests are supported',
+      requestId 
+    })
   }
 
   // Try multiple possible environment variable names
   const apiToken = process.env.VERCEL_API_TOKEN || process.env.VITE_VERCEL_API_TOKEN
   
   if (!apiToken) {
-    console.error('VERCEL_API_TOKEN environment variable not found')
-    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('VERCEL') || k.includes('TOKEN')))
+    logError(
+      new Error('VERCEL_API_TOKEN not configured'), 
+      { ...context, availableEnvKeys: Object.keys(process.env).filter(k => k.includes('VERCEL')).length }, 
+      requestId
+    )
     return res.status(500).json({ 
-      error: 'Vercel API token not configured',
-      message: 'Please set VERCEL_API_TOKEN in Vercel project settings → Environment Variables'
+      error: 'Configuration error',
+      message: 'Analytics service is not configured. Please contact administrator.',
+      requestId
     })
   }
 
   try {
+    logInfo('Fetching deployment analytics', context, requestId)
+    
     const baseUrl = 'https://api.vercel.com'
     
     // Get project ID - try environment first, then fetch from API
@@ -38,14 +72,19 @@ export default async function handler(req: any, res: any) {
         const projectsData = await projectsResponse.json()
         if (projectsData.projects && projectsData.projects.length > 0) {
           projectId = projectsData.projects[0].id
+          logInfo('Project ID fetched from API', context, requestId, { projectId })
         }
+      } else {
+        logWarning('Failed to fetch project from Vercel API', context, requestId)
       }
     }
 
     if (!projectId) {
+      logError(new Error('Project ID not found'), context, requestId)
       return res.status(500).json({ 
-        error: 'Project ID not found',
-        message: 'Could not determine project ID from environment or API'
+        error: 'Configuration error',
+        message: 'Analytics service configuration is incomplete',
+        requestId
       })
     }
     
@@ -64,11 +103,16 @@ export default async function handler(req: any, res: any) {
 
     if (!deploymentsResponse.ok) {
       const errorText = await deploymentsResponse.text()
-      console.error('Vercel API error:', deploymentsResponse.status, errorText)
+      logError(
+        new Error(`Vercel API returned ${deploymentsResponse.status}`),
+        { ...context, status: deploymentsResponse.status, responsePreview: errorText.substring(0, 100) },
+        requestId
+      )
+      
       return res.status(deploymentsResponse.status).json({ 
-        error: 'Failed to fetch deployments',
-        status: deploymentsResponse.status,
-        details: errorText 
+        error: 'External API error',
+        message: 'Failed to fetch deployment information',
+        requestId
       })
     }
 
@@ -77,6 +121,11 @@ export default async function handler(req: any, res: any) {
     
     // Get latest deployment info
     const latestDeployment = deployments[0] || null
+    
+    logInfo('Deployment analytics fetched successfully', context, requestId, {
+      totalDeployments: deployments.length,
+      hasLatest: !!latestDeployment
+    })
 
     return res.status(200).json({
       totalDeployments: deployments.length,
@@ -86,13 +135,20 @@ export default async function handler(req: any, res: any) {
         state: latestDeployment.state,
         environment: latestDeployment.target,
       } : null,
+      requestId,
     })
   } catch (error) {
-    console.error('Error fetching deployments:', error)
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+    // Log detailed error server-side
+    logError(error, { ...context, operation: 'fetchDeployments' }, requestId)
+    
+    // Return safe error response to client
+    const errorResponse = createErrorResponse(
+      error,
+      requestId,
+      'Failed to fetch deployment analytics. Please try again later.'
+    )
+    
+    return res.status(500).json(errorResponse)
   }
 }
 
