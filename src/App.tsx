@@ -277,17 +277,60 @@ function App() {
   }
 
   /**
+   * Custom RPC provider that uses proxy endpoint in production
+   * Extends JsonRpcProvider to intercept requests and route through proxy
+   */
+  class ProxyJsonRpcProvider extends ethers.JsonRpcProvider {
+    private targetEndpoint: string
+    
+    constructor(targetEndpoint: string) {
+      // Use a dummy URL - we'll override the connection
+      super('/api/rpc', undefined, { staticNetwork: null })
+      this.targetEndpoint = targetEndpoint
+    }
+    
+    // Override the connection to use our proxy
+    _getConnection() {
+      const connection = super._getConnection()
+      return {
+        ...connection,
+        url: `/api/rpc?target=${encodeURIComponent(this.targetEndpoint)}`,
+      }
+    }
+  }
+
+  /**
    * Get a working RPC provider by trying multiple endpoints
-   * Falls back to alternative endpoints if the primary fails due to CORS
+   * In production, uses proxy endpoint to avoid CORS issues
+   * Falls back to direct endpoints if proxy fails
    */
   const getWorkingProvider = async (): Promise<ethers.JsonRpcProvider | null> => {
+    const isProduction = !import.meta.env.DEV
     const endpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [CONFIG.ROOTSTOCK_RPC]
     
+    // In production, try proxy endpoint first to avoid CORS
+    if (isProduction) {
+      for (const endpoint of endpoints) {
+        try {
+          const provider = new ProxyJsonRpcProvider(endpoint)
+          // Test connection
+          await provider.getBlockNumber()
+          console.log(`✅ Using RPC proxy endpoint: ${endpoint}`)
+          return provider
+        } catch (error) {
+          console.warn(`RPC proxy for ${endpoint} failed, trying next...`, error)
+          continue
+        }
+      }
+    }
+    
+    // Try direct endpoints (works in dev, or as fallback)
     for (const endpoint of endpoints) {
       try {
         const provider = new ethers.JsonRpcProvider(endpoint)
         // Test connection by attempting to get block number
         await provider.getBlockNumber()
+        console.log(`✅ Using direct RPC endpoint: ${endpoint}`)
         return provider
       } catch (error) {
         console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
@@ -295,6 +338,7 @@ function App() {
       }
     }
     
+    console.error('❌ All RPC endpoints failed')
     return null
   }
 
