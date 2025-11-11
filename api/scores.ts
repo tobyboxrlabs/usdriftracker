@@ -26,12 +26,14 @@ async function getRedisClient() {
   try {
     // First, try Vercel KV (preferred)
     if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      console.log('[getRedisClient] Using Vercel KV')
       const kv = await import('@vercel/kv')
       return { type: 'vercel-kv', client: kv.kv }
     }
     
     // Fallback to external Redis via REDIS_URL
     if (process.env.REDIS_URL) {
+      console.log('[getRedisClient] Using external Redis (REDIS_URL provided)')
       const Redis = await import('ioredis')
       const redis = new Redis.default(process.env.REDIS_URL, {
         maxRetriesPerRequest: 3,
@@ -50,16 +52,18 @@ async function getRedisClient() {
       
       try {
         await redis.connect()
+        console.log('[getRedisClient] Successfully connected to external Redis')
         return { type: 'redis', client: redis }
       } catch (connectError) {
-        console.error('Failed to connect to Redis:', connectError)
+        console.error('[getRedisClient] Failed to connect to Redis:', connectError)
         throw connectError
       }
     }
     
+    console.warn('[getRedisClient] No Redis configuration found (neither KV_REST_API_URL nor REDIS_URL)')
     return null
   } catch (error) {
-    console.error('Error initializing Redis client:', error)
+    console.error('[getRedisClient] Error initializing Redis client:', error)
     return null
   }
 }
@@ -175,6 +179,8 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
     try {
       const { type, client } = redisClient
       
+      console.log(`[getLeaderboard] Using ${type} client, limit: ${limit}`)
+      
       // Get top scores from sorted set (reverse order = highest first)
       let scoreIds: string[] = []
       if (type === 'vercel-kv') {
@@ -182,6 +188,8 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
       } else {
         scoreIds = await client.zrevrange('leaderboard', 0, limit - 1) as string[]
       }
+      
+      console.log(`[getLeaderboard] Found ${scoreIds.length} score IDs in leaderboard`)
       
       const scores: ScoreEntry[] = []
       
@@ -195,7 +203,8 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
               const data = await client.get(scoreId)
               return data ? JSON.parse(data as string) as ScoreEntry : null
             }
-          } catch {
+          } catch (err) {
+            console.error(`[getLeaderboard] Error fetching entry ${scoreId}:`, err)
             return null
           }
         })
@@ -208,15 +217,18 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
         }
       }
       
+      console.log(`[getLeaderboard] Returning ${scores.length} valid entries`)
       return scores.sort((a, b) => b.score - a.score).slice(0, limit)
     } catch (error) {
-      console.error('Error fetching from Redis, falling back to memory:', error)
+      console.error('[getLeaderboard] Error fetching from Redis, falling back to memory:', error)
+      console.error('[getLeaderboard] Error details:', error instanceof Error ? error.message : String(error))
       // Fallback to in-memory store
       return scoreStore
         .sort((a, b) => b.score - a.score)
         .slice(0, limit)
     }
   } else {
+    console.warn('[getLeaderboard] No Redis client available, using in-memory store (empty after deployment)')
     // Fallback to in-memory store
     return scoreStore
       .sort((a, b) => b.score - a.score)

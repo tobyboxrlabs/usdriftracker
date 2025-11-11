@@ -35,15 +35,13 @@ export default async function handler(req: any, res: any) {
   const apiToken = process.env.VERCEL_API_TOKEN || process.env.VITE_VERCEL_API_TOKEN
   
   if (!apiToken) {
-    logError(
-      new Error('VERCEL_API_TOKEN not configured'), 
-      { ...context, availableEnvKeys: Object.keys(process.env).filter(k => k.includes('VERCEL')).length }, 
-      requestId
-    )
-    return res.status(500).json({ 
-      error: 'Configuration error',
-      message: 'Analytics service is not configured. Please contact administrator.',
-      requestId
+    // Analytics is optional - return empty data instead of error
+    logWarning('VERCEL_API_TOKEN not configured - returning empty analytics', context, requestId)
+    return res.status(200).json({ 
+      totalDeployments: 0,
+      latestDeployment: null,
+      requestId,
+      message: 'Analytics not configured'
     })
   }
 

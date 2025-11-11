@@ -75,8 +75,11 @@ async function showDatabaseContents() {
               console.log(`   ${i + 1}. ${entry.playerName || 'Anonymous'}`)
               console.log(`      Score: ${entry.score.toLocaleString()}`)
               console.log(`      Date: ${entry.date} ${entry.time}`)
-              if (entry.location && entry.location.timezone) {
-                console.log(`      Location: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
+              if (entry.timezone) {
+                console.log(`      Timezone: 📍 ${entry.timezone.replace(/_/g, ' ')}`)
+              } else if (entry.location && entry.location.timezone) {
+                // Legacy format support
+                console.log(`      Timezone: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
               }
               console.log(`      Key: ${scoreId}`)
               console.log(`      Sorted Set Score: ${score}`)
@@ -115,10 +118,13 @@ async function showDatabaseContents() {
             console.log(`   └─ Player: ${entry.playerName || 'Anonymous'}`)
             console.log(`   └─ Score: ${entry.score.toLocaleString()}`)
             console.log(`   └─ Date: ${entry.date} ${entry.time}`)
-            if (entry.location && entry.location.timezone) {
-              console.log(`   └─ Location: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
+            if (entry.timezone) {
+              console.log(`   └─ Timezone: 📍 ${entry.timezone.replace(/_/g, ' ')}`)
+            } else if (entry.location && entry.location.timezone) {
+              // Legacy format support
+              console.log(`   └─ Timezone: 📍 ${entry.location.timezone.replace(/_/g, ' ')}`)
             } else {
-              console.log(`   └─ Location: (not provided)`)
+              console.log(`   └─ Timezone: (not provided)`)
             }
             console.log()
           } catch (e) {
