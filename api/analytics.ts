@@ -1,36 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { 
-  logError, 
-  logWarning, 
-  logInfo, 
-  createErrorResponse, 
-  generateRequestId,
-  type ErrorLogContext 
-} from './errorLogger'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Top-level error handler to catch any initialization errors
   try {
-    // Generate unique request ID for tracking
-    const requestId = generateRequestId()
-    
-    // Create context for logging
-    const context: ErrorLogContext = {
-      endpoint: '/api/analytics',
-      method: req.method || 'UNKNOWN',
-      userAgent: req.headers['user-agent'],
-      ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
-    }
-    
-    // Add request ID to response headers
-    res.setHeader('X-Request-ID', requestId)
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*')
     
     if (req.method !== 'GET') {
-      logWarning('Method not allowed', context, requestId)
       return res.status(405).json({ 
         error: 'Method not allowed',
-        message: 'Only GET requests are supported',
-        requestId 
+        message: 'Only GET requests are supported'
       })
     }
 
@@ -39,17 +18,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     if (!apiToken) {
       // Analytics is optional - return empty data instead of error
-      logWarning('VERCEL_API_TOKEN not configured - returning empty analytics', context, requestId)
+      console.log('[analytics] VERCEL_API_TOKEN not configured - returning empty analytics')
       return res.status(200).json({ 
         totalDeployments: 0,
         latestDeployment: null,
-        requestId,
         message: 'Analytics not configured'
       })
     }
 
     try {
-      logInfo('Fetching deployment analytics', context, requestId)
+      console.log('[analytics] Fetching deployment analytics')
       
       const baseUrl = 'https://api.vercel.com'
       
@@ -73,19 +51,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const projectsData = await projectsResponse.json()
           if (projectsData.projects && projectsData.projects.length > 0) {
             projectId = projectsData.projects[0].id
-            logInfo('Project ID fetched from API', context, requestId, { projectId })
+            console.log('[analytics] Project ID fetched from API:', projectId)
           }
         } else {
-          logWarning('Failed to fetch project from Vercel API', context, requestId)
+          console.warn('[analytics] Failed to fetch project from Vercel API')
         }
       }
 
       if (!projectId) {
-        logError(new Error('Project ID not found'), context, requestId)
+        console.error('[analytics] Project ID not found')
         return res.status(500).json({ 
           error: 'Configuration error',
-          message: 'Analytics service configuration is incomplete',
-          requestId
+          message: 'Analytics service configuration is incomplete'
         })
       }
       
@@ -104,16 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!deploymentsResponse.ok) {
         const errorText = await deploymentsResponse.text()
-        logError(
-          new Error(`Vercel API returned ${deploymentsResponse.status}`),
-          { ...context, status: deploymentsResponse.status, responsePreview: errorText.substring(0, 100) },
-          requestId
-        )
+        console.error('[analytics] Vercel API error:', deploymentsResponse.status, errorText.substring(0, 100))
         
         return res.status(deploymentsResponse.status).json({ 
           error: 'External API error',
-          message: 'Failed to fetch deployment information',
-          requestId
+          message: 'Failed to fetch deployment information'
         })
       }
 
@@ -123,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Get latest deployment info
       const latestDeployment = deployments[0] || null
       
-      logInfo('Deployment analytics fetched successfully', context, requestId, {
+      console.log('[analytics] Deployment analytics fetched successfully:', {
         totalDeployments: deployments.length,
         hasLatest: !!latestDeployment
       })
@@ -136,26 +108,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           state: latestDeployment.state,
           environment: latestDeployment.target,
         } : null,
-        requestId,
       })
     } catch (error) {
-      // Log detailed error server-side
-      logError(error, { ...context, operation: 'fetchDeployments' }, requestId)
+      console.error('[analytics] Error fetching deployments:', error)
       
-      // Return safe error response to client
-      const errorResponse = createErrorResponse(
-        error,
-        requestId,
-        'Failed to fetch deployment analytics. Please try again later.'
-      )
-      
-      return res.status(500).json(errorResponse)
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Failed to fetch deployment analytics'
+      })
     }
   } catch (topLevelError) {
     // Catch any errors that occur before we can set up proper error handling
     console.error('[analytics] Top-level error:', topLevelError)
     const errorMessage = topLevelError instanceof Error ? topLevelError.message : String(topLevelError)
-    const errorStack = topLevelError instanceof Error ? topLevelError.stack : undefined
     
     // Try to set headers even on error
     try {
@@ -166,8 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'An unexpected error occurred',
-      requestId: `error_${Date.now()}`,
-      ...(process.env.NODE_ENV === 'development' && { details: errorMessage, stack: errorStack })
+      ...(process.env.NODE_ENV === 'development' && { details: errorMessage })
     })
   }
 }
