@@ -277,25 +277,31 @@ function App() {
   }
 
   /**
-   * Custom RPC provider that uses proxy endpoint in production
-   * Extends JsonRpcProvider to intercept requests and route through proxy
+   * Create a custom fetch function that proxies RPC requests through our API
    */
-  class ProxyJsonRpcProvider extends ethers.JsonRpcProvider {
-    private targetEndpoint: string
-    
-    constructor(targetEndpoint: string) {
-      // Use a dummy URL - we'll override the connection
-      super('/api/rpc', undefined, { staticNetwork: null })
-      this.targetEndpoint = targetEndpoint
-    }
-    
-    // Override the connection to use our proxy
-    _getConnection() {
-      const connection = super._getConnection()
-      return {
-        ...connection,
-        url: `/api/rpc?target=${encodeURIComponent(this.targetEndpoint)}`,
+  function createProxyFetch(targetEndpoint: string): typeof fetch {
+    return async (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      // If this is an RPC request, proxy it through our endpoint
+      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.toString() : (url as Request).url
+      
+      if (urlString.startsWith('http')) {
+        // This is an RPC endpoint - proxy it
+        const proxyUrl = `/api/rpc?target=${encodeURIComponent(targetEndpoint)}`
+        
+        // Extract the JSON-RPC payload from the request
+        const rpcPayload = init?.body ? (typeof init.body === 'string' ? JSON.parse(init.body) : init.body) : null
+        
+        if (rpcPayload) {
+          return fetch(proxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(rpcPayload),
+          })
+        }
       }
+      
+      // Fallback to regular fetch
+      return fetch(url, init)
     }
   }
 
@@ -312,7 +318,13 @@ function App() {
     if (isProduction) {
       for (const endpoint of endpoints) {
         try {
-          const provider = new ProxyJsonRpcProvider(endpoint)
+          // Create provider with custom fetch that proxies through our API
+          const customFetch = createProxyFetch(endpoint)
+          const provider = new ethers.JsonRpcProvider(endpoint, undefined, {
+            staticNetwork: null,
+            fetch: customFetch as any,
+          })
+          
           // Test connection
           await provider.getBlockNumber()
           console.log(`✅ Using RPC proxy endpoint: ${endpoint}`)
