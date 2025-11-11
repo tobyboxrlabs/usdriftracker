@@ -106,7 +106,7 @@ body::before {
   display: flex;
   gap: 20px;
   justify-content: center;
-  align-items: center;
+  align-items: baseline;
   margin-top: 8px;
 }
 
@@ -119,6 +119,8 @@ body::before {
   letter-spacing: 1px;
   text-transform: lowercase;
   margin: 0;
+  line-height: 1.2;
+  vertical-align: baseline;
 }
 
 .deployment-count {
@@ -129,6 +131,8 @@ body::before {
   opacity: 0.5;
   letter-spacing: 1px;
   margin: 0;
+  line-height: 1.2;
+  vertical-align: baseline;
 }
 
 .game-link {
