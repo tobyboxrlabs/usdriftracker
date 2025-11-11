@@ -1,12 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { 
-  logError, 
-  logWarning, 
-  logInfo, 
-  createErrorResponse, 
-  generateRequestId,
-  type ErrorLogContext 
-} from './errorLogger'
 
 interface ScoreEntry {
   score: number
@@ -258,24 +250,10 @@ export default async function handler(
 ) {
   // Top-level error handler to catch any initialization errors
   try {
-    // Generate unique request ID for tracking
-    const requestId = generateRequestId()
-    
-    // Create context for logging
-    const context: ErrorLogContext = {
-      endpoint: '/api/scores',
-      method: req.method || 'UNKNOWN',
-      userAgent: req.headers['user-agent'],
-      ip: req.headers['x-forwarded-for']?.toString().split(',')[0] || req.headers['x-real-ip']?.toString() || 'unknown',
-    }
-    
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-    
-    // Add request ID to response headers for tracking
-    res.setHeader('X-Request-ID', requestId)
 
     if (req.method === 'OPTIONS') {
       return res.status(200).end()
@@ -287,16 +265,14 @@ export default async function handler(
 
         // Input validation
         if (typeof score !== 'number' || score < 0) {
-          logWarning('Invalid score submitted', context, requestId)
+          console.warn('[scores] Invalid score submitted:', score)
           return res.status(400).json({ 
             error: 'Invalid input',
-            message: 'Score must be a positive number',
-            requestId 
+            message: 'Score must be a positive number'
           })
         }
 
-        // Log the operation (structured logging)
-        logInfo('Score submission attempt', context, requestId, {
+        console.log('[scores] Score submission attempt:', {
           hasPlayerName: !!playerName,
           hasTimezone: !!timezone,
           score,
@@ -304,21 +280,16 @@ export default async function handler(
 
         await saveScore(score, playerName, timezone)
         
-        logInfo('Score saved successfully', context, requestId, { score, playerName: playerName || 'Anonymous' })
+        console.log('[scores] Score saved successfully:', { score, playerName: playerName || 'Anonymous' })
 
-        return res.status(200).json({ success: true, requestId })
+        return res.status(200).json({ success: true })
       } catch (error) {
-        // Log detailed error server-side
-        logError(error, { ...context, operation: 'saveScore' }, requestId)
+        console.error('[scores] Error saving score:', error)
         
-        // Return safe error response to client
-        const errorResponse = createErrorResponse(
-          error,
-          requestId,
-          'Failed to save score. Please try again later.'
-        )
-        
-        return res.status(500).json(errorResponse)
+        return res.status(500).json({
+          error: 'Internal Server Error',
+          message: 'Failed to save score. Please try again later.'
+        })
       }
     }
 
@@ -327,37 +298,30 @@ export default async function handler(
         const limit = parseInt(req.query.limit as string) || 10
         const sanitizedLimit = Math.min(Math.max(1, limit), 100)
         
-        logInfo('Leaderboard fetch', context, requestId, { limit: sanitizedLimit })
+        console.log('[scores] Leaderboard fetch:', { limit: sanitizedLimit })
         
         const leaderboard = await getLeaderboard(sanitizedLimit)
 
-        return res.status(200).json({ leaderboard, requestId })
+        return res.status(200).json({ leaderboard })
       } catch (error) {
-        // Log detailed error server-side
-        logError(error, { ...context, operation: 'getLeaderboard' }, requestId)
+        console.error('[scores] Error fetching leaderboard:', error)
         
-        // Return safe error response to client
-        const errorResponse = createErrorResponse(
-          error,
-          requestId,
-          'Failed to fetch leaderboard. Please try again later.'
-        )
-        
-        return res.status(500).json(errorResponse)
+        return res.status(500).json({
+          error: 'Internal Server Error',
+          message: 'Failed to fetch leaderboard. Please try again later.'
+        })
       }
     }
 
-    logWarning('Method not allowed', context, requestId)
+    console.warn('[scores] Method not allowed:', req.method)
     return res.status(405).json({ 
       error: 'Method not allowed',
-      message: `Method ${req.method} is not supported for this endpoint`,
-      requestId 
+      message: `Method ${req.method} is not supported for this endpoint`
     })
   } catch (topLevelError) {
     // Catch any errors that occur before we can set up proper error handling
     console.error('[scores] Top-level error:', topLevelError)
     const errorMessage = topLevelError instanceof Error ? topLevelError.message : String(topLevelError)
-    const errorStack = topLevelError instanceof Error ? topLevelError.stack : undefined
     
     // Try to set CORS headers even on error
     try {
@@ -368,8 +332,7 @@ export default async function handler(
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'An unexpected error occurred',
-      requestId: `error_${Date.now()}`,
-      ...(process.env.NODE_ENV === 'development' && { details: errorMessage, stack: errorStack })
+      ...(process.env.NODE_ENV === 'development' && { details: errorMessage })
     })
   }
 }
