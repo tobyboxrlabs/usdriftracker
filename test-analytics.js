@@ -5,7 +5,14 @@
  * Run with: node test-analytics.js
  */
 
-const apiToken = process.env.VERCEL_API_TOKEN || 'fTd7riGVbTtuoFyPzjhJPat8'
+const apiToken = process.env.VERCEL_API_TOKEN
+
+if (!apiToken) {
+  console.error('❌ VERCEL_API_TOKEN environment variable is required')
+  console.error('   Please set it in your environment or .env file')
+  console.error('   Example: export VERCEL_API_TOKEN=your_token_here')
+  process.exit(1)
+}
 
 async function testVercelAnalytics() {
   console.log('Testing Vercel Analytics API...\n')
