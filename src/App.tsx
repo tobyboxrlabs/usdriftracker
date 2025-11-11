@@ -277,31 +277,42 @@ function App() {
   }
 
   /**
-   * Create a custom fetch function that proxies RPC requests through our API
+   * Custom JsonRpcProvider that proxies requests through our API endpoint
    */
-  function createProxyFetch(targetEndpoint: string): typeof fetch {
-    return async (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-      // If this is an RPC request, proxy it through our endpoint
-      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.toString() : (url as Request).url
+  class ProxyJsonRpcProvider extends ethers.JsonRpcProvider {
+    private proxyUrl: string
+    
+    constructor(targetEndpoint: string) {
+      // Use proxy URL as the base URL
+      const proxyUrl = `/api/rpc?target=${encodeURIComponent(targetEndpoint)}`
+      super(proxyUrl)
+      this.proxyUrl = proxyUrl
+    }
+    
+    // Override _send to intercept RPC calls and proxy them
+    async _send(payload: ethers.JsonRpcPayload | Array<ethers.JsonRpcPayload>): Promise<Array<ethers.JsonRpcResult>> {
+      // Convert payload to array if single
+      const payloads = Array.isArray(payload) ? payload : [payload]
       
-      if (urlString.startsWith('http')) {
-        // This is an RPC endpoint - proxy it
-        const proxyUrl = `/api/rpc?target=${encodeURIComponent(targetEndpoint)}`
-        
-        // Extract the JSON-RPC payload from the request
-        const rpcPayload = init?.body ? (typeof init.body === 'string' ? JSON.parse(init.body) : init.body) : null
-        
-        if (rpcPayload) {
-          return fetch(proxyUrl, {
+      // Forward each request through our proxy
+      const results = await Promise.all(
+        payloads.map(async (p) => {
+          const response = await fetch(this.proxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(rpcPayload),
+            body: JSON.stringify(p),
           })
-        }
-      }
+          
+          if (!response.ok) {
+            throw new Error(`RPC proxy error: ${response.status}`)
+          }
+          
+          const result = await response.json()
+          return result
+        })
+      )
       
-      // Fallback to regular fetch
-      return fetch(url, init)
+      return results as Array<ethers.JsonRpcResult>
     }
   }
 
@@ -318,12 +329,8 @@ function App() {
     if (isProduction) {
       for (const endpoint of endpoints) {
         try {
-          // Create provider with custom fetch that proxies through our API
-          const customFetch = createProxyFetch(endpoint)
-          const provider = new ethers.JsonRpcProvider(endpoint, undefined, {
-            staticNetwork: null,
-            fetch: customFetch as any,
-          })
+          // Create provider with proxy
+          const provider = new ProxyJsonRpcProvider(endpoint)
           
           // Test connection
           await provider.getBlockNumber()
