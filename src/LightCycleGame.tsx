@@ -183,7 +183,7 @@ export default function LightCycleGame() {
     
     try {
       console.log('🔍 Fetching leaderboard from:', apiUrl)
-      const response = await fetch(`${apiUrl}?limit=10`, {
+      const response = await fetch(`${apiUrl}?limit=100`, {
         // Add credentials for CORS if needed
         credentials: 'omit',
       })
