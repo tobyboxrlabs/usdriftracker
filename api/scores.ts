@@ -89,7 +89,9 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
       const { type, client } = redisClient
       
       // If player has a name, check for existing entries with the same name and remove them
-      if (playerName && playerName.trim() !== '' && playerName !== 'Anonymous') {
+      // Normalize player name for comparison (trim and lowercase)
+      const normalizedPlayerName = playerName?.trim()
+      if (normalizedPlayerName && normalizedPlayerName !== '' && normalizedPlayerName !== 'Anonymous') {
         // Get all score IDs from the leaderboard
         let allScoreIds: string[] = []
         if (type === 'vercel-kv') {
@@ -99,7 +101,7 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
           allScoreIds = await (client as any).zrange('leaderboard', 0, -1) as string[]
         }
         
-        // Check each entry and remove if it has the same player name
+        // Check each entry and remove if it has the same player name (case-insensitive, trimmed)
         for (const scoreId of allScoreIds) {
           try {
             let existingEntry: ScoreEntry | null = null
@@ -110,7 +112,10 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
               existingEntry = data ? JSON.parse(data as string) : null
             }
             
-            if (existingEntry && existingEntry.playerName === playerName) {
+            // Compare normalized names (case-insensitive, trimmed)
+            const existingName = existingEntry?.playerName?.trim() || ''
+            if (existingEntry && existingName.toLowerCase() === normalizedPlayerName.toLowerCase()) {
+              console.log(`[saveScore] Removing duplicate entry for player "${normalizedPlayerName}": ${scoreId}`)
               // Remove from sorted set
               await client.zrem('leaderboard', scoreId)
               // Delete the entry
@@ -149,9 +154,13 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
     } catch (error) {
       console.error('Error saving to Redis, falling back to memory:', error)
       // Fallback to in-memory if Redis fails
-      // Remove old entries with same name
-      if (playerName && playerName.trim() !== '' && playerName !== 'Anonymous') {
-        scoreStore = scoreStore.filter(e => e.playerName !== playerName)
+      // Remove old entries with same name (case-insensitive, trimmed)
+      const normalizedPlayerName = playerName?.trim()
+      if (normalizedPlayerName && normalizedPlayerName !== '' && normalizedPlayerName !== 'Anonymous') {
+        scoreStore = scoreStore.filter(e => {
+          const existingName = (e.playerName || '').trim()
+          return existingName.toLowerCase() !== normalizedPlayerName.toLowerCase()
+        })
       }
       scoreStore.push(entry)
       scoreStore.sort((a, b) => b.score - a.score)
@@ -159,9 +168,13 @@ async function saveScore(score: number, playerName?: string, timezone?: string):
     }
   } else {
     // Fallback to in-memory store
-    // Remove old entries with same name
-    if (playerName && playerName.trim() !== '' && playerName !== 'Anonymous') {
-      scoreStore = scoreStore.filter(e => e.playerName !== playerName)
+    // Remove old entries with same name (case-insensitive, trimmed)
+    const normalizedPlayerName = playerName?.trim()
+    if (normalizedPlayerName && normalizedPlayerName !== '' && normalizedPlayerName !== 'Anonymous') {
+      scoreStore = scoreStore.filter(e => {
+        const existingName = (e.playerName || '').trim()
+        return existingName.toLowerCase() !== normalizedPlayerName.toLowerCase()
+      })
     }
     scoreStore.push(entry)
     // Keep only top 100 scores in memory
@@ -225,20 +238,61 @@ async function getLeaderboard(limit: number = 10): Promise<ScoreEntry[]> {
         }
       }
       
-      console.log(`[getLeaderboard] Returning ${scores.length} valid entries`)
-      return scores.sort((a, b) => b.score - a.score).slice(0, limit)
+      // Deduplicate: keep only the highest score for each player name
+      // This handles existing duplicates in the database
+      const playerMap = new Map<string, ScoreEntry>()
+      for (const entry of scores) {
+        const normalizedName = (entry.playerName || 'Anonymous').trim().toLowerCase()
+        const existing = playerMap.get(normalizedName)
+        
+        // Keep the entry with the higher score, or the newer one if scores are equal
+        if (!existing || entry.score > existing.score || 
+            (entry.score === existing.score && entry.timestamp > existing.timestamp)) {
+          playerMap.set(normalizedName, entry)
+        }
+      }
+      
+      // Convert back to array and sort by score
+      const deduplicatedScores = Array.from(playerMap.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+      
+      if (deduplicatedScores.length < scores.length) {
+        console.log(`[getLeaderboard] Deduplicated ${scores.length} entries to ${deduplicatedScores.length} unique players`)
+      }
+      
+      console.log(`[getLeaderboard] Returning ${deduplicatedScores.length} valid entries`)
+      return deduplicatedScores
     } catch (error) {
       console.error('[getLeaderboard] Error fetching from Redis, falling back to memory:', error)
       console.error('[getLeaderboard] Error details:', error instanceof Error ? error.message : String(error))
-      // Fallback to in-memory store
-      return scoreStore
+      // Fallback to in-memory store with deduplication
+      const playerMap = new Map<string, ScoreEntry>()
+      for (const entry of scoreStore) {
+        const normalizedName = (entry.playerName || 'Anonymous').trim().toLowerCase()
+        const existing = playerMap.get(normalizedName)
+        if (!existing || entry.score > existing.score || 
+            (entry.score === existing.score && entry.timestamp > existing.timestamp)) {
+          playerMap.set(normalizedName, entry)
+        }
+      }
+      return Array.from(playerMap.values())
         .sort((a, b) => b.score - a.score)
         .slice(0, limit)
     }
   } else {
     console.warn('[getLeaderboard] No Redis client available, using in-memory store (empty after deployment)')
-    // Fallback to in-memory store
-    return scoreStore
+    // Fallback to in-memory store with deduplication
+    const playerMap = new Map<string, ScoreEntry>()
+    for (const entry of scoreStore) {
+      const normalizedName = (entry.playerName || 'Anonymous').trim().toLowerCase()
+      const existing = playerMap.get(normalizedName)
+      if (!existing || entry.score > existing.score || 
+          (entry.score === existing.score && entry.timestamp > existing.timestamp)) {
+        playerMap.set(normalizedName, entry)
+      }
+    }
+    return Array.from(playerMap.values())
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
   }

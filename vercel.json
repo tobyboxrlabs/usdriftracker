@@ -3,9 +3,10 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "devCommand": "vite",
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|@vite|src/|node_modules/|assets/).*)",
       "destination": "/index.html"
     }
   ]
