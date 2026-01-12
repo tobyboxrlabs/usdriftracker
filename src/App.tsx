@@ -647,6 +647,14 @@ function App() {
         if (contentType && contentType.includes('application/json')) {
           const data = await response.json()
           console.log('Deployment count response:', data)
+          
+          // Check if analytics is configured
+          if (data.message === 'Analytics not configured') {
+            console.warn('Analytics not configured - VERCEL_API_TOKEN missing in Vercel environment variables')
+            setDeploymentCount(null) // Don't show 0, show nothing
+            return
+          }
+          
           if (data.totalDeployments !== undefined) {
             setDeploymentCount(data.totalDeployments)
             console.log('Set deployment count to:', data.totalDeployments)
@@ -712,7 +720,7 @@ function App() {
                 {import.meta.env.VITE_GIT_COMMIT_HASH && (
                   <p className="git-hash">#{import.meta.env.VITE_GIT_COMMIT_HASH}</p>
                 )}
-                {deploymentCount !== null && (
+                {deploymentCount !== null && deploymentCount > 0 && (
                   <p className="deployment-count">Deployments: {deploymentCount} 😅</p>
                 )}
               </div>
