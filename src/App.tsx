@@ -705,7 +705,7 @@ function App() {
           <div className="container">
             <header className="header">
               <div className="header-title-row">
-                <h1>RIF PUT TO WORK</h1>
+                <h1>PUT RIF TO WORK...</h1>
               </div>
               <p className="subtitle">Real-time token metrics on Rootstock</p>
               <div className="header-meta">
