@@ -13,8 +13,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // Try multiple possible environment variable names
-    const apiToken = process.env.VERCEL_API_TOKEN || process.env.VITE_VERCEL_API_TOKEN
+    // Only use server-side environment variable (VITE_* vars are exposed to client!)
+    const apiToken = process.env.VERCEL_API_TOKEN
     
     if (!apiToken) {
       // Analytics is optional - return empty data instead of error

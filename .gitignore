@@ -4,4 +4,8 @@ dist-ssr
 *.local
 .env
 .env.local
+.env.*.local
 .vercel
+
+# Test scripts that may contain sensitive data
+test-analytics.js
