@@ -8,7 +8,7 @@
 
 ---
 
-### **Step 1: Total RIF Collateral** (~212M RIF)
+### **Step 1: Total RIF Collateral** (~295.5M RIF)
 
 **Business Value**: Total RIF tokens locked as collateral in the Money on Chain protocol
 
@@ -59,7 +59,7 @@ const targetCoverageResult = await queryOptionalMetric(
 
 ---
 
-### **Step 3: Ratio'd RIF** (~38M RIF)
+### **Step 3: Ratio'd RIF** (~53.7M RIF)
 
 **Business Value**: Effective RIF amount after applying the coverage ratio safety buffer
 
@@ -67,7 +67,7 @@ const targetCoverageResult = await queryOptionalMetric(
 ```typescript
 // Step 3: Ratio'd RIF = Total RIF Collateral / Coverage Ratio
 const ratioDRif = totalRifCollateral / coverageRatio
-// Example: 212,057,756 / 5.5 = ~38,556,864
+// Example: 295,544,136.913 / 5.5 = ~53,735,297.62
 ```
 
 **Technical References**:
@@ -76,7 +76,7 @@ const ratioDRif = totalRifCollateral / coverageRatio
 
 ---
 
-### **Step 4: RIF/USD Price** (~$0.0413)
+### **Step 4: RIF/USD Price** (~$0.0363)
 
 **Business Value**: Current RIF token price in USD (from MoC's price oracle)
 
@@ -99,11 +99,11 @@ const rifPriceMocResult = await queryOptionalMetric(
 - Contract address: `src/config.ts:33`
 - ABI definition: `src/config.ts:69-72` (PRICE_FEED_ABI)
 - **Note**: Uses MoC price feed (not RLabs) for mintable calculation consistency
-- Returns: `bigint` value in wei (18 decimals), e.g., 41300000000000000 = $0.0413
+- Returns: `bigint` value in wei (18 decimals), e.g., 36300000000000000 = $0.0363
 
 ---
 
-### **Step 5: USD Equivalent of Ratio'd RIF** (~$1.59M)
+### **Step 5: USD Equivalent of Ratio'd RIF** (~$1.95M)
 
 **Business Value**: Maximum USD value that can be backed by the current collateral
 
@@ -111,7 +111,7 @@ const rifPriceMocResult = await queryOptionalMetric(
 ```typescript
 // Step 5: USD Equiv Ratio'd RIF = Ratio'd RIF × RIF Price
 const usdEquivRatioDRif = ratioDRif * rifPrice
-// Example: 38,556,864 × 0.0413 = ~1,592,398 USD
+// Example: 53,735,297.62 × 0.0363 = ~1,950,591 USD
 ```
 
 **Technical References**:
@@ -120,7 +120,7 @@ const usdEquivRatioDRif = ratioDRif * rifPrice
 
 ---
 
-### **Step 6: Already Minted USDRIF** (~$1.51M)
+### **Step 6: Already Minted USDRIF** (~$1.38M)
 
 **Business Value**: Total amount of USDRIF tokens currently in circulation
 
@@ -149,7 +149,7 @@ const formattedMinted = formatAmount(USDRIFSupply, USDRIFDecimals)
 
 ---
 
-### **Step 7: MINTABLE USDRIF** (~$99K)
+### **Step 7: MINTABLE USDRIF** (~$569.5K)
 
 **Business Value**: Available minting capacity remaining
 
