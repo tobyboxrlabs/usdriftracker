@@ -419,7 +419,7 @@ function App() {
         ERC20_ABI,
         provider
       )
-      const oldUSDRIFContract = new ethers.Contract(
+      const usdrifContract = new ethers.Contract(
         getChecksummedAddress(CONFIG.USDRIF_ADDRESS),
         ERC20_ABI,
         provider
@@ -440,8 +440,8 @@ function App() {
         stRIFContract.decimals(),
         rifproContract.totalSupply(),
         rifproContract.decimals(),
-        oldUSDRIFContract.totalSupply(),
-        oldUSDRIFContract.decimals(),
+        usdrifContract.totalSupply(),
+        usdrifContract.decimals(),
         stRIFContract.name(),
         stRIFContract.symbol(),
       ])
@@ -780,7 +780,7 @@ function App() {
                 unit="USD"
                 isRefreshing={refreshingMetrics.has('minted')}
                 history={history.minted}
-                helpText="Sourced from the old USDRIF token contract (totalSupply). Represents the total amount of USDRIF tokens that have been minted."
+                helpText="Sourced from the USDRIF token contract (totalSupply). Represents the total amount of USDRIF tokens that have been minted."
               />
               <MetricDisplay
                 label="RIF Price"
