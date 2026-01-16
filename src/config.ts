@@ -17,6 +17,9 @@ export const CONFIG = {
   // USDRIF token address - used for USDRIF Minted metric - will be checksummed when used
   USDRIF_ADDRESS: import.meta.env.VITE_USDRIF_ADDRESS || '0x3A15461d8AE0f0Fb5fA2629e9dA7D66A794a6E37',
   
+  // VUSD token address - used for Vaulted USDRIF metric - will be checksummed when used
+  VUSD_ADDRESS: import.meta.env.VITE_VUSD_ADDRESS || '0xd8169270417050dCEf119597a7F6F5EE98dd2fd3',
+  
   // RIFPRO token address (for future metrics) - will be checksummed when used
   RIFPRO_ADDRESS: import.meta.env.VITE_RIFPRO_ADDRESS || '0xF4d27C56595eD59B66cC7f03CFF5193E4Bd74a61',
   

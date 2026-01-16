@@ -16,6 +16,8 @@ interface TokenData {
   // Token supplies
   stRIFSupply: string
   formattedStRIFSupply: string
+  vaultedUsdrif: string | null
+  formattedVaultedUsdrif: string | null
   rifproSupply: string
   formattedRifproSupply: string
   minted: string | null
@@ -47,6 +49,8 @@ interface TokenData {
 const INITIAL_TOKEN_DATA: TokenData = {
   stRIFSupply: '0',
   formattedStRIFSupply: '0',
+  vaultedUsdrif: null,
+  formattedVaultedUsdrif: null,
   rifproSupply: '0',
   formattedRifproSupply: '0',
   minted: null,
@@ -393,6 +397,7 @@ function App() {
       // Mark all metrics as refreshing
       setRefreshingMetrics(new Set([
         'stRIFSupply',
+        'vaultedUsdrif',
         'rifproSupply',
         'minted',
         'rifPrice',
@@ -424,6 +429,11 @@ function App() {
         ERC20_ABI,
         provider
       )
+      const vusdContract = new ethers.Contract(
+        getChecksummedAddress(CONFIG.VUSD_ADDRESS),
+        ERC20_ABI,
+        provider
+      )
 
       // Fetch all token data in parallel
       const [
@@ -433,6 +443,8 @@ function App() {
         rifproDecimalsRaw,
         USDRIFSupply,
         USDRIFDecimalsRaw,
+        VUSDSupply,
+        VUSDDecimalsRaw,
         name,
         symbol,
       ] = await Promise.all([
@@ -442,6 +454,8 @@ function App() {
         rifproContract.decimals(),
         usdrifContract.totalSupply(),
         usdrifContract.decimals(),
+        vusdContract.totalSupply(),
+        vusdContract.decimals(),
         stRIFContract.name(),
         stRIFContract.symbol(),
       ])
@@ -455,11 +469,13 @@ function App() {
       const stRIFDecimals = Number(stRIFDecimalsRaw)
       const rifproDecimals = Number(rifproDecimalsRaw)
       const USDRIFDecimals = Number(USDRIFDecimalsRaw)
+      const VUSDDecimals = Number(VUSDDecimalsRaw)
 
       // Format token supplies
       const formattedStRIFSupply = formatAmount(stRIFSupply, stRIFDecimals)
       const formattedRifproSupply = formatAmount(rifproSupply, rifproDecimals)
       const formattedMinted = formatAmount(USDRIFSupply, USDRIFDecimals)
+      const formattedVaultedUsdrif = formatAmount(VUSDSupply, VUSDDecimals)
 
       // Query optional metrics (these may fail without breaking the app)
       const rifPriceResult = await queryOptionalMetric(
@@ -552,6 +568,7 @@ function App() {
       // Save history and update state
       const metricKeys = {
         stRIFSupply: parseFloat(formattedStRIFSupply),
+        vaultedUsdrif: parseFloat(formattedVaultedUsdrif),
         rifproSupply: parseFloat(formattedRifproSupply),
         minted: parseFloat(formattedMinted),
         rifPrice: rifPriceResult?.formatted ? parseFloat(rifPriceResult.formatted) : null,
@@ -576,6 +593,8 @@ function App() {
       setTokenData(prev => ({
         stRIFSupply: stRIFSupply ? stRIFSupply.toString() : prev.stRIFSupply,
         formattedStRIFSupply: formattedStRIFSupply || prev.formattedStRIFSupply,
+        vaultedUsdrif: VUSDSupply ? VUSDSupply.toString() : prev.vaultedUsdrif,
+        formattedVaultedUsdrif: formattedVaultedUsdrif || prev.formattedVaultedUsdrif,
         rifproSupply: rifproSupply ? rifproSupply.toString() : prev.rifproSupply,
         formattedRifproSupply: formattedRifproSupply || prev.formattedRifproSupply,
         minted: USDRIFSupply ? USDRIFSupply.toString() : prev.minted,
@@ -598,6 +617,7 @@ function App() {
       // Update history state
       setHistory({
         stRIFSupply: getMetricHistory('stRIFSupply'),
+        vaultedUsdrif: getMetricHistory('vaultedUsdrif'),
         rifproSupply: getMetricHistory('rifproSupply'),
         minted: getMetricHistory('minted'),
         rifPrice: getMetricHistory('rifPrice'),
@@ -685,6 +705,7 @@ function App() {
     // Load initial history
     setHistory({
       stRIFSupply: getMetricHistory('stRIFSupply'),
+      vaultedUsdrif: getMetricHistory('vaultedUsdrif'),
       rifproSupply: getMetricHistory('rifproSupply'),
       minted: getMetricHistory('minted'),
       rifPrice: getMetricHistory('rifPrice'),
@@ -765,6 +786,14 @@ function App() {
                 isRefreshing={refreshingMetrics.has('stRIFSupply')}
                 history={history.stRIFSupply}
                 helpText="Sourced from the stRIF token contract (totalSupply). Represents the total amount of RIF tokens staked in the collective."
+              />
+              <MetricDisplay
+                label="STAKED USDRIF IN USD VAULT"
+                value={tokenData.formattedVaultedUsdrif}
+                unit="VUSD"
+                isRefreshing={refreshingMetrics.has('vaultedUsdrif')}
+                history={history.vaultedUsdrif}
+                helpText="Sourced from the VUSD token contract (0xd8169270417050dCEf119597a7F6F5EE98dd2fd3) using totalSupply(). Represents the total amount of USDRIF staked in the USD vault."
               />
               <MetricDisplay
                 label="RIFPRO Total Supply"
