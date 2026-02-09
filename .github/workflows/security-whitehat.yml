@@ -1,0 +1,74 @@
+name: Security Whitehat (commit review)
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run Security Whitehat Cloud Agent
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          echo "Starting Security Whitehat review for $SHA"
+
+          RUN_ID=$(curl -sS \
+            -u "${CURSOR_API_KEY}:" \
+            -X POST https://api.cursor.com/v0/agents \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"prompt\": {
+                \"text\": \"Perform a security review on the most recent commit to main using the Security Whitehat persona. Output a single review comment.\"
+              },
+              \"source\": {
+                \"repository\": \"https://github.com/${REPO}\",
+                \"ref\": \"main\"
+              },
+              \"target\": {
+                \"autoBranch\": false,
+                \"autoCreatePr\": false
+              }
+            }" | jq -r '.id')
+
+          echo "Run ID: $RUN_ID"
+
+          for i in {1..20}; do
+            STATUS=$(curl -sS \
+              -u "${CURSOR_API_KEY}:" \
+              https://api.cursor.com/v0/agents/${RUN_ID} | jq -r '.status')
+
+            echo "Status: $STATUS"
+
+            if [ "$STATUS" = "FINISHED" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$STATUS" != "FINISHED" ]; then
+            echo "Agent did not finish in time"
+            exit 1
+          fi
+
+          BODY=$(curl -sS \
+            -u "${CURSOR_API_KEY}:" \
+            https://api.cursor.com/v0/agents/${RUN_ID}/conversation | jq -r '.messages[].text')
+
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${REPO}/commits/${SHA}/comments \
+            -d "$(jq -n --arg body "$BODY" '{body: $body}')"
+
+          echo "Security review posted to commit"
