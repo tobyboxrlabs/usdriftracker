@@ -21,6 +21,10 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Create secure temporary file and ensure cleanup
+          TMPFILE=$(mktemp)
+          trap 'rm -f "$TMPFILE"' EXIT INT TERM
+
           echo "Starting Security Whitehat review for commit $SHA"
 
           # Create agent run
@@ -42,7 +46,9 @@ jobs:
               }
             }")
           
-          echo "Create agent response: $CREATE_RESPONSE"
+          # Log only status, not full response (to avoid exposing sensitive data)
+          CREATE_STATUS=$(echo "$CREATE_RESPONSE" | jq -r '.status // "no-status"')
+          echo "Agent creation status: $CREATE_STATUS"
           
           RUN_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id // empty')
           CREATE_ERROR=$(echo "$CREATE_RESPONSE" | jq -r '.error // empty')
@@ -62,8 +68,8 @@ jobs:
           # Wait for agent to finish (max 5 minutes = 60 iterations × 5 seconds)
           MAX_ITERATIONS=60
           for i in $(seq 1 $MAX_ITERATIONS); do
-            # Fetch status (don't use -f flag, we want to handle errors gracefully)
-            HTTP_CODE=$(curl -sS -o /tmp/response.json -w "%{http_code}" \
+            # Fetch status using secure temporary file
+            HTTP_CODE=$(curl -sS -o "$TMPFILE" -w "%{http_code}" \
               -u "${CURSOR_API_KEY}:" \
               https://api.cursor.com/v0/agents/${RUN_ID} 2>&1) || HTTP_CODE="000"
             
@@ -78,7 +84,7 @@ jobs:
               fi
             fi
             
-            RESPONSE=$(cat /tmp/response.json)
+            RESPONSE=$(cat "$TMPFILE")
             STATUS=$(echo "$RESPONSE" | jq -r '.status // "UNKNOWN"')
             ERROR=$(echo "$RESPONSE" | jq -r '.error // empty')
 
@@ -117,10 +123,13 @@ jobs:
             -u "${CURSOR_API_KEY}:" \
             https://api.cursor.com/v0/agents/${RUN_ID})
           FINAL_STATUS=$(echo "$FINAL_RESPONSE" | jq -r '.status // "UNKNOWN"')
+          FINAL_ERROR=$(echo "$FINAL_RESPONSE" | jq -r '.error // empty')
           
           if [ "$FINAL_STATUS" != "FINISHED" ]; then
             echo "Agent did not finish in time. Final status: $FINAL_STATUS"
-            echo "Full response: $FINAL_RESPONSE"
+            if [ -n "$FINAL_ERROR" ]; then
+              echo "Error: $FINAL_ERROR"
+            fi
             exit 1
           fi
 
@@ -130,10 +139,10 @@ jobs:
             https://api.cursor.com/v0/agents/${RUN_ID}/conversation)
           
           BODY=$(echo "$CONVERSATION" | jq -r '[.messages[] | select(.type=="assistant_message") | .text] | last')
+          MESSAGE_COUNT=$(echo "$CONVERSATION" | jq -r '[.messages[] | select(.type=="assistant_message")] | length')
 
           if [ -z "$BODY" ] || [ "$BODY" = "null" ]; then
-            echo "No security review output received"
-            echo "Conversation response: $CONVERSATION"
+            echo "No security review output received (found $MESSAGE_COUNT assistant messages)"
             exit 1
           fi
           
