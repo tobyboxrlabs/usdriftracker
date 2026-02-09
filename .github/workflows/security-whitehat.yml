@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Starting Security Whitehat review for $SHA"
+          echo "Starting Security Whitehat review for commit $SHA"
 
           RUN_ID=$(curl -sS \
             -u "${CURSOR_API_KEY}:" \
@@ -39,6 +39,11 @@ jobs:
                 \"autoCreatePr\": false
               }
             }" | jq -r '.id')
+
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "Failed to start Security Whitehat agent"
+            exit 1
+          fi
 
           echo "Run ID: $RUN_ID"
 
@@ -63,12 +68,18 @@ jobs:
 
           BODY=$(curl -sS \
             -u "${CURSOR_API_KEY}:" \
-            https://api.cursor.com/v0/agents/${RUN_ID}/conversation | jq -r '.messages[].text')
+            https://api.cursor.com/v0/agents/${RUN_ID}/conversation \
+            | jq -r '.messages[] | select(.type=="assistant_message") | .text')
 
-          curl -sS -X POST \
+          if [ -z "$BODY" ]; then
+            echo "No security review output received"
+            exit 1
+          fi
+
+          curl -fsS -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${REPO}/commits/${SHA}/comments \
             -d "$(jq -n --arg body "$BODY" '{body: $body}')"
 
-          echo "Security review posted to commit"
+          echo "Security Whitehat review posted to commit"
