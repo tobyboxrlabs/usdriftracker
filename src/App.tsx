@@ -823,7 +823,7 @@ function App() {
               <MetricDisplay
                 label="RIF Collateral Backing USDRIF"
                 value={tokenData.formattedRifCollateral}
-                unit="RIFPROF"
+                unit="RIFPRO"
                 isRefreshing={refreshingMetrics.has('rifCollateral')}
                 history={history.rifCollateral}
                 helpText="Sourced from MoC V2 Core contract (0xA27024Ed70035E46dba712609fc2Afa1c97aA36A) using getTotalACavailable(). Represents the total RIF collateral available in the system (~212M RIF)."
