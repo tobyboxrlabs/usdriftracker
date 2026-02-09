@@ -129,7 +129,7 @@ jobs:
             -u "${CURSOR_API_KEY}:" \
             https://api.cursor.com/v0/agents/${RUN_ID}/conversation)
           
-          BODY=$(echo "$CONVERSATION" | jq -r '.messages[] | select(.type=="assistant_message") | .text' | head -1)
+          BODY=$(echo "$CONVERSATION" | jq -r '[.messages[] | select(.type=="assistant_message") | .text] | last')
 
           if [ -z "$BODY" ] || [ "$BODY" = "null" ]; then
             echo "No security review output received"
