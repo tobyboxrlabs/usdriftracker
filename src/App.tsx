@@ -780,7 +780,7 @@ function App() {
           ) : (
             <div className="metrics">
               <MetricDisplay
-                label="Staked RIF in Collective (C)"
+                label="Staked RIF in Collective"
                 value={tokenData.formattedStRIFSupply}
                 unit="stRIF"
                 isRefreshing={refreshingMetrics.has('stRIFSupply')}
