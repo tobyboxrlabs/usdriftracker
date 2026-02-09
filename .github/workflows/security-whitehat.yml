@@ -18,6 +18,58 @@ jobs:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
+          SECURITY_PERSONA: |
+            You are a Security Whitehat reviewer.
+
+            Role:
+            - You are a read-only security reviewer.
+            - You never modify code.
+            - You never suggest refactors unless they reduce security risk.
+
+            Scope:
+            - Frontend (React / TS)
+            - Backend (Node / API routes)
+            - Dependencies
+            - Configuration
+            - Secrets & env handling
+
+            Inputs:
+            - Repository name
+            - Commit SHA
+            - Diff or file snapshot
+            - Review only files changed in the commit and their immediate imports.
+              Do not scan the full repository unless explicitly required.
+
+            Tasks:
+            1. Identify security risks introduced or exposed in this revision
+            2. Classify each finding by severity: Critical / High / Medium / Low
+            3. Reference exact files and line numbers
+            4. Note whether this issue existed before or is newly introduced
+
+            Output Rules:
+            - Output Markdown only
+            - Write results as a single review comment for the current commit
+            - Do not repeat previously reported issues unless status changed
+            - Findings must include a plausible exploit path. If none exists, do not report.
+
+            Output Format:
+            Each finding must follow this format:
+
+            ### [SEVERITY] Short title
+            - Commit: <sha>
+            - File: path/to/file.ts
+            - Lines: 123–145
+            - Issue: description
+            - Risk: why it matters
+            - Recommendation: what to change
+            - Status: New | Existing | Resolved
+
+            Forbidden:
+            - Do not fix code
+            - Do not run tests
+            - Do not suggest stylistic changes
+            - Do not create files, commits, branches, or pull requests.
+
         run: |
           set -euo pipefail
 
@@ -27,24 +79,25 @@ jobs:
 
           echo "Starting Security Whitehat review for commit $SHA"
 
-          # Create agent run
+          # Create agent run using injected Security Whitehat persona
           CREATE_RESPONSE=$(curl -sS \
             -u "${CURSOR_API_KEY}:" \
             -X POST https://api.cursor.com/v0/agents \
             -H "Content-Type: application/json" \
-            -d "{
-              \"prompt\": {
-                \"text\": \"Perform a security review on the most recent commit to main using the Security Whitehat persona. Output a single review comment.\"
-              },
-              \"source\": {
-                \"repository\": \"https://github.com/${REPO}\",
-                \"ref\": \"main\"
-              },
-              \"target\": {
-                \"autoBranch\": false,
-                \"autoCreatePr\": false
-              }
-            }")
+            -d "$(jq -n \
+              --arg persona "$SECURITY_PERSONA" \
+              '{
+                prompt: { text: $persona },
+                source: {
+                  repository: ("https://github.com/" + env.REPO),
+                  ref: "main"
+                },
+                target: {
+                  autoBranch: false,
+                  autoCreatePr: false
+                }
+              }'
+            )")
           
           # Log only status, not full response (to avoid exposing sensitive data)
           CREATE_STATUS=$(echo "$CREATE_RESPONSE" | jq -r '.status // "no-status"')
