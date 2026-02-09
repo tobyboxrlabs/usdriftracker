@@ -41,8 +41,8 @@ export const CONFIG = {
   // MoC V2 Core contract (for RIF collateral)
   MOC_V2_CORE: '0xA27024Ed70035E46dba712609fc2Afa1c97aA36A',
   
-  // Refresh interval in milliseconds (60 seconds)
-  REFRESH_INTERVAL: 60000,
+  // Refresh interval in milliseconds (120 seconds)
+  REFRESH_INTERVAL: 120000,
 }
 
 // ERC-20 ABI (minimal)
