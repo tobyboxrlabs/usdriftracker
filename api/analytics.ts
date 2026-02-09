@@ -1,10 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { setCorsHeaders, setSecurityHeaders } from './security'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Top-level error handler to catch any initialization errors
   try {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    // Set security headers
+    setSecurityHeaders(res)
+    
+    // Set CORS headers (restricted to allowed origins)
+    setCorsHeaders(req, res)
     
     if (req.method !== 'GET') {
       return res.status(405).json({ 
@@ -124,7 +128,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Try to set headers even on error
     try {
-      res.setHeader('Access-Control-Allow-Origin', '*')
+      setCorsHeaders(req, res)
+      setSecurityHeaders(res)
       res.setHeader('Content-Type', 'application/json')
     } catch {}
     

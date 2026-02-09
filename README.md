@@ -50,6 +50,15 @@ For local development with leaderboard functionality:
 REDIS_URL=your_redis_url_here
 ```
 
+For production API security (CORS configuration):
+
+```env
+# Comma-separated list of allowed origins (required for production)
+# Example: "https://usdriftracker.vercel.app,https://usdriftracker.com"
+# Leave unset or use "*" for development (allows all origins)
+ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+```
+
 ### Running Locally
 
 **Option 1: Vite Dev Server (Frontend only)**

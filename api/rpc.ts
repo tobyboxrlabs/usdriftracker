@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { setCorsHeaders, setSecurityHeaders } from './security'
 
 // Allowed RPC endpoints (whitelist for security)
 const ALLOWED_RPC_ENDPOINTS = [
@@ -27,8 +28,11 @@ export default async function handler(
 ) {
   // Top-level error handler to catch any initialization errors
   try {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    // Set security headers
+    setSecurityHeaders(res)
+    
+    // Set CORS headers (restricted to allowed origins)
+    setCorsHeaders(req, res)
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
@@ -82,7 +86,9 @@ export default async function handler(
         })
       }
 
-      console.log('[rpc] Proxying request to:', rpcEndpoint, 'method:', rpcRequest.method)
+      const requestOrigin = req.headers.origin || 'no-origin'
+      const userAgent = req.headers['user-agent'] || 'no-user-agent'
+      console.log('[rpc] Proxying request to:', rpcEndpoint, 'method:', rpcRequest.method, 'origin:', requestOrigin, 'user-agent:', userAgent?.substring(0, 50))
 
       // Forward the request to the RPC endpoint
       const rpcResponse = await fetch(rpcEndpoint, {
@@ -123,7 +129,8 @@ export default async function handler(
     
     // Try to set headers even on error
     try {
-      res.setHeader('Access-Control-Allow-Origin', '*')
+      setCorsHeaders(req, res)
+      setSecurityHeaders(res)
       res.setHeader('Content-Type', 'application/json')
     } catch {}
     

@@ -1,4 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import {
+  setCorsHeaders,
+  setSecurityHeaders,
+  validatePlayerName,
+  validateTimezone,
+  validateScore,
+  validateRequestSize,
+  checkRateLimit,
+  getClientIp,
+} from './security'
 
 interface ScoreEntry {
   score: number
@@ -69,13 +79,13 @@ function getDateAndTime(): { date: string; time: string } {
 }
 
 // Helper to save scores to Redis or fallback
-async function saveScore(score: number, playerName?: string, timezone?: string): Promise<void> {
+async function saveScore(score: number, playerName: string, timezone?: string): Promise<void> {
   const redisClient = await getRedisClient()
   const { date, time } = getDateAndTime()
   const entry: ScoreEntry = {
     score,
     timestamp: Date.now(),
-    playerName: playerName || 'Anonymous',
+    playerName, // Already validated
     date,
     time,
     timezone: timezone || undefined,
@@ -304,10 +314,11 @@ export default async function handler(
 ) {
   // Top-level error handler to catch any initialization errors
   try {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    // Set security headers
+    setSecurityHeaders(res)
+    
+    // Set CORS headers (restricted to allowed origins)
+    setCorsHeaders(req, res)
 
     if (req.method === 'OPTIONS') {
       return res.status(200).end()
@@ -315,26 +326,53 @@ export default async function handler(
 
     if (req.method === 'POST') {
       try {
-        const { score, playerName, timezone } = req.body
-
-        // Input validation
-        if (typeof score !== 'number' || score < 0) {
-          console.warn('[scores] Invalid score submitted:', score)
-          return res.status(400).json({ 
-            error: 'Invalid input',
-            message: 'Score must be a positive number'
+        // Rate limiting: 10 requests per minute per IP
+        const clientIp = getClientIp(req)
+        if (!checkRateLimit(clientIp, 10, 60000)) {
+          console.warn('[scores] Rate limit exceeded for IP:', clientIp)
+          return res.status(429).json({
+            error: 'Too many requests',
+            message: 'Rate limit exceeded. Please try again later.'
           })
         }
 
+        // Validate request size (max 10KB)
+        const sizeValidation = validateRequestSize(req.headers['content-length'], 10240)
+        if (!sizeValidation.valid) {
+          console.warn('[scores] Request too large:', req.headers['content-length'])
+          return res.status(413).json({
+            error: 'Request too large',
+            message: sizeValidation.error || 'Request body exceeds maximum size'
+          })
+        }
+
+        const { score, playerName, timezone } = req.body
+
+        // Validate score
+        const scoreValidation = validateScore(score)
+        if (!scoreValidation.valid) {
+          console.warn('[scores] Invalid score submitted:', score, scoreValidation.error)
+          return res.status(400).json({ 
+            error: 'Invalid input',
+            message: scoreValidation.error || 'Invalid score value'
+          })
+        }
+
+        // Validate and sanitize player name
+        const validatedPlayerName = validatePlayerName(playerName)
+
+        // Validate timezone
+        const validatedTimezone = validateTimezone(timezone)
+
         console.log('[scores] Score submission attempt:', {
-          hasPlayerName: !!playerName,
-          hasTimezone: !!timezone,
-          score,
+          hasPlayerName: !!validatedPlayerName && validatedPlayerName !== 'Anonymous',
+          hasTimezone: !!validatedTimezone,
+          score: scoreValidation.value,
         })
 
-        await saveScore(score, playerName, timezone)
+        await saveScore(scoreValidation.value!, validatedPlayerName, validatedTimezone)
         
-        console.log('[scores] Score saved successfully:', { score, playerName: playerName || 'Anonymous' })
+        console.log('[scores] Score saved successfully:', { score: scoreValidation.value, playerName: validatedPlayerName })
 
         return res.status(200).json({ success: true })
       } catch (error) {
@@ -377,9 +415,10 @@ export default async function handler(
     console.error('[scores] Top-level error:', topLevelError)
     const errorMessage = topLevelError instanceof Error ? topLevelError.message : String(topLevelError)
     
-    // Try to set CORS headers even on error
+    // Try to set headers even on error
     try {
-      res.setHeader('Access-Control-Allow-Origin', '*')
+      setCorsHeaders(req, res)
+      setSecurityHeaders(res)
       res.setHeader('Content-Type', 'application/json')
     } catch {}
     
