@@ -10,6 +10,7 @@ permissions:
 jobs:
   security-review:
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Maximum 10 minutes for the entire job
 
     steps:
       - name: Run Security Whitehat Cloud Agent
@@ -22,7 +23,8 @@ jobs:
 
           echo "Starting Security Whitehat review for commit $SHA"
 
-          RUN_ID=$(curl -sS \
+          # Create agent run
+          CREATE_RESPONSE=$(curl -sS \
             -u "${CURSOR_API_KEY}:" \
             -X POST https://api.cursor.com/v0/agents \
             -H "Content-Type: application/json" \
@@ -38,7 +40,17 @@ jobs:
                 \"autoBranch\": false,
                 \"autoCreatePr\": false
               }
-            }" | jq -r '.id')
+            }")
+          
+          echo "Create agent response: $CREATE_RESPONSE"
+          
+          RUN_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id // empty')
+          CREATE_ERROR=$(echo "$CREATE_RESPONSE" | jq -r '.error // empty')
+          
+          if [ -n "$CREATE_ERROR" ]; then
+            echo "Error creating agent: $CREATE_ERROR"
+            exit 1
+          fi
 
           if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
             echo "Failed to start Security Whitehat agent"
@@ -47,34 +59,85 @@ jobs:
 
           echo "Run ID: $RUN_ID"
 
-          for i in {1..20}; do
-            STATUS=$(curl -sS \
+          # Wait for agent to finish (max 5 minutes = 60 iterations × 5 seconds)
+          MAX_ITERATIONS=60
+          for i in $(seq 1 $MAX_ITERATIONS); do
+            # Fetch status (don't use -f flag, we want to handle errors gracefully)
+            HTTP_CODE=$(curl -sS -o /tmp/response.json -w "%{http_code}" \
               -u "${CURSOR_API_KEY}:" \
-              https://api.cursor.com/v0/agents/${RUN_ID} | jq -r '.status')
-
-            echo "Status: $STATUS"
-
-            if [ "$STATUS" = "FINISHED" ]; then
-              break
+              https://api.cursor.com/v0/agents/${RUN_ID} 2>&1) || HTTP_CODE="000"
+            
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "[$i/$MAX_ITERATIONS] HTTP $HTTP_CODE when fetching status, retrying..."
+              if [ $i -lt $MAX_ITERATIONS ]; then
+                sleep 5
+                continue
+              else
+                echo "Max retries reached for status check (last HTTP code: $HTTP_CODE)"
+                exit 1
+              fi
             fi
+            
+            RESPONSE=$(cat /tmp/response.json)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status // "UNKNOWN"')
+            ERROR=$(echo "$RESPONSE" | jq -r '.error // empty')
+
+            echo "[$i/$MAX_ITERATIONS] Status: $STATUS"
+            
+            if [ -n "$ERROR" ]; then
+              echo "Error from agent: $ERROR"
+            fi
+
+            # Handle terminal states
+            case "$STATUS" in
+              "FINISHED")
+                echo "Agent finished successfully"
+                break
+                ;;
+              "FAILED"|"ERROR"|"CANCELLED")
+                echo "Agent failed with status: $STATUS"
+                if [ -n "$ERROR" ]; then
+                  echo "Error details: $ERROR"
+                fi
+                exit 1
+                ;;
+              "CREATING"|"RUNNING"|"PENDING")
+                # Continue waiting
+                ;;
+              *)
+                echo "Unknown status: $STATUS, continuing to wait..."
+                ;;
+            esac
 
             sleep 5
           done
 
-          if [ "$STATUS" != "FINISHED" ]; then
-            echo "Agent did not finish in time"
-            exit 1
-          fi
-
-          BODY=$(curl -sS \
+          # Final status check
+          FINAL_RESPONSE=$(curl -sS \
             -u "${CURSOR_API_KEY}:" \
-            https://api.cursor.com/v0/agents/${RUN_ID}/conversation \
-            | jq -r '.messages[] | select(.type=="assistant_message") | .text')
-
-          if [ -z "$BODY" ]; then
-            echo "No security review output received"
+            https://api.cursor.com/v0/agents/${RUN_ID})
+          FINAL_STATUS=$(echo "$FINAL_RESPONSE" | jq -r '.status // "UNKNOWN"')
+          
+          if [ "$FINAL_STATUS" != "FINISHED" ]; then
+            echo "Agent did not finish in time. Final status: $FINAL_STATUS"
+            echo "Full response: $FINAL_RESPONSE"
             exit 1
           fi
+
+          # Get conversation messages
+          CONVERSATION=$(curl -sS \
+            -u "${CURSOR_API_KEY}:" \
+            https://api.cursor.com/v0/agents/${RUN_ID}/conversation)
+          
+          BODY=$(echo "$CONVERSATION" | jq -r '.messages[] | select(.type=="assistant_message") | .text' | head -1)
+
+          if [ -z "$BODY" ] || [ "$BODY" = "null" ]; then
+            echo "No security review output received"
+            echo "Conversation response: $CONVERSATION"
+            exit 1
+          fi
+          
+          echo "Security review output received (${#BODY} characters)"
 
           curl -fsS -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
