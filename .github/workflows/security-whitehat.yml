@@ -72,6 +72,8 @@ jobs:
 
         run: |
           set -euo pipefail
+          PERSONA_HASH=$(echo "$SECURITY_PERSONA" | sha256sum | cut -d' ' -f1)
+          echo "Security Whitehat persona hash: $PERSONA_HASH"
 
           # Create secure temporary file and ensure cleanup
           TMPFILE=$(mktemp)
