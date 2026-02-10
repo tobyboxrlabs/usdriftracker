@@ -86,10 +86,11 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$(jq -n \
               --arg persona "$SECURITY_PERSONA" \
+              --arg repo "$REPO" \
               '{
                 prompt: { text: $persona },
                 source: {
-                  repository: ("https://github.com/" + env.REPO),
+                  repository: ("https://github.com/" + $repo),
                   ref: "main"
                 },
                 target: {
