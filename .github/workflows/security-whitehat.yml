@@ -75,7 +75,8 @@ jobs:
           MODEL_NAME="claude-4.5-sonnet"
           PERSONA_HASH=$(echo "$SECURITY_PERSONA" | sha256sum | cut -d' ' -f1)
           PERSONA_LINES=$(echo "$SECURITY_PERSONA" | wc -l | tr -d ' ')
-          PERSONA_LAST_LINE=$(echo "$SECURITY_PERSONA" | tail -n 1)
+          # Get last non-blank line (skip trailing empty lines)
+          PERSONA_LAST_LINE=$(echo "$SECURITY_PERSONA" | grep -v '^$' | tail -n 1)
 
           echo "Cloud Agent model: $MODEL_NAME"
           echo "Security Whitehat persona hash: $PERSONA_HASH"
@@ -96,8 +97,9 @@ jobs:
             -d "$(jq -n \
               --arg persona "$SECURITY_PERSONA" \
               --arg repo "$REPO" \
+              --arg model_name "$MODEL_NAME" \
               '{
-                model: "claude-4.5-sonnet",
+                model: $model_name,
                 prompt: { text: $persona },
                 source: {
                   repository: ("https://github.com/" + $repo),
