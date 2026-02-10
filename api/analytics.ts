@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { setCorsHeaders, setSecurityHeaders } from './security'
+import { setCorsHeaders, setSecurityHeaders } from './security.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Top-level error handler to catch any initialization errors

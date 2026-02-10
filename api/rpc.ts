@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { setCorsHeaders, setSecurityHeaders } from './security'
+import { setCorsHeaders, setSecurityHeaders } from './security.js'
 
 // Allowed RPC endpoints (whitelist for security)
 const ALLOWED_RPC_ENDPOINTS = [

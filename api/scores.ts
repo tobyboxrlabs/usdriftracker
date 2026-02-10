@@ -8,7 +8,7 @@ import {
   validateRequestSize,
   checkRateLimit,
   getClientIp,
-} from './security'
+} from './security.js'
 
 interface ScoreEntry {
   score: number
