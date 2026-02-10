@@ -10,8 +10,11 @@ import {
   getClientIp,
 } from './security.js'
 
-// Expected client version (increment on breaking API changes)
-const EXPECTED_CLIENT_VERSION = '2.0.0' // Updated for ESM refactor
+// Expected client version (git commit hash from build)
+// This should match VITE_GIT_COMMIT_HASH from the frontend build
+// Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
+// Take first 7 characters to match the short hash format used by vite.config.ts
+const EXPECTED_CLIENT_VERSION = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
 
 interface ScoreEntry {
   score: number

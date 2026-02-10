@@ -3,8 +3,9 @@ import { setCorsHeaders, setSecurityHeaders } from './security.js'
 
 // Expected client version (git commit hash from build)
 // This should match VITE_GIT_COMMIT_HASH from the frontend build
-// Set via environment variable at build time, or use 'unknown' as fallback
-const EXPECTED_CLIENT_VERSION = process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
+// Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
+// Take first 7 characters to match the short hash format used by vite.config.ts
+const EXPECTED_CLIENT_VERSION = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
 
 // Allowed RPC endpoints (whitelist for security)
 const ALLOWED_RPC_ENDPOINTS = [
