@@ -42,6 +42,9 @@ export const CONFIG = {
   
   // Refresh interval in milliseconds (120 seconds)
   REFRESH_INTERVAL: 120000,
+  
+  // Client version for version checking (uses git commit hash)
+  CLIENT_VERSION: import.meta.env.VITE_GIT_COMMIT_HASH || 'unknown',
 }
 
 // ERC-20 ABI (minimal)

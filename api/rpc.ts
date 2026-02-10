@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setCorsHeaders, setSecurityHeaders } from './security.js'
 
+// Expected client version (git commit hash from build)
+// This should match VITE_GIT_COMMIT_HASH from the frontend build
+// Set via environment variable at build time, or use 'unknown' as fallback
+const EXPECTED_CLIENT_VERSION = process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
+
 // Allowed RPC endpoints (whitelist for security)
 const ALLOWED_RPC_ENDPOINTS = [
   'https://public-node.rsk.co',
@@ -113,15 +118,32 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  // Check client version
+  const clientVersion = req.headers['x-client-version'] as string | undefined
+  const isOldClient = !clientVersion || clientVersion !== EXPECTED_CLIENT_VERSION
+  
   // Log handler invocation immediately
   console.log('[rpc] === Handler Invoked ===')
   console.log('[rpc] Method:', req.method)
   console.log('[rpc] URL:', req.url)
   console.log('[rpc] Query:', req.query)
+  console.log('[rpc] Client Version:', clientVersion || '(missing)')
+  console.log('[rpc] Expected Version:', EXPECTED_CLIENT_VERSION)
+  console.log('[rpc] Is Old Client:', isOldClient)
+  
+  if (isOldClient) {
+    console.warn('[rpc] ⚠️ OLD CLIENT DETECTED ⚠️')
+    console.warn('[rpc] Client version:', clientVersion || 'MISSING')
+    console.warn('[rpc] Expected version:', EXPECTED_CLIENT_VERSION)
+    console.warn('[rpc] This client may be using outdated code from before ESM refactor')
+    console.warn('[rpc] User should refresh their browser to get the latest version')
+  }
+  
   console.log('[rpc] Headers:', {
     'content-type': req.headers['content-type'],
     'content-length': req.headers['content-length'],
     origin: req.headers.origin,
+    'x-client-version': clientVersion,
   })
   
   // Top-level error handler to catch any initialization errors

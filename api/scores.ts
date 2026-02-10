@@ -10,6 +10,9 @@ import {
   getClientIp,
 } from './security.js'
 
+// Expected client version (increment on breaking API changes)
+const EXPECTED_CLIENT_VERSION = '2.0.0' // Updated for ESM refactor
+
 interface ScoreEntry {
   score: number
   timestamp: number
@@ -314,6 +317,18 @@ export default async function handler(
 ) {
   // Top-level error handler to catch any initialization errors
   try {
+    // Check client version
+    const clientVersion = req.headers['x-client-version'] as string | undefined
+    const isOldClient = !clientVersion || clientVersion !== EXPECTED_CLIENT_VERSION
+    
+    if (isOldClient) {
+      console.warn('[scores] ⚠️ OLD CLIENT DETECTED ⚠️')
+      console.warn('[scores] Client version:', clientVersion || 'MISSING')
+      console.warn('[scores] Expected version:', EXPECTED_CLIENT_VERSION)
+      console.warn('[scores] This client may be using outdated code from before ESM refactor')
+      console.warn('[scores] User should refresh their browser to get the latest version')
+    }
+    
     // Set security headers
     setSecurityHeaders(res)
     

@@ -308,7 +308,10 @@ function App() {
           try {
             const response = await fetch(this.proxyUrl, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'X-Client-Version': CONFIG.CLIENT_VERSION,
+              },
               body: JSON.stringify(p),
             })
             
@@ -694,7 +697,11 @@ function App() {
 
     try {
       console.log('Fetching deployment count from /api/analytics...')
-      const response = await fetch('/api/analytics')
+      const response = await fetch('/api/analytics', {
+        headers: {
+          'X-Client-Version': CONFIG.CLIENT_VERSION,
+        },
+      })
       console.log('Response status:', response.status, response.statusText)
       
       if (response.ok) {

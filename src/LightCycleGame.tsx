@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { CONFIG } from './config'
 import './LightCycleGame.css'
 
 const GRID_SIZE = 20
@@ -186,6 +187,9 @@ export default function LightCycleGame() {
       const response = await fetch(`${apiUrl}?limit=100`, {
         // Add credentials for CORS if needed
         credentials: 'omit',
+        headers: {
+          'X-Client-Version': CONFIG.CLIENT_VERSION,
+        },
       })
       
       console.log('📡 Response status:', response.status, response.statusText)
@@ -317,6 +321,7 @@ export default function LightCycleGame() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Client-Version': CONFIG.CLIENT_VERSION,
         },
         body: JSON.stringify(requestBody),
       })
