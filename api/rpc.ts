@@ -5,7 +5,6 @@ import { setCorsHeaders, setSecurityHeaders } from './security.js'
 const ALLOWED_RPC_ENDPOINTS = [
   'https://public-node.rsk.co',
   'https://rsk.publicnode.com',
-  'https://rpc.ankr.com/rsk',
 ]
 
 // Get the RPC endpoint from query param or use default

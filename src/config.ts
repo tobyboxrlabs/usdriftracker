@@ -8,7 +8,6 @@ export const CONFIG = {
   ROOTSTOCK_RPC_ALTERNATIVES: [
     'https://public-node.rsk.co',
     'https://rsk.publicnode.com',
-    'https://rpc.ankr.com/rsk',
   ],
   
   // stRIF token address (mainnet) - will be checksummed when used
