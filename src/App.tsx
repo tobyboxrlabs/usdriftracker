@@ -290,8 +290,9 @@ function App() {
     private proxyUrl: string
     
     constructor(targetEndpoint: string) {
-      // Use proxy URL as the base URL
+      // Construct proxy URL with target endpoint
       const proxyUrl = `/api/rpc?target=${encodeURIComponent(targetEndpoint)}`
+      // Pass proxy URL to super - ethers.js will use it, but we override _send to intercept
       super(proxyUrl)
       this.proxyUrl = proxyUrl
     }
@@ -304,18 +305,31 @@ function App() {
       // Forward each request through our proxy
       const results = await Promise.all(
         payloads.map(async (p) => {
-          const response = await fetch(this.proxyUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(p),
-          })
-          
-          if (!response.ok) {
-            throw new Error(`RPC proxy error: ${response.status}`)
+          try {
+            const response = await fetch(this.proxyUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(p),
+            })
+            
+            if (!response.ok) {
+              const errorText = await response.text()
+              console.error(`[ProxyJsonRpcProvider] RPC proxy error ${response.status}:`, errorText.substring(0, 200))
+              throw new Error(`RPC proxy error: ${response.status} - ${errorText.substring(0, 100)}`)
+            }
+            
+            const result = await response.json()
+            
+            // Check for JSON-RPC error in response
+            if (result.error) {
+              console.error(`[ProxyJsonRpcProvider] JSON-RPC error:`, result.error)
+            }
+            
+            return result
+          } catch (fetchError) {
+            console.error(`[ProxyJsonRpcProvider] Fetch error:`, fetchError)
+            throw fetchError
           }
-          
-          const result = await response.json()
-          return result
         })
       )
       

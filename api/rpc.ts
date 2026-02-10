@@ -113,6 +113,17 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  // Log handler invocation immediately
+  console.log('[rpc] === Handler Invoked ===')
+  console.log('[rpc] Method:', req.method)
+  console.log('[rpc] URL:', req.url)
+  console.log('[rpc] Query:', req.query)
+  console.log('[rpc] Headers:', {
+    'content-type': req.headers['content-type'],
+    'content-length': req.headers['content-length'],
+    origin: req.headers.origin,
+  })
+  
   // Top-level error handler to catch any initialization errors
   try {
     // Set security headers
@@ -124,25 +135,39 @@ export default async function handler(
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
     if (req.method === 'OPTIONS') {
+      console.log('[rpc] OPTIONS request - returning 200')
       return res.status(200).end()
     }
 
     if (req.method !== 'POST') {
+      console.error('[rpc] === 405 Error: Method Not Allowed ===')
+      console.error('[rpc] Method:', req.method)
       return res.status(405).json({ 
         error: 'Method not allowed',
-        message: 'Only POST requests are supported'
+        message: 'Only POST requests are supported',
+        receivedMethod: req.method
       })
     }
 
     try {
       // Get target RPC endpoint from query param (target is in query string, not body)
       const target = req.query.target as string
+      
+      // Log query params for debugging
+      console.log('[rpc] Query params:', JSON.stringify(req.query))
+      console.log('[rpc] Target from query:', target)
+      
       const rpcEndpoint = getRpcEndpoint(target)
       
       if (!rpcEndpoint) {
+        console.error('[rpc] === 400 Error: Invalid Endpoint ===')
+        console.error('[rpc] Provided target:', target)
+        console.error('[rpc] Allowed endpoints:', ALLOWED_RPC_ENDPOINTS)
+        console.error('[rpc] Query params:', req.query)
         return res.status(400).json({ 
           error: 'Invalid endpoint',
           message: 'Invalid or missing RPC endpoint. Use ?target=<endpoint>',
+          providedTarget: target || '(missing)',
           allowedEndpoints: ALLOWED_RPC_ENDPOINTS
         })
       }
@@ -151,25 +176,36 @@ export default async function handler(
       // Vercel should parse JSON automatically, but handle both parsed and raw cases
       let rpcRequest = req.body
       
+      // Log body info for debugging
+      console.log('[rpc] Body type:', typeof rpcRequest)
+      console.log('[rpc] Body value:', rpcRequest ? JSON.stringify(rpcRequest).substring(0, 200) : '(empty)')
+      
       // If body is undefined or a string, try to parse it
       if (!rpcRequest || typeof rpcRequest === 'string') {
         try {
           const bodyText = typeof rpcRequest === 'string' ? rpcRequest : (req as any).rawBody || ''
           rpcRequest = bodyText ? JSON.parse(bodyText) : null
         } catch (parseError) {
-          console.error('[rpc] Failed to parse body:', parseError)
+          console.error('[rpc] === 400 Error: JSON Parse Failed ===')
+          console.error('[rpc] Parse error:', parseError)
+          console.error('[rpc] Body text:', typeof rpcRequest === 'string' ? rpcRequest.substring(0, 200) : 'N/A')
           return res.status(400).json({ 
             error: 'Invalid request',
-            message: 'Request body must be valid JSON'
+            message: 'Request body must be valid JSON',
+            parseError: parseError instanceof Error ? parseError.message : String(parseError)
           })
         }
       }
       
       if (!rpcRequest || typeof rpcRequest !== 'object') {
-        console.error('[rpc] Invalid body type:', typeof rpcRequest)
+        console.error('[rpc] === 400 Error: Invalid Body Type ===')
+        console.error('[rpc] Body type:', typeof rpcRequest)
+        console.error('[rpc] Body value:', rpcRequest)
         return res.status(400).json({ 
           error: 'Invalid request',
-          message: 'Request body must be a valid JSON-RPC request'
+          message: 'Request body must be a valid JSON-RPC request',
+          bodyType: typeof rpcRequest,
+          bodyValue: rpcRequest
         })
       }
 
