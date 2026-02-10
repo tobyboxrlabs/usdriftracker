@@ -241,6 +241,9 @@ function App() {
 
   // Track component mount state to prevent state updates after unmount
   const isMountedRef = useRef(true)
+  
+  // Cache provider instance to avoid creating new provider per request
+  const providerCacheRef = useRef<ethers.JsonRpcProvider | null>(null)
 
   /**
    * Normalize Ethereum address to checksummed format
@@ -324,8 +327,22 @@ function App() {
    * Get a working RPC provider by trying multiple endpoints
    * In production, uses proxy endpoint to avoid CORS issues
    * Falls back to direct endpoints if proxy fails
+   * Caches provider instance to avoid creating new provider per request
    */
-  const getWorkingProvider = async (): Promise<ethers.JsonRpcProvider | null> => {
+  const getWorkingProvider = useCallback(async (): Promise<ethers.JsonRpcProvider | null> => {
+    // Return cached provider if available and still working
+    if (providerCacheRef.current) {
+      try {
+        // Quick health check - this will use cached eth_chainId/blockNumber from our RPC cache
+        await providerCacheRef.current.getBlockNumber()
+        return providerCacheRef.current
+      } catch (error) {
+        // Provider failed, clear cache and create new one
+        console.warn('[provider] Cached provider failed, creating new instance:', error)
+        providerCacheRef.current = null
+      }
+    }
+
     const isProduction = !import.meta.env.DEV
     const endpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [CONFIG.ROOTSTOCK_RPC]
     
@@ -339,6 +356,9 @@ function App() {
           // Test connection
           await provider.getBlockNumber()
           console.log(`✅ Using RPC proxy endpoint: ${endpoint}`)
+          
+          // Cache the provider instance
+          providerCacheRef.current = provider
           return provider
         } catch (error) {
           console.warn(`RPC proxy for ${endpoint} failed, trying next...`, error)
@@ -354,6 +374,9 @@ function App() {
         // Test connection by attempting to get block number
         await provider.getBlockNumber()
         console.log(`✅ Using direct RPC endpoint: ${endpoint}`)
+        
+        // Cache the provider instance
+        providerCacheRef.current = provider
         return provider
       } catch (error) {
         console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
@@ -363,7 +386,7 @@ function App() {
     
     console.error('❌ All RPC endpoints failed')
     return null
-  }
+  }, [])
 
   /**
    * Query optional metric from contract
@@ -723,6 +746,8 @@ function App() {
     return () => {
       isMountedRef.current = false
       clearInterval(interval)
+      // Clear provider cache on unmount
+      providerCacheRef.current = null
     }
   }, [fetchTokenData, fetchDeploymentCount])
 
