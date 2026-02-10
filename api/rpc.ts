@@ -7,6 +7,94 @@ const ALLOWED_RPC_ENDPOINTS = [
   'https://rsk.publicnode.com',
 ]
 
+// ============================================================================
+// RPC Response Caching
+// ============================================================================
+
+interface CachedResponse {
+  result: any
+  timestamp: number
+}
+
+// Cache eth_chainId forever (module scope, persists across requests in same process)
+const chainIdCache = new Map<string, CachedResponse>()
+
+// Cache block number and network metadata for 30 seconds per provider
+const metadataCache = new Map<string, CachedResponse>()
+const METADATA_CACHE_TTL = 30000 // 30 seconds
+
+// Methods that should be cached forever
+const FOREVER_CACHE_METHODS = ['eth_chainId']
+
+// Methods that should be cached for short duration
+const SHORT_CACHE_METHODS = ['eth_blockNumber', 'net_version']
+
+/**
+ * Generate cache key from endpoint, method, and params
+ */
+function getCacheKey(endpoint: string, method: string, params?: any[]): string {
+  const paramsKey = params ? JSON.stringify(params) : ''
+  return `${endpoint}:${method}:${paramsKey}`
+}
+
+/**
+ * Check if cached response is still valid
+ */
+function isCacheValid(cached: CachedResponse, ttl: number): boolean {
+  return Date.now() - cached.timestamp < ttl
+}
+
+/**
+ * Get cached response if available and valid
+ */
+function getCachedResponse(
+  endpoint: string,
+  method: string,
+  params?: any[]
+): any | null {
+  const cacheKey = getCacheKey(endpoint, method, params)
+  
+  if (FOREVER_CACHE_METHODS.includes(method)) {
+    const cached = chainIdCache.get(cacheKey)
+    if (cached) {
+      console.log(`[rpc] Cache HIT (forever): ${method}`)
+      return cached.result
+    }
+  } else if (SHORT_CACHE_METHODS.includes(method)) {
+    const cached = metadataCache.get(cacheKey)
+    if (cached && isCacheValid(cached, METADATA_CACHE_TTL)) {
+      console.log(`[rpc] Cache HIT (${METADATA_CACHE_TTL}ms): ${method}`)
+      return cached.result
+    }
+  }
+  
+  return null
+}
+
+/**
+ * Store response in cache
+ */
+function setCachedResponse(
+  endpoint: string,
+  method: string,
+  params: any[] | undefined,
+  result: any
+): void {
+  const cacheKey = getCacheKey(endpoint, method, params)
+  const cached: CachedResponse = {
+    result,
+    timestamp: Date.now(),
+  }
+  
+  if (FOREVER_CACHE_METHODS.includes(method)) {
+    chainIdCache.set(cacheKey, cached)
+    console.log(`[rpc] Cache SET (forever): ${method}`)
+  } else if (SHORT_CACHE_METHODS.includes(method)) {
+    metadataCache.set(cacheKey, cached)
+    console.log(`[rpc] Cache SET (${METADATA_CACHE_TTL}ms): ${method}`)
+  }
+}
+
 // Get the RPC endpoint from query param or use default
 function getRpcEndpoint(target?: string): string | null {
   if (!target) {
@@ -105,6 +193,19 @@ export default async function handler(
       console.log('[rpc] User-Agent:', userAgent?.substring(0, 100))
       console.log('[rpc] Timestamp:', new Date().toISOString())
 
+      // Check cache first for cacheable methods
+      const paramsArray = Array.isArray(rpcRequest.params) ? rpcRequest.params : undefined
+      const cachedResult = getCachedResponse(rpcEndpoint, rpcMethod, paramsArray)
+      
+      if (cachedResult !== null) {
+        // Return cached response
+        return res.status(200).json({
+          jsonrpc: '2.0',
+          id: rpcRequest.id,
+          result: cachedResult,
+        })
+      }
+
       // Forward the request to the RPC endpoint
       const rpcResponse = await fetch(rpcEndpoint, {
         method: 'POST',
@@ -138,6 +239,14 @@ export default async function handler(
 
       const rpcData = await rpcResponse.json()
       console.log('[rpc] Request successful - Method:', rpcMethod, 'Endpoint:', rpcEndpoint, 'HasError:', !!rpcData.error)
+
+      // Cache successful responses for cacheable methods
+      if (!rpcData.error && rpcData.result !== undefined) {
+        setCachedResponse(rpcEndpoint, rpcMethod, paramsArray, rpcData.result)
+      }
+
+      // Return the RPC response
+      return res.status(200).json(rpcData)
 
     } catch (error) {
       console.error('[rpc] Error proxying request:', error)
