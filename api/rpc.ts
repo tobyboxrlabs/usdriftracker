@@ -88,7 +88,23 @@ export default async function handler(
 
       const requestOrigin = req.headers.origin || 'no-origin'
       const userAgent = req.headers['user-agent'] || 'no-user-agent'
-      console.log('[rpc] Proxying request to:', rpcEndpoint, 'method:', rpcRequest.method, 'origin:', requestOrigin, 'user-agent:', userAgent?.substring(0, 50))
+      const rpcMethod = rpcRequest.method || 'unknown'
+      const rpcParams = Array.isArray(rpcRequest.params) 
+        ? `[${rpcRequest.params.length} params]` 
+        : rpcRequest.params 
+          ? JSON.stringify(rpcRequest.params).substring(0, 100) 
+          : 'no params'
+      const requestId = rpcRequest.id || 'no-id'
+
+      // Detailed logging for investigation
+      console.log('[rpc] === RPC Request Details ===')
+      console.log('[rpc] Endpoint:', rpcEndpoint)
+      console.log('[rpc] Method:', rpcMethod)
+      console.log('[rpc] Params:', rpcParams)
+      console.log('[rpc] Request ID:', requestId)
+      console.log('[rpc] Origin:', requestOrigin)
+      console.log('[rpc] User-Agent:', userAgent?.substring(0, 100))
+      console.log('[rpc] Timestamp:', new Date().toISOString())
 
       // Forward the request to the RPC endpoint
       const rpcResponse = await fetch(rpcEndpoint, {
@@ -101,19 +117,29 @@ export default async function handler(
 
       if (!rpcResponse.ok) {
         const errorText = await rpcResponse.text()
-        console.error('[rpc] RPC endpoint error:', rpcResponse.status, errorText.substring(0, 100))
+        console.error('[rpc] === RPC Error Details ===')
+        console.error('[rpc] Endpoint:', rpcEndpoint)
+        console.error('[rpc] Method:', rpcMethod)
+        console.error('[rpc] HTTP Status:', rpcResponse.status)
+        console.error('[rpc] HTTP Status Text:', rpcResponse.statusText)
+        console.error('[rpc] Error Response:', errorText)
+        console.error('[rpc] Request ID:', requestId)
+        console.error('[rpc] Origin:', requestOrigin)
+        console.error('[rpc] Timestamp:', new Date().toISOString())
         
         return res.status(rpcResponse.status).json({ 
           error: 'RPC error',
-          message: 'Failed to fetch from RPC endpoint'
+          message: 'Failed to fetch from RPC endpoint',
+          endpoint: rpcEndpoint,
+          method: rpcMethod,
+          status: rpcResponse.status,
+          ...(process.env.NODE_ENV === 'development' && { details: errorText.substring(0, 500) })
         })
       }
 
       const rpcData = await rpcResponse.json()
-      console.log('[rpc] Request successful, hasError:', !!rpcData.error)
+      console.log('[rpc] Request successful - Method:', rpcMethod, 'Endpoint:', rpcEndpoint, 'HasError:', !!rpcData.error)
 
-      // Return the RPC response
-      return res.status(200).json(rpcData)
     } catch (error) {
       console.error('[rpc] Error proxying request:', error)
       
