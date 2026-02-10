@@ -131,8 +131,8 @@ jobs:
 
           echo "Run ID: $RUN_ID"
 
-          # Wait for agent to finish (max 5 minutes = 60 iterations × 5 seconds)
-          MAX_ITERATIONS=60
+          # Wait for agent to finish (max time = 45 iterations × 10 seconds)
+          MAX_ITERATIONS=45
           for i in $(seq 1 $MAX_ITERATIONS); do
             # Fetch status using secure temporary file
             HTTP_CODE=$(curl -sS -o "$TMPFILE" -w "%{http_code}" \
@@ -142,7 +142,7 @@ jobs:
             if [ "$HTTP_CODE" != "200" ]; then
               echo "[$i/$MAX_ITERATIONS] HTTP $HTTP_CODE when fetching status, retrying..."
               if [ $i -lt $MAX_ITERATIONS ]; then
-                sleep 5
+                sleep 10
                 continue
               else
                 echo "Max retries reached for status check (last HTTP code: $HTTP_CODE)"
