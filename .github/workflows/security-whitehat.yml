@@ -181,7 +181,7 @@ jobs:
                 ;;
             esac
 
-            sleep 5
+            sleep 10
           done
 
           # Final status check
