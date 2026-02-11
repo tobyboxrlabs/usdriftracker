@@ -50,6 +50,21 @@ For local development with leaderboard functionality:
 REDIS_URL=your_redis_url_here
 ```
 
+For production (Vercel), set these environment variables in Vercel dashboard:
+
+```env
+# Upstash Redis (for rate limiting and leaderboard)
+UPSTASH_REDIS_REST_URL=your_upstash_redis_rest_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+
+# Or use legacy Vercel KV variables (backward compatible)
+KV_REST_API_URL=your_kv_rest_api_url
+KV_REST_API_TOKEN=your_kv_rest_api_token
+
+# Optional: Customize rate limit (default: 60 requests per minute)
+RATE_LIMIT_REQUESTS_PER_MINUTE=60
+```
+
 For production API security (CORS configuration):
 
 ```env
