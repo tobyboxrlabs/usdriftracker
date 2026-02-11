@@ -1,36 +1,24 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
-
 /**
- * Edge Middleware for IP-based rate limiting
- * Blocks requests at the edge before they reach API endpoints
+ * Edge Middleware for blocking outdated clients
+ * Blocks old client versions at the edge before they reach API endpoints
  * 
- * Rate Limits:
- * - API endpoints (/api/*): 60 requests per minute per IP
- * - Static assets: No rate limiting (allow all)
+ * Protection:
+ * - Blocks outdated clients for /api/rpc endpoint (410 Gone)
+ * - No Redis dependency - simple version check
  */
 
-// Initialize Upstash Redis client (works with Vercel KV/Upstash)
-// Uses environment variables: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
-// Falls back to KV_REST_API_URL and KV_REST_API_TOKEN for backward compatibility
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || '',
-})
-
-// Rate limit configuration
-// Default: 60 requests per minute per IP
-// Can be overridden via RATE_LIMIT_REQUESTS_PER_MINUTE environment variable
-const RATE_LIMIT_REQUESTS = parseInt(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE || '60', 10)
-
-// Create rate limiter with sliding window algorithm
-// More accurate than fixed window, prevents burst traffic
-const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(RATE_LIMIT_REQUESTS, '1 m'),
-  analytics: true, // Track rate limit hits
-  prefix: '@ratelimit', // Redis key prefix
-})
+/**
+ * Get expected client version (git commit hash)
+ * Same logic as api/rpc.ts - uses Vercel's commit SHA
+ */
+function getExpectedClientVersion(): string {
+  // Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
+  // Take first 7 characters to match the short hash format used by vite.config.ts
+  return process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 
+         process.env.VITE_GIT_COMMIT_HASH || 
+         process.env.GIT_COMMIT_HASH || 
+         'unknown'
+}
 
 /**
  * Get client IP from request headers
@@ -62,36 +50,22 @@ function getClientIp(request: Request): string {
 }
 
 /**
- * Get expected client version (git commit hash)
- * Same logic as api/rpc.ts - uses Vercel's commit SHA
- */
-function getExpectedClientVersion(): string {
-  // Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
-  // Take first 7 characters to match the short hash format used by vite.config.ts
-  return process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 
-         process.env.VITE_GIT_COMMIT_HASH || 
-         process.env.GIT_COMMIT_HASH || 
-         'unknown'
-}
-
-/**
  * Vercel Edge Middleware
  * Runs at the edge before requests reach your API endpoints
- * Uses standard Web API Request/Response (not Next.js types)
+ * Uses standard Web API Request/Response
  * Returns Response to intercept, or undefined to pass through
  */
 export default async function middleware(request: Request): Promise<Response | undefined> {
   const url = new URL(request.url)
   const pathname = url.pathname
 
-  // Skip rate limiting for static assets and non-API routes
-  // Only rate limit API endpoints
+  // Only check API endpoints
   if (!pathname.startsWith('/api/')) {
-    // Let request pass through - return undefined to allow request
+    // Let request pass through
     return undefined
   }
 
-  // Skip rate limiting for health check endpoints (if any)
+  // Skip health check endpoints
   if (pathname === '/api/health' || pathname === '/api/healthz') {
     return undefined
   }
@@ -133,54 +107,8 @@ export default async function middleware(request: Request): Promise<Response | u
     }
   }
 
-  // Get client IP
-  const clientIp = getClientIp(request)
-
-  // Skip rate limiting if IP cannot be determined (shouldn't happen in production)
-  if (clientIp === 'unknown') {
-    console.warn('[middleware] Could not determine client IP, allowing request')
-    return undefined
-  }
-
-  try {
-    // Check rate limit
-    const { success, limit, remaining, reset } = await ratelimit.limit(`ratelimit:${clientIp}`)
-
-    if (!success) {
-      // Log rate limit violations for monitoring
-      console.warn(`[middleware] Rate limit exceeded for IP: ${clientIp}, path: ${pathname}`)
-
-      // Return 429 Too Many Requests
-      const retryAfter = Math.ceil((reset - Date.now()) / 1000) // seconds until reset
-      return new Response(
-        JSON.stringify({
-          error: 'Rate limit exceeded',
-          message: 'Too many requests. Please try again later.',
-          retryAfter,
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-RateLimit-Limit': limit.toString(),
-            'X-RateLimit-Remaining': remaining.toString(),
-            'X-RateLimit-Reset': reset.toString(),
-            'Retry-After': retryAfter.toString(),
-          },
-        }
-      )
-    }
-
-    // Request allowed - pass through
-    // Note: We can't easily add headers to the response in standard Request/Response
-    // without intercepting it. The rate limit headers could be added in API endpoints if needed.
-    return undefined
-  } catch (error) {
-    // If Redis/rate limiting fails, log error but allow request
-    // Better to allow traffic than block everything on Redis failure
-    console.error('[middleware] Rate limit check failed, allowing request:', error)
-    return undefined
-  }
+  // Request allowed - pass through
+  return undefined
 }
 
 // Configure which routes this middleware applies to
