@@ -1,6 +1,5 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
-import { NextRequest, NextResponse } from '@vercel/edge'
 
 /**
  * Edge Middleware for IP-based rate limiting
@@ -37,7 +36,7 @@ const ratelimit = new Ratelimit({
  * Get client IP from request headers
  * Handles Vercel's proxy headers
  */
-function getClientIp(request: NextRequest): string {
+function getClientIp(request: Request): string {
   // Check x-forwarded-for header (Vercel sets this)
   const forwardedFor = request.headers.get('x-forwarded-for')
   if (forwardedFor) {
@@ -58,8 +57,8 @@ function getClientIp(request: NextRequest): string {
     return cfIp.trim()
   }
 
-  // Use request IP from Vercel
-  return request.ip || 'unknown'
+  // Last resort: unknown
+  return 'unknown'
 }
 
 /**
@@ -78,20 +77,23 @@ function getExpectedClientVersion(): string {
 /**
  * Vercel Edge Middleware
  * Runs at the edge before requests reach your API endpoints
+ * Uses standard Web API Request/Response (not Next.js types)
+ * Returns Response to intercept, or undefined to pass through
  */
-export default async function middleware(request: NextRequest): Promise<NextResponse> {
-  const pathname = request.nextUrl.pathname
+export default async function middleware(request: Request): Promise<Response | undefined> {
+  const url = new URL(request.url)
+  const pathname = url.pathname
 
   // Skip rate limiting for static assets and non-API routes
   // Only rate limit API endpoints
   if (!pathname.startsWith('/api/')) {
-    // Let request pass through
-    return NextResponse.next()
+    // Let request pass through - return undefined to allow request
+    return undefined
   }
 
   // Skip rate limiting for health check endpoints (if any)
   if (pathname === '/api/health' || pathname === '/api/healthz') {
-    return NextResponse.next()
+    return undefined
   }
 
   // Block old clients for /api/rpc endpoint
@@ -112,17 +114,18 @@ export default async function middleware(request: NextRequest): Promise<NextResp
       
       // Return 410 Gone - resource no longer available
       // This tells the client (and browsers) that the resource is permanently gone
-      return NextResponse.json(
-        {
+      return new Response(
+        JSON.stringify({
           error: 'Client version outdated',
           message: 'Please refresh your browser to get the latest version. This client version is no longer supported.',
           code: 'OUTDATED_CLIENT',
           clientVersion: clientVersion || 'missing',
           expectedVersion,
-        },
+        }),
         {
           status: 410, // 410 Gone - resource no longer available
           headers: {
+            'Content-Type': 'application/json',
             'Cache-Control': 'no-store, no-cache, must-revalidate',
           },
         }
@@ -136,7 +139,7 @@ export default async function middleware(request: NextRequest): Promise<NextResp
   // Skip rate limiting if IP cannot be determined (shouldn't happen in production)
   if (clientIp === 'unknown') {
     console.warn('[middleware] Could not determine client IP, allowing request')
-    return NextResponse.next()
+    return undefined
   }
 
   try {
@@ -149,15 +152,16 @@ export default async function middleware(request: NextRequest): Promise<NextResp
 
       // Return 429 Too Many Requests
       const retryAfter = Math.ceil((reset - Date.now()) / 1000) // seconds until reset
-      return NextResponse.json(
-        {
+      return new Response(
+        JSON.stringify({
           error: 'Rate limit exceeded',
           message: 'Too many requests. Please try again later.',
           retryAfter,
-        },
+        }),
         {
           status: 429,
           headers: {
+            'Content-Type': 'application/json',
             'X-RateLimit-Limit': limit.toString(),
             'X-RateLimit-Remaining': remaining.toString(),
             'X-RateLimit-Reset': reset.toString(),
@@ -167,18 +171,15 @@ export default async function middleware(request: NextRequest): Promise<NextResp
       )
     }
 
-    // Request allowed - pass through with rate limit headers
-    const response = NextResponse.next()
-    response.headers.set('X-RateLimit-Limit', limit.toString())
-    response.headers.set('X-RateLimit-Remaining', remaining.toString())
-    response.headers.set('X-RateLimit-Reset', reset.toString())
-
-    return response
+    // Request allowed - pass through
+    // Note: We can't easily add headers to the response in standard Request/Response
+    // without intercepting it. The rate limit headers could be added in API endpoints if needed.
+    return undefined
   } catch (error) {
     // If Redis/rate limiting fails, log error but allow request
     // Better to allow traffic than block everything on Redis failure
     console.error('[middleware] Rate limit check failed, allowing request:', error)
-    return NextResponse.next()
+    return undefined
   }
 }
 
