@@ -63,6 +63,19 @@ function getClientIp(request: NextRequest): string {
 }
 
 /**
+ * Get expected client version (git commit hash)
+ * Same logic as api/rpc.ts - uses Vercel's commit SHA
+ */
+function getExpectedClientVersion(): string {
+  // Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
+  // Take first 7 characters to match the short hash format used by vite.config.ts
+  return process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 
+         process.env.VITE_GIT_COMMIT_HASH || 
+         process.env.GIT_COMMIT_HASH || 
+         'unknown'
+}
+
+/**
  * Vercel Edge Middleware
  * Runs at the edge before requests reach your API endpoints
  */
@@ -79,6 +92,42 @@ export default async function middleware(request: NextRequest): Promise<NextResp
   // Skip rate limiting for health check endpoints (if any)
   if (pathname === '/api/health' || pathname === '/api/healthz') {
     return NextResponse.next()
+  }
+
+  // Block old clients for /api/rpc endpoint
+  // This prevents outdated clients from consuming resources
+  if (pathname.startsWith('/api/rpc')) {
+    const clientVersion = request.headers.get('x-client-version')
+    const expectedVersion = getExpectedClientVersion()
+    
+    // Block if version is missing or doesn't match
+    if (!clientVersion || clientVersion !== expectedVersion) {
+      const clientIp = getClientIp(request)
+      console.warn(
+        `[middleware] 🚫 BLOCKING OLD CLIENT 🚫 IP: ${clientIp}, ` +
+        `Client Version: ${clientVersion || 'MISSING'}, ` +
+        `Expected: ${expectedVersion}, ` +
+        `Path: ${pathname}`
+      )
+      
+      // Return 410 Gone - resource no longer available
+      // This tells the client (and browsers) that the resource is permanently gone
+      return NextResponse.json(
+        {
+          error: 'Client version outdated',
+          message: 'Please refresh your browser to get the latest version. This client version is no longer supported.',
+          code: 'OUTDATED_CLIENT',
+          clientVersion: clientVersion || 'missing',
+          expectedVersion,
+        },
+        {
+          status: 410, // 410 Gone - resource no longer available
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+          },
+        }
+      )
+    }
   }
 
   // Get client IP
