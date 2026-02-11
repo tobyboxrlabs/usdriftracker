@@ -13,13 +13,13 @@ jobs:
     timeout-minutes: 10  # Maximum 10 minutes for the entire job
 
     steps:
-      - name: Run Security Whitehat Cloud Agent
+      - name: Run Security Whitehat Cloud Agent v0.5
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
           SECURITY_PERSONA: |
-            You are a Security Whitehat reviewer.
+            You are a Security Whitehat reviewer. v0.5
 
             Role:
             - You are a read-only security reviewer.
@@ -38,7 +38,9 @@ jobs:
             - Commit SHA
             - Diff or file snapshot
             - Review only files changed in the commit and their immediate imports.
-              Do not scan the full repository unless explicitly required.
+            - Do not scan the full repository unless explicitly required.
+            - If the change is purely syntactic or non-functional, return a concise review and do not perform extended context exploration.
+
 
             Tasks:
             1. Identify security risks introduced or exposed in this revision
@@ -69,6 +71,9 @@ jobs:
             - Do not run tests
             - Do not suggest stylistic changes
             - Do not create files, commits, branches, or pull requests.
+            - Do not follow nested imports recursively.
+            - Do not read more than one level of imports unless a security-critical boundary is detected.
+            - Prefer analyzing only the diff unless additional context is strictly required.
 
         run: |
           set -euo pipefail
