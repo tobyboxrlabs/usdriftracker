@@ -238,12 +238,14 @@ function App() {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [history, setHistory] = useState<Record<string, HistoryPoint[]>>({})
   const [deploymentCount, setDeploymentCount] = useState<number | null>(null)
+  const [isClientOutdated, setIsClientOutdated] = useState(false)
 
   // Track component mount state to prevent state updates after unmount
   const isMountedRef = useRef(true)
   
   // Cache provider instance to avoid creating new provider per request
   const providerCacheRef = useRef<ethers.JsonRpcProvider | null>(null)
+  const pollingIntervalRef = useRef<number | null>(null)
 
   /**
    * Normalize Ethereum address to checksummed format
@@ -318,6 +320,25 @@ function App() {
             if (!response.ok) {
               const errorText = await response.text()
               console.error(`[ProxyJsonRpcProvider] RPC proxy error ${response.status}:`, errorText.substring(0, 200))
+              
+              // Check if this is a 410 Gone response indicating outdated client
+              if (response.status === 410) {
+                try {
+                  const errorData = JSON.parse(errorText)
+                  if (errorData.code === 'OUTDATED_CLIENT') {
+                    console.warn('[ProxyJsonRpcProvider] ⚠️ Client version outdated - stopping polling')
+                    // Signal that client is outdated (will be handled by parent component)
+                    throw new Error('OUTDATED_CLIENT')
+                  }
+                } catch (parseError) {
+                  // If we can't parse the error, still treat 410 as outdated client
+                  if (response.status === 410) {
+                    console.warn('[ProxyJsonRpcProvider] ⚠️ Received 410 Gone - client may be outdated')
+                    throw new Error('OUTDATED_CLIENT')
+                  }
+                }
+              }
+              
               throw new Error(`RPC proxy error: ${response.status} - ${errorText.substring(0, 100)}`)
             }
             
@@ -674,11 +695,35 @@ function App() {
       console.error('Error fetching token data:', error)
 
       if (isMountedRef.current) {
-        setTokenData(prev => ({
-          ...prev,
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch token data',
-        }))
+        // Check if error is due to outdated client
+        if (error instanceof Error && error.message === 'OUTDATED_CLIENT') {
+          console.warn('[App] Client version outdated - stopping polling')
+          setIsClientOutdated(true)
+          
+          // Stop polling interval
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current)
+            pollingIntervalRef.current = null
+          }
+          
+          // Clear provider cache
+          providerCacheRef.current = null
+          
+          // Set error state with user-friendly message
+          setTokenData(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Your browser is using an outdated version. Please refresh the page to get the latest version.',
+          }))
+        } else {
+          // Regular error handling
+          setTokenData(prev => ({
+            ...prev,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Failed to fetch token data',
+          }))
+        }
+        
         setRefreshingMetrics(new Set())
         if (isInitialLoad) {
           setIsInitialLoad(false)
@@ -760,17 +805,24 @@ function App() {
     fetchTokenData()
     fetchDeploymentCount()
 
-    const interval = setInterval(() => {
-      fetchTokenData()
+    // Store interval reference so we can clear it if client becomes outdated
+    pollingIntervalRef.current = window.setInterval(() => {
+      // Don't poll if client is outdated
+      if (!isClientOutdated) {
+        fetchTokenData()
+      }
     }, CONFIG.REFRESH_INTERVAL)
 
     return () => {
       isMountedRef.current = false
-      clearInterval(interval)
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
       // Clear provider cache on unmount
       providerCacheRef.current = null
     }
-  }, [fetchTokenData, fetchDeploymentCount])
+  }, [fetchTokenData, fetchDeploymentCount, isClientOutdated])
 
   return (
     <Routes>
@@ -816,7 +868,37 @@ function App() {
             })()}
           </div>
 
-          {tokenData.error ? (
+          {isClientOutdated ? (
+            <div className="error" style={{ 
+              backgroundColor: '#ff6b6b', 
+              color: 'white', 
+              padding: '20px', 
+              borderRadius: '8px',
+              textAlign: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '10px' }}>⚠️ Client Version Outdated</h3>
+              <p style={{ marginBottom: '15px' }}>
+                Your browser is using an outdated version of this application. 
+                Please refresh the page to get the latest version.
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="retry-button"
+                style={{
+                  backgroundColor: 'white',
+                  color: '#ff6b6b',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Refresh Page
+              </button>
+            </div>
+          ) : tokenData.error ? (
             <div className="error">
               <p>⚠️ Error: {tokenData.error}</p>
               <button onClick={fetchTokenData} className="retry-button">
