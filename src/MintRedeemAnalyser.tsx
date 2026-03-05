@@ -142,20 +142,34 @@ export default function MintRedeemAnalyser() {
     ]
     
     // Build list of endpoints to try
+    // If proxy returns 410, fall back to direct RPC calls (may have CORS issues but better than failing)
     const endpointsToTry = isDev
       ? [primaryRpcEndpoint, ...fallbackEndpoints] // In dev, try direct endpoints
       : [
           `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
-          ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`)
+          ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`),
+          // Fallback to direct RPC calls if proxy is unavailable
+          primaryRpcEndpoint,
+          ...fallbackEndpoints
         ]
     
     let lastError: Error | null = null
     
     for (const targetUrl of endpointsToTry) {
       try {
+        // Determine if this is a direct RPC call or proxy call
+        const isDirectRpc = !targetUrl.startsWith('/api/')
+        const requestHeaders: HeadersInit = { 'Content-Type': 'application/json' }
+        
+        // Add client version header for proxy calls (required by proxy)
+        if (!isDirectRpc) {
+          const clientVersion = CONFIG.CLIENT_VERSION || 'unknown'
+          requestHeaders['x-client-version'] = clientVersion
+        }
+        
         const response = await fetch(targetUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: requestHeaders,
           body: JSON.stringify({
             jsonrpc: '2.0',
             id: 1,
