@@ -135,9 +135,18 @@ body::before {
   vertical-align: baseline;
 }
 
-.game-link {
-  display: inline-block;
+.header-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
   margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.game-link,
+.tools-link {
+  display: inline-block;
   color: #00ffff;
   text-decoration: none;
   font-family: 'Rajdhani', sans-serif;
@@ -151,7 +160,8 @@ body::before {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
-.game-link:hover {
+.game-link:hover,
+.tools-link:hover {
   background: rgba(0, 255, 255, 0.1);
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
   transform: translateY(-2px);
@@ -354,8 +364,14 @@ body::before {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: help;
   z-index: 100;
+  min-width: 44px;
+  min-height: 44px;
+  /* Center the icon within larger touch target */
+  padding: 13px;
+  margin: -13px;
 }
 
 .metric-help-icon {
@@ -375,10 +391,16 @@ body::before {
   box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
 }
 
-.metric-help:hover .metric-help-icon {
+.metric-help:hover .metric-help-icon,
+.metric-help:focus .metric-help-icon {
   background: rgba(0, 255, 255, 0.2);
   box-shadow: 0 0 12px rgba(0, 255, 255, 0.6);
   transform: scale(1.1);
+}
+
+.metric-help:focus {
+  outline: 2px solid #00ffff;
+  outline-offset: 2px;
 }
 
 .metric-help-tooltip-portal {
@@ -490,6 +512,29 @@ body::before {
   opacity: 0.4;
   cursor: not-allowed;
   border-color: rgba(0, 255, 255, 0.3);
+}
+
+.refresh-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-top-color: #00ffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refresh-spinner {
+    animation: none;
+    border-top-color: rgba(0, 255, 255, 0.3);
+  }
+  
+  .header-gif {
+    animation: none;
+  }
 }
 
 .info {

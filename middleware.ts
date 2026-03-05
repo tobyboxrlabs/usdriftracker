@@ -76,9 +76,18 @@ export default async function middleware(request: Request): Promise<Response | u
     const clientVersion = request.headers.get('x-client-version')
     const expectedVersion = getExpectedClientVersion()
     
+    // Log all /api/rpc requests for debugging
+    const clientIp = getClientIp(request)
+    console.log(
+      `[middleware] Checking /api/rpc request - ` +
+      `IP: ${clientIp}, ` +
+      `Client Version: ${clientVersion || 'MISSING'}, ` +
+      `Expected: ${expectedVersion}, ` +
+      `Match: ${clientVersion === expectedVersion ? 'YES' : 'NO'}`
+    )
+    
     // Block if version is missing or doesn't match
     if (!clientVersion || clientVersion !== expectedVersion) {
-      const clientIp = getClientIp(request)
       console.warn(
         `[middleware] 🚫 BLOCKING OLD CLIENT 🚫 IP: ${clientIp}, ` +
         `Client Version: ${clientVersion || 'MISSING'}, ` +

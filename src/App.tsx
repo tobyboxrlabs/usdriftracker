@@ -6,6 +6,7 @@ import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
 import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
 import { MiniLineGraph } from './MiniLineGraph'
 import LightCycleGame from './LightCycleGame'
+import Tools from './Tools'
 import './App.css'
 
 /**
@@ -166,6 +167,36 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
   const helpIconRef = useRef<HTMLSpanElement>(null)
   const [isTooltipVisible, setIsTooltipVisible] = useState(false)
 
+  const toggleTooltip = useCallback(() => {
+    setIsTooltipVisible(prev => !prev)
+  }, [])
+
+  const closeTooltip = useCallback(() => {
+    setIsTooltipVisible(false)
+  }, [])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      toggleTooltip()
+    } else if (e.key === 'Escape') {
+      closeTooltip()
+    }
+  }, [toggleTooltip, closeTooltip])
+
+  // Close tooltip on Escape key press globally
+  useEffect(() => {
+    if (isTooltipVisible) {
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          closeTooltip()
+        }
+      }
+      window.addEventListener('keydown', handleEscape)
+      return () => window.removeEventListener('keydown', handleEscape)
+    }
+  }, [isTooltipVisible, closeTooltip])
+
   if (value === null) {
     return (
       <div className="metric metric-disabled">
@@ -179,8 +210,14 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
               <span
                 ref={helpIconRef}
                 className="metric-help"
+                role="button"
+                tabIndex={0}
+                aria-expanded={isTooltipVisible}
+                aria-label="More information about this metric"
                 onMouseEnter={() => setIsTooltipVisible(true)}
                 onMouseLeave={() => setIsTooltipVisible(false)}
+                onClick={toggleTooltip}
+                onKeyDown={handleKeyDown}
               >
                 <span className="metric-help-icon">?</span>
               </span>
@@ -208,8 +245,14 @@ const MetricDisplay = ({ label, value, unit, formatOptions, isRefreshing = false
                 <span
                   ref={helpIconRef}
                   className="metric-help"
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isTooltipVisible}
+                  aria-label="More information about this metric"
                   onMouseEnter={() => setIsTooltipVisible(true)}
                   onMouseLeave={() => setIsTooltipVisible(false)}
+                  onClick={toggleTooltip}
+                  onKeyDown={handleKeyDown}
                 >
                   <span className="metric-help-icon">?</span>
                 </span>
@@ -827,12 +870,13 @@ function App() {
   return (
     <Routes>
       <Route path="/game" element={<LightCycleGame />} />
+      <Route path="/tools" element={<Tools />} />
       <Route path="/" element={
         <div className="app">
           <div className="container">
             <header className="header">
               <div className="header-title-row">
-                <h1>PUT RIF TO WORK...</h1>
+                <h1>PUT RIF TO WORK</h1>
               </div>
               <p className="subtitle">Real-time token metrics on Rootstock</p>
               <div className="header-meta">
@@ -843,7 +887,10 @@ function App() {
                   <p className="deployment-count">Deployments: {deploymentCount} 😅</p>
                 )}
               </div>
-              <Link to="/game" className="game-link">Play Light Cycle →</Link>
+              <div className="header-actions">
+                <Link to="/tools" className="tools-link">Tools</Link>
+                <Link to="/game" className="game-link">Play Light Cycle →</Link>
+              </div>
             </header>
 
         <div className="card">
@@ -916,7 +963,7 @@ function App() {
                 helpText="Sourced from the stRIF token contract (totalSupply). Represents the total amount of RIF tokens staked in the collective."
               />
               <MetricDisplay
-                label="STAKED USDRIF IN USD VAULT"
+                label="Staked USDRIF in USD Vault"
                 value={tokenData.formattedVaultedUsdrif}
                 unit="VUSD"
                 isRefreshing={refreshingMetrics.has('vaultedUsdrif')}
@@ -972,7 +1019,10 @@ function App() {
               onClick={fetchTokenData}
               className="refresh-button"
               disabled={refreshingMetrics.size > 0}
+              aria-busy={refreshingMetrics.size > 0}
+              aria-live="polite"
             >
+              {refreshingMetrics.size > 0 && <span className="refresh-spinner"></span>}
               {refreshingMetrics.size > 0 ? 'Refreshing...' : 'Refresh Now'}
             </button>
             <p className="info">
