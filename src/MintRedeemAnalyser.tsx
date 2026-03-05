@@ -132,45 +132,85 @@ export default function MintRedeemAnalyser() {
   // In dev: goes straight to RPC endpoint
   // In production: uses proxy for CORS handling
   const makeRpcCall = useCallback(async (method: string, params: any[]): Promise<any> => {
-    const rpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
     const isDev = import.meta.env.DEV
+    const primaryRpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
     
-    // In development: go straight to RPC endpoint
-    // In production: use proxy for CORS handling
-    const targetUrl = isDev 
-      ? rpcEndpoint 
-      : `/api/rpc?target=${encodeURIComponent(rpcEndpoint)}`
+    // Fallback RPC endpoints
+    const fallbackEndpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [
+      'https://public-node.rsk.co',
+      'https://rsk.publicnode.com',
+    ]
     
-    try {
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method,
-          params,
-        }),
-      })
-      
-      if (!response.ok) {
-        throw new Error(`RPC error: ${response.status} ${response.statusText}`)
+    // Build list of endpoints to try
+    const endpointsToTry = isDev
+      ? [primaryRpcEndpoint, ...fallbackEndpoints] // In dev, try direct endpoints
+      : [
+          `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
+          ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`)
+        ]
+    
+    let lastError: Error | null = null
+    
+    for (const targetUrl of endpointsToTry) {
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method,
+            params,
+          }),
+        })
+        
+        // Handle 410 Gone and other client errors - try next endpoint
+        if (response.status === 410 || response.status === 404) {
+          console.warn(`[RPC] Endpoint ${targetUrl} returned ${response.status}, trying next endpoint...`)
+          lastError = new Error(`RPC endpoint unavailable: ${response.status} ${response.statusText}`)
+          continue
+        }
+        
+        if (!response.ok) {
+          // For other 4xx errors, try next endpoint
+          if (response.status >= 400 && response.status < 500) {
+            console.warn(`[RPC] Client error ${response.status} from ${targetUrl}, trying next endpoint...`)
+            lastError = new Error(`RPC error: ${response.status} ${response.statusText}`)
+            continue
+          }
+          // For 5xx errors, throw immediately (server issue, don't retry)
+          throw new Error(`RPC server error: ${response.status} ${response.statusText}`)
+        }
+        
+        const responseText = await response.text()
+        if (!responseText || responseText.trim().length === 0) {
+          lastError = new Error('RPC returned empty response')
+          continue
+        }
+        
+        const data = JSON.parse(responseText)
+        if (data.error) {
+          // If it's a JSON-RPC error, don't retry (it's a valid response)
+          throw new Error(data.error.message || 'RPC error')
+        }
+        
+        // Success - return result
+        return data.result
+      } catch (rpcError) {
+        // If it's a network error or parse error, try next endpoint
+        if (rpcError instanceof SyntaxError || 
+            (rpcError instanceof Error && (rpcError.message.includes('fetch') || rpcError.message.includes('network')))) {
+          console.warn(`[RPC] Network/parse error with ${targetUrl}, trying next endpoint:`, rpcError.message)
+          lastError = rpcError as Error
+          continue
+        }
+        // If it's a JSON-RPC error or server error, don't retry
+        throw rpcError
       }
-      
-      const responseText = await response.text()
-      if (!responseText || responseText.trim().length === 0) {
-        throw new Error('RPC returned empty response')
-      }
-      
-      const data = JSON.parse(responseText)
-      if (data.error) {
-        throw new Error(data.error.message || 'RPC error')
-      }
-      
-      return data.result
-    } catch (rpcError) {
-      throw new Error(`Failed to fetch RPC data: ${rpcError instanceof Error ? rpcError.message : 'Unknown error'}`)
     }
+    
+    // All endpoints failed
+    throw new Error(`Failed to fetch RPC data from all endpoints: ${lastError?.message || 'Unknown error'}`)
   }, [])
 
   const fetchTransactions = useCallback(async () => {
