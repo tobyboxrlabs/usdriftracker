@@ -120,13 +120,6 @@ async function fetchLogsFromBlockscout(
   }
 }
 
-function getChecksummedAddress(address: string): string {
-  try {
-    return address.toLowerCase().replace(/^0x/, '0x')
-  } catch {
-    return address.toLowerCase()
-  }
-}
 
 export default function MintRedeemAnalyser() {
   const [transactions, setTransactions] = useState<MintRedeemTransaction[]>([])
@@ -260,10 +253,19 @@ export default function MintRedeemAnalyser() {
       
       // Now fetch MoC events - query by transaction hash from Blockscout API
       const mocInterface = new ethers.Interface(MOC_ABI)
-      const mintEventTopic = mocInterface.getEvent('MintStableToken').topicHash
-      const mintVendorsEventTopic = mocInterface.getEvent('MintStableTokenVendors').topicHash
-      const redeemEventTopic = mocInterface.getEvent('RedeemFreeStableToken').topicHash
-      const redeemVendorsEventTopic = mocInterface.getEvent('RedeemFreeStableTokenVendors').topicHash
+      const mintEvent = mocInterface.getEvent('MintStableToken')
+      const mintVendorsEvent = mocInterface.getEvent('MintStableTokenVendors')
+      const redeemEvent = mocInterface.getEvent('RedeemFreeStableToken')
+      const redeemVendorsEvent = mocInterface.getEvent('RedeemFreeStableTokenVendors')
+      
+      if (!mintEvent || !mintVendorsEvent || !redeemEvent || !redeemVendorsEvent) {
+        throw new Error('Failed to get MoC event definitions')
+      }
+      
+      const mintEventTopic = mintEvent.topicHash
+      const mintVendorsEventTopic = mintVendorsEvent.topicHash
+      const redeemEventTopic = redeemEvent.topicHash
+      const redeemVendorsEventTopic = redeemVendorsEvent.topicHash
       
       console.log(`[DEBUG] Event topic hashes:`, {
         mint: mintEventTopic,
@@ -403,7 +405,7 @@ export default function MintRedeemAnalyser() {
           }
           
           // Method 2: Try from decoded args (ethers.js should decode correctly)
-          if ((!accountAddress || accountAddress === ZERO_ADDRESS) && decoded.args && decoded.args.length > 0) {
+          if (decoded && (!accountAddress || accountAddress === ZERO_ADDRESS) && decoded.args && decoded.args.length > 0) {
             try {
               const arg0 = decoded.args[0]
               if (arg0) {
@@ -437,7 +439,7 @@ export default function MintRedeemAnalyser() {
           }
           
           // Store account address for this transaction
-          if (accountAddress && accountAddress !== ZERO_ADDRESS && accountAddress.length === 42) {
+          if (decoded && accountAddress && accountAddress !== ZERO_ADDRESS && accountAddress.length === 42) {
             // Use the first account found for this transaction (should be consistent)
             if (!accountByTx.has(log.transactionHash)) {
               accountByTx.set(log.transactionHash, accountAddress)
@@ -448,7 +450,7 @@ export default function MintRedeemAnalyser() {
             }
           } else {
             // Debug: log if extraction failed
-            if (mocEvents.length <= 5) {
+            if (decoded && mocEvents.length <= 5) {
               console.warn(`[DEBUG] Failed to extract account from ${decoded.name} event:`, {
                 topicsLength: log.topics.length,
                 topics1: log.topics[1]?.substring(0, 20),
@@ -722,18 +724,24 @@ export default function MintRedeemAnalyser() {
         // Method 1: Check MoC contract events
         const mocTxEvents = mocEventsByTx.get(log.transactionHash) || []
         for (const { decoded } of mocTxEvents) {
+          if (!decoded) continue
+          
           if (decoded.name === 'MintStableToken' || decoded.name === 'MintStableTokenVendors') {
             // reserveTokenAmount is the RIF collateral amount (args[1])
-            const reserveTokenAmount = decoded.args[1] as bigint
-            if (reserveTokenAmount > collateralAmount) {
-              collateralAmount = reserveTokenAmount
+            if (decoded.args && decoded.args.length > 1) {
+              const reserveTokenAmount = decoded.args[1] as bigint
+              if (reserveTokenAmount > collateralAmount) {
+                collateralAmount = reserveTokenAmount
+              }
             }
           } else if (decoded.name === 'RedeemFreeStableToken' || decoded.name === 'RedeemFreeStableTokenVendors') {
             // reserveTokenAmount is the RIF returned (args[2])
-            const reserveTokenAmount = decoded.args[2] as bigint
-            if (reserveTokenAmount > collateralAmount) {
-              collateralAmount = reserveTokenAmount
-              tokenReturnedAddr = RIF_TOKEN_ADDRESS
+            if (decoded.args && decoded.args.length > 2) {
+              const reserveTokenAmount = decoded.args[2] as bigint
+              if (reserveTokenAmount > collateralAmount) {
+                collateralAmount = reserveTokenAmount
+                tokenReturnedAddr = RIF_TOKEN_ADDRESS
+              }
             }
           }
         }
