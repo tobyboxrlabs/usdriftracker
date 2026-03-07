@@ -11,30 +11,54 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 /**
  * Get allowed origins from environment variable
- * Format: comma-separated list of origins, or '*' for development only
+ * Format: comma-separated list of origins
  * Example: "https://usdriftracker.vercel.app,https://usdriftracker.com"
+ * 
+ * SECURITY: Never allows wildcard defaults - requires explicit configuration
  */
 function getAllowedOrigins(): string[] {
   const envOrigins = process.env.ALLOWED_ORIGINS
+
+  // REQUIRE explicit configuration - NEVER allow wildcard defaults
   if (!envOrigins) {
-    // Default: allow all in development, restrict in production
-    return process.env.NODE_ENV === 'development' ? ['*'] : []
+    if (process.env.NODE_ENV === 'development') {
+      // Development: allow only localhost variants (secure default)
+      return [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173',
+      ]
+    } else {
+      // Production: block all CORS unless explicitly configured
+      console.warn('[security] ALLOWED_ORIGINS not configured - CORS disabled')
+      return []
+    }
   }
-  return envOrigins.split(',').map(o => o.trim()).filter(Boolean)
+
+  const origins = envOrigins.split(',').map(o => o.trim()).filter(Boolean)
+
+  // Validate origin formats - reject invalid formats
+  for (const origin of origins) {
+    if (origin !== '*' && !origin.startsWith('http://') && !origin.startsWith('https://')) {
+      console.warn(`[security] Invalid origin format: ${origin}`)
+      return [] // Fail securely
+    }
+  }
+
+  return origins
 }
 
 /**
  * Set secure CORS headers based on request origin
+ * Only allows explicitly configured origins - never uses wildcard
  */
 export function setCorsHeaders(req: VercelRequest, res: VercelResponse): void {
   const allowedOrigins = getAllowedOrigins()
   const requestOrigin = req.headers.origin
 
-  // Handle wildcard in development
-  if (allowedOrigins.includes('*') && process.env.NODE_ENV === 'development') {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-  } else if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-    // Allow specific origin
+  // Only allow explicitly configured origins (wildcard removed for security)
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
     res.setHeader('Access-Control-Allow-Origin', requestOrigin)
     res.setHeader('Access-Control-Allow-Credentials', 'true')
   }

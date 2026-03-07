@@ -127,6 +127,8 @@ export default function MintRedeemAnalyser() {
   const [error, setError] = useState<string | null>(null)
   const [days, setDays] = useState(7)
   const [tokenFilter, setTokenFilter] = useState<'USDRIF' | 'RifPro' | 'All'>('All')
+  const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   // Helper function to make RPC calls
   // In dev: goes straight to RPC endpoint
@@ -230,6 +232,7 @@ export default function MintRedeemAnalyser() {
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setLoadingProgress(null)
     
     try {
       // Get current block number via RPC (with proxy fallback)
@@ -305,6 +308,12 @@ export default function MintRedeemAnalyser() {
       // Get unique transaction hashes for all mint/redeem events
       const uniqueTxHashes = [...new Set(allEvents.map(e => e.log.transactionHash))]
       
+      // Set total count for progress tracking
+      const totalTxs = uniqueTxHashes.length
+      if (totalTxs > 0) {
+        setLoadingProgress({ current: 0, total: totalTxs, phase: 'Fetching MoC events...' })
+      }
+      
       // Now fetch MoC events - query by transaction hash from Blockscout API
       const mocInterface = new ethers.Interface(MOC_ABI)
       const mintEvent = mocInterface.getEvent('MintStableToken')
@@ -360,8 +369,15 @@ export default function MintRedeemAnalyser() {
       const BATCH_DELAY = 200 // 200ms delay between batches
       
       // Query transaction logs in batches with delays
-      for (let i = 0; i < Math.min(uniqueTxHashes.length, 50); i += BATCH_SIZE) {
+      const mocQueryLimit = Math.min(uniqueTxHashes.length, 50)
+      for (let i = 0; i < mocQueryLimit; i += BATCH_SIZE) {
         const batch = uniqueTxHashes.slice(i, i + BATCH_SIZE)
+        
+        // Update progress (MoC events phase: ~25% of total work)
+        if (totalTxs > 0) {
+          const progress = Math.floor(((i + BATCH_SIZE) / mocQueryLimit) * 25)
+          setLoadingProgress({ current: Math.min(progress, 25), total: 100, phase: `Fetching MoC events... (${Math.min(i + BATCH_SIZE, mocQueryLimit)}/${mocQueryLimit})` })
+        }
         
         // Process batch in parallel
         const batchPromises = batch.map(async (txHash) => {
@@ -429,6 +445,11 @@ export default function MintRedeemAnalyser() {
       }
       
       console.log(`[DEBUG] Found ${mocEvents.length} total MoC events to process`)
+      
+      // Update progress: MoC events complete (25%), moving to block timestamps
+      if (totalTxs > 0) {
+        setLoadingProgress({ current: 25, total: 100, phase: 'Fetching block timestamps...' })
+      }
       
       // Group MoC events by transaction hash and extract account addresses
       const mocEventsByTx = new Map<string, Array<{ log: BlockscoutLog; decoded: any }>>()
@@ -558,8 +579,16 @@ export default function MintRedeemAnalyser() {
       const BLOCK_BATCH_DELAY = 100 // 100ms delay between batches
       
       // Fetch blocks in batches with delays
+      const totalBlocks = uniqueBlockNumbers.length
       for (let i = 0; i < uniqueBlockNumbers.length; i += BLOCK_BATCH_SIZE) {
         const batch = uniqueBlockNumbers.slice(i, i + BLOCK_BATCH_SIZE)
+        
+        // Update progress (blocks are ~25% of total work: 25-50%)
+        if (totalTxs > 0) {
+          const blockProgress = 25 + Math.floor((i / totalBlocks) * 25)
+          setLoadingProgress({ current: Math.min(blockProgress, 50), total: 100, phase: `Fetching block timestamps... (${Math.min(i + BLOCK_BATCH_SIZE, totalBlocks)}/${totalBlocks} blocks)` })
+        }
+        
         const blockPromises = batch.map(async (blockNum) => {
           try {
             const blockHex = `0x${blockNum.toString(16)}`
@@ -588,6 +617,11 @@ export default function MintRedeemAnalyser() {
         }
       }
       
+      // Update progress: Block timestamps complete (50%), moving to transaction details
+      if (totalTxs > 0) {
+        setLoadingProgress({ current: 50, total: 100, phase: 'Fetching transaction details...' })
+      }
+      
       // Fetch transaction details to get original sender (fallback if no MoC event)
       const txFromByHash = new Map<string, string>()
       const txToByHash = new Map<string, string>() // Store 'to' address to check if it's a contract
@@ -596,8 +630,16 @@ export default function MintRedeemAnalyser() {
       const TX_BATCH_SIZE = 5 // Smaller batches
       const TX_BATCH_DELAY = 150 // 150ms delay between batches
       
-      for (let i = 0; i < Math.min(uniqueTxHashes.length, 100); i += TX_BATCH_SIZE) {
+      const txDetailsLimit = Math.min(uniqueTxHashes.length, 100)
+      for (let i = 0; i < txDetailsLimit; i += TX_BATCH_SIZE) {
         const batch = uniqueTxHashes.slice(i, i + TX_BATCH_SIZE)
+        
+        // Update progress (transaction details are ~25% of total work: 50-75%)
+        if (totalTxs > 0) {
+          const txProgress = 50 + Math.floor((i / txDetailsLimit) * 25)
+          setLoadingProgress({ current: Math.min(txProgress, 75), total: 100, phase: `Fetching transaction details... (${Math.min(i + TX_BATCH_SIZE, txDetailsLimit)}/${txDetailsLimit})` })
+        }
+        
         const txPromises = batch.map(async (txHash) => {
           try {
             // Try Blockscout transaction info endpoint first (more reliable)
@@ -643,16 +685,28 @@ export default function MintRedeemAnalyser() {
         }
         
         // Add delay between batches to avoid rate limiting
-        if (i + TX_BATCH_SIZE < Math.min(uniqueTxHashes.length, 100)) {
+        if (i + TX_BATCH_SIZE < txDetailsLimit) {
           await new Promise(resolve => setTimeout(resolve, TX_BATCH_DELAY))
         }
       }
       
       console.log(`[DEBUG] Fetched ${txFromByHash.size} transaction 'from' addresses`)
       
+      // Update progress: Transaction details complete (75%), building transaction list
+      if (totalTxs > 0) {
+        setLoadingProgress({ current: 75, total: 100, phase: 'Processing transactions...' })
+      }
+      
       // Build transaction list with collateral extraction
       const txs: MintRedeemTransaction[] = []
+      let processedCount = 0
       for (const { log, tokenType, from, to, value, direction } of allEvents) {
+        processedCount++
+        // Update progress during processing (last 25% of work: 75-100%)
+        if (totalTxs > 0 && (processedCount % 10 === 0 || processedCount === allEvents.length)) {
+          const processingProgress = 75 + Math.floor((processedCount / allEvents.length) * 25)
+          setLoadingProgress({ current: Math.min(processingProgress, 100), total: 100, phase: `Processing transactions... (${processedCount}/${allEvents.length})` })
+        }
         const blockNumber = parseInt(log.blockNumber, 16)
         const timestamp = blockTimestamps.get(blockNumber)
         if (!timestamp) continue
@@ -848,11 +902,17 @@ export default function MintRedeemAnalyser() {
       const recentTxs = txs.filter(tx => tx.time.getTime() >= cutoffTime)
       
       setTransactions(recentTxs)
+      setLastUpdated(new Date())
+      if (totalTxs > 0) {
+        setLoadingProgress({ current: 100, total: 100, phase: 'Complete' })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
       console.error('Error fetching mint/redeem transactions:', err)
     } finally {
       setLoading(false)
+      // Clear progress after a short delay to show completion
+      setTimeout(() => setLoadingProgress(null), 500)
     }
   }, [days, makeRpcCall])
 
@@ -951,18 +1011,54 @@ export default function MintRedeemAnalyser() {
       <div className="analyser-header">
         <h2>USDRIF Mint/Redeem Analyser</h2>
         <div className="analyser-controls">
-          <label>
-            Days to look back:
+          <div className="filter-toggle">
+            <button
+              className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
+              onClick={() => setTokenFilter('All')}
+              aria-pressed={tokenFilter === 'All'}
+            >
+              All
+            </button>
+            <button
+              className={`filter-button ${tokenFilter === 'USDRIF' ? 'active' : ''}`}
+              onClick={() => setTokenFilter('USDRIF')}
+              aria-pressed={tokenFilter === 'USDRIF'}
+            >
+              USDRIF
+            </button>
+            <button
+              className={`filter-button ${tokenFilter === 'RifPro' ? 'active' : ''}`}
+              onClick={() => setTokenFilter('RifPro')}
+              aria-pressed={tokenFilter === 'RifPro'}
+            >
+              RifPro
+            </button>
+          </div>
+          <div className="right-controls">
             <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
               <option value={1}>1 day</option>
               <option value={7}>7 days</option>
               <option value={30}>30 days</option>
               <option value={90}>90 days</option>
             </select>
-          </label>
-          <button onClick={fetchTransactions} disabled={loading}>
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
+            <button 
+              onClick={fetchTransactions} 
+              disabled={loading}
+              aria-busy={loading}
+            >
+              {loading && <span className="refresh-spinner"></span>}
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+            <button 
+              className="export-button"
+              onClick={() => exportToExcel(transactions.filter(tx => 
+                tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)
+              ))}
+              disabled={loading}
+            >
+              XLS
+            </button>
+          </div>
         </div>
       </div>
 
@@ -972,50 +1068,43 @@ export default function MintRedeemAnalyser() {
         </div>
       )}
 
-      {loading && transactions.length === 0 && (
-        <div className="loading-message">Loading transactions...</div>
+      {loading && (
+        <div className="loading-message" role="status" aria-live="polite">
+          {loadingProgress ? (
+            <>
+              <div>{loadingProgress.phase}</div>
+              <div className="loading-progress">
+                {loadingProgress.total > 0 ? (
+                  <div className="loading-progress-row">
+                    <div className="loading-progress-bar">
+                      <div 
+                        className={`loading-progress-fill ${loadingProgress.current === 100 ? 'complete' : ''}`}
+                        style={{ width: `${Math.min(100, (loadingProgress.current / loadingProgress.total) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="loading-progress-text">
+                      {loadingProgress.current}%
+                    </div>
+                  </div>
+                ) : (
+                  <div>Initializing...</div>
+                )}
+              </div>
+            </>
+          ) : (
+            'Loading transactions...'
+          )}
+        </div>
       )}
 
       {!loading && transactions.length === 0 && !error && (
-        <div className="no-data">No mint/redeem transactions found in the selected period.</div>
+        <div className="no-data" role="status" aria-live="polite">
+          No mint/redeem transactions found in the selected period.
+        </div>
       )}
 
-      {transactions.length > 0 && (
+      {transactions.length > 0 && !loading && (
         <div className="transactions-table-container">
-          <div className="table-filters">
-            <label className="filter-label">
-              Filter by Token:
-              <div className="filter-toggle">
-                <button
-                  className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
-                  onClick={() => setTokenFilter('All')}
-                >
-                  All
-                </button>
-                <button
-                  className={`filter-button ${tokenFilter === 'USDRIF' ? 'active' : ''}`}
-                  onClick={() => setTokenFilter('USDRIF')}
-                >
-                  USDRIF
-                </button>
-                <button
-                  className={`filter-button ${tokenFilter === 'RifPro' ? 'active' : ''}`}
-                  onClick={() => setTokenFilter('RifPro')}
-                >
-                  RifPro
-                </button>
-              </div>
-            </label>
-            <button 
-              className="export-button"
-              onClick={() => exportToExcel(transactions.filter(tx => 
-                tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)
-              ))}
-              disabled={loading}
-            >
-              Export to Excel
-            </button>
-          </div>
           
           {(() => {
             // Filter transactions based on selected token filter
@@ -1024,7 +1113,13 @@ export default function MintRedeemAnalyser() {
               : transactions.filter(tx => tx.type.includes(tokenFilter))
             
             return filteredTransactions.length === 0 ? (
-              <div className="no-data">No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.</div>
+              <div className="no-data" role="status" aria-live="polite">
+                No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
+                <br />
+                <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+                  Try selecting a different time period or filter option.
+                </span>
+              </div>
             ) : (
               <>
                 <table className="transactions-table">
@@ -1085,13 +1180,22 @@ export default function MintRedeemAnalyser() {
           </table>
           
           <div className="transactions-summary">
-            <p>Total Transactions: {filteredTransactions.length} {tokenFilter !== 'All' && `(filtered from ${transactions.length})`}</p>
-            <p>Mints: {filteredTransactions.filter(tx => tx.type.includes('Mint')).length} | 
-               Redeems: {filteredTransactions.filter(tx => tx.type.includes('Redeem')).length}</p>
-            {tokenFilter === 'All' && (
-              <p>USDRIF: {filteredTransactions.filter(tx => tx.type.includes('USDRIF')).length} | 
-                 RifPro: {filteredTransactions.filter(tx => tx.type.includes('RifPro')).length}</p>
-            )}
+            <div className="summary-row">
+              <p>
+                Total Transactions: {filteredTransactions.length}{tokenFilter !== 'All' && ` (filtered from ${transactions.length})`}, 
+                Mints: {filteredTransactions.filter(tx => tx.type.includes('Mint')).length} | 
+                Redeems: {filteredTransactions.filter(tx => tx.type.includes('Redeem')).length}
+                {tokenFilter === 'All' && (
+                  <>, USDRIF: {filteredTransactions.filter(tx => tx.type.includes('USDRIF')).length} | 
+                  RifPro: {filteredTransactions.filter(tx => tx.type.includes('RifPro')).length}</>
+                )}
+              </p>
+              {lastUpdated && (
+                <p className="last-updated">
+                  Last updated: {lastUpdated.getFullYear()}{String(lastUpdated.getMonth() + 1).padStart(2, '0')}{String(lastUpdated.getDate()).padStart(2, '0')} {String(lastUpdated.getHours()).padStart(2, '0')}:{String(lastUpdated.getMinutes()).padStart(2, '0')}:{String(lastUpdated.getSeconds()).padStart(2, '0')}.{String(Math.floor(lastUpdated.getMilliseconds() / 10)).padStart(2, '0')}
+                </p>
+              )}
+            </div>
           </div>
                 </>
               )

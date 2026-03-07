@@ -1,4 +1,4 @@
-.tools-page {
+.analytics-page {
   min-height: 100vh;
   background: #0a0a0a;
   background-image: 
@@ -9,7 +9,7 @@
   position: relative;
 }
 
-.tools-header {
+.analytics-header {
   text-align: center;
   color: #00ffff;
   margin-bottom: 40px;
@@ -19,7 +19,7 @@
     0 0 30px rgba(0, 255, 255, 0.3);
 }
 
-.tools-header-title-row {
+.analytics-header-title-row {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,7 +27,7 @@
   margin-bottom: 10px;
 }
 
-.tools-header h1 {
+.analytics-header h1 {
   font-family: 'Orbitron', monospace;
   font-size: 3rem;
   font-weight: 400;
@@ -40,7 +40,7 @@
     0 0 30px rgba(0, 255, 255, 0.3);
 }
 
-.tools-header .subtitle {
+.analytics-header .subtitle {
   font-family: 'Rajdhani', sans-serif;
   font-size: 1.2rem;
   font-weight: 300;
@@ -51,7 +51,7 @@
   margin: 10px 0 20px 0;
 }
 
-.tools-header-actions {
+.analytics-header-actions {
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -60,7 +60,7 @@
 }
 
 .back-link,
-.tools-header .game-link {
+.analytics-header .game-link {
   display: inline-block;
   padding: 10px 20px;
   background: transparent;
@@ -77,13 +77,13 @@
 }
 
 .back-link:hover,
-.tools-header .game-link:hover {
+.analytics-header .game-link:hover {
   background: rgba(0, 255, 255, 0.1);
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
   transform: translateY(-2px);
 }
 
-.tools-container {
+.analytics-container {
   max-width: 1400px;
   margin: 0 auto;
 }

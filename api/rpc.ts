@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { setCorsHeaders, setSecurityHeaders } from './security.js'
+import { setCorsHeaders, setSecurityHeaders, checkRateLimit, getClientIp } from './security.js'
 
 // Expected client version (git commit hash from build)
 // This should match VITE_GIT_COMMIT_HASH from the frontend build
@@ -169,6 +169,17 @@ export default async function handler(
         error: 'Method not allowed',
         message: 'Only POST requests are supported',
         receivedMethod: req.method
+      })
+    }
+
+    // Rate limiting: 100 requests per minute per IP (higher limit for RPC proxy)
+    const clientIp = getClientIp(req)
+    if (!checkRateLimit(clientIp, 100, 60000)) {
+      console.warn('[rpc] Rate limit exceeded for IP:', clientIp)
+      return res.status(429).json({
+        error: 'Too many requests',
+        message: 'Rate limit exceeded. Please try again later.',
+        retryAfter: 60
       })
     }
 

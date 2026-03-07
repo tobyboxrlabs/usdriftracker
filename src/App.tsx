@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import { ethers } from 'ethers'
 import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
 import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
 import { MiniLineGraph } from './MiniLineGraph'
 import LightCycleGame from './LightCycleGame'
-import Tools from './Tools'
+import Analytics from './Analytics'
 import './App.css'
 
 /**
@@ -627,37 +627,41 @@ function App() {
           )
 
           if (targetCoverageResult) {
-            // Step 1: Total RIF Collateral (already have from rifCollateralResult)
-            const totalRifCollateral = parseFloat(rifCollateralResult.formatted) // ~212,057,756
+            // Use BigInt math end-to-end to preserve precision
+            // All values are already in BigInt with 18 decimals
             
-            // Step 2: Coverage Ratio (target coverage EMA)
-            const coverageRatio = parseFloat(targetCoverageResult.formatted) // ~5.5
+            // Step 1: Total RIF Collateral (BigInt, 18 decimals)
+            const totalRifCollateral = rifCollateralResult.raw // Already BigInt with 18 decimals
             
-            // Step 3: Ratio'd RIF = Total RIF Collateral / Coverage Ratio
-            const ratioDRif = totalRifCollateral / coverageRatio // ~38,556,864
+            // Step 2: Coverage Ratio (BigInt, 18 decimals) - e.g., 5.5 = 5500000000000000000n
+            const coverageRatio = targetCoverageResult.raw // Already BigInt with 18 decimals
             
-            // Step 4: RIF/USD Price (use MoC price feed for mintable calculation)
-            const rifPrice = parseFloat(rifPriceMocResult.formatted) // May differ from RLabs price
+            // Step 3: RIF/USD Price (BigInt, 18 decimals)
+            const rifPrice = rifPriceMocResult.raw // Already BigInt with 18 decimals
             
-            // Step 5: USD Equiv Ratio'd RIF = Ratio'd RIF × RIF Price
-            const usdEquivRatioDRif = ratioDRif * rifPrice // ~1,592,398
+            // Step 4: Already Minted USDRIF (BigInt, 18 decimals)
+            const mintedUsdrif = USDRIFSupply // Already BigInt with 18 decimals
             
-            // Step 6: Already Minted USDRIF
-            const mintedUsdrif = parseFloat(formattedMinted) // ~1,510,574
+            // Step 5: Calculate mintable using fixed-point BigInt math:
+            // Formula: (TotalRIFCollateral * RIFPrice) / CoverageRatio - MintedUSDRIF
+            // All values are in 18 decimals, so:
+            // - TotalRIFCollateral * RIFPrice = result in 36 decimals
+            // - Divide by CoverageRatio = result in 18 decimals
+            // - Subtract MintedUSDRIF = final result in 18 decimals
             
-            // Step 7: Mintable USDRIF = USD Equiv Ratio'd RIF - Already Minted
-            const mintableUsdrif = usdEquivRatioDRif - mintedUsdrif
+            // Calculate: (totalRifCollateral * rifPrice) / coverageRatio
+            // Multiply first (36 decimals), then divide by coverageRatio (back to 18 decimals)
+            const usdEquivRatioDRif = (totalRifCollateral * rifPrice) / coverageRatio
             
-            // Only set if mintable is positive
-            if (mintableUsdrif > 0) {
-              // Convert back to BigInt with 18 decimals (USDRIF uses 18 decimals)
-              const mintableBigInt = BigInt(Math.floor(mintableUsdrif * 1e18))
-              maxMintable = mintableBigInt
-              formattedMaxMintable = Math.floor(mintableUsdrif).toString()
-            } else {
-              maxMintable = 0n
-              formattedMaxMintable = '0'
-            }
+            // Step 6: Mintable USDRIF = USD Equiv Ratio'd RIF - Already Minted
+            // Both are in 18 decimals, so subtraction is safe
+            const mintableUsdrif = usdEquivRatioDRif > mintedUsdrif 
+              ? usdEquivRatioDRif - mintedUsdrif 
+              : 0n
+            
+            // Set results
+            maxMintable = mintableUsdrif
+            formattedMaxMintable = formatAmount(mintableUsdrif, 18)
           }
         } catch (error) {
           console.warn('Failed to calculate USDRIF Mintable:', error)
@@ -694,25 +698,26 @@ function App() {
       console.log('History data points:', historyCounts)
 
       // Update state with all fetched data, preserving existing values if new ones aren't available
+      // Use explicit null/undefined checks to avoid falsy 0n being treated as "no value"
       setTokenData(prev => ({
-        stRIFSupply: stRIFSupply ? stRIFSupply.toString() : prev.stRIFSupply,
-        formattedStRIFSupply: formattedStRIFSupply || prev.formattedStRIFSupply,
-        vaultedUsdrif: VUSDSupply ? VUSDSupply.toString() : prev.vaultedUsdrif,
-        formattedVaultedUsdrif: formattedVaultedUsdrif || prev.formattedVaultedUsdrif,
-        rifproSupply: rifproSupply ? rifproSupply.toString() : prev.rifproSupply,
-        formattedRifproSupply: formattedRifproSupply || prev.formattedRifproSupply,
-        minted: USDRIFSupply ? USDRIFSupply.toString() : prev.minted,
-        formattedMinted: formattedMinted || prev.formattedMinted,
-        rifPrice: rifPriceResult?.raw ? rifPriceResult.raw.toString() : prev.rifPrice,
-        formattedRifPrice: rifPriceResult?.formatted || prev.formattedRifPrice,
-        rifCollateral: rifCollateralResult?.raw
+        stRIFSupply: stRIFSupply !== null && stRIFSupply !== undefined ? stRIFSupply.toString() : prev.stRIFSupply,
+        formattedStRIFSupply: formattedStRIFSupply !== null && formattedStRIFSupply !== undefined ? formattedStRIFSupply : prev.formattedStRIFSupply,
+        vaultedUsdrif: VUSDSupply !== null && VUSDSupply !== undefined ? VUSDSupply.toString() : prev.vaultedUsdrif,
+        formattedVaultedUsdrif: formattedVaultedUsdrif !== null && formattedVaultedUsdrif !== undefined ? formattedVaultedUsdrif : prev.formattedVaultedUsdrif,
+        rifproSupply: rifproSupply !== null && rifproSupply !== undefined ? rifproSupply.toString() : prev.rifproSupply,
+        formattedRifproSupply: formattedRifproSupply !== null && formattedRifproSupply !== undefined ? formattedRifproSupply : prev.formattedRifproSupply,
+        minted: USDRIFSupply !== null && USDRIFSupply !== undefined ? USDRIFSupply.toString() : prev.minted,
+        formattedMinted: formattedMinted !== null && formattedMinted !== undefined ? formattedMinted : prev.formattedMinted,
+        rifPrice: rifPriceResult?.raw !== null && rifPriceResult?.raw !== undefined ? rifPriceResult.raw.toString() : prev.rifPrice,
+        formattedRifPrice: rifPriceResult?.formatted !== null && rifPriceResult?.formatted !== undefined ? rifPriceResult.formatted : prev.formattedRifPrice,
+        rifCollateral: rifCollateralResult?.raw !== null && rifCollateralResult?.raw !== undefined
           ? rifCollateralResult.raw.toString()
           : prev.rifCollateral,
-        formattedRifCollateral: rifCollateralResult?.formatted || prev.formattedRifCollateral,
-        maxMintable: maxMintable ? maxMintable.toString() : prev.maxMintable,
-        formattedMaxMintable: formattedMaxMintable || prev.formattedMaxMintable,
-        symbol: symbol || prev.symbol,
-        name: name || prev.name,
+        formattedRifCollateral: rifCollateralResult?.formatted !== null && rifCollateralResult?.formatted !== undefined ? rifCollateralResult.formatted : prev.formattedRifCollateral,
+        maxMintable: maxMintable !== null && maxMintable !== undefined ? maxMintable.toString() : prev.maxMintable,
+        formattedMaxMintable: formattedMaxMintable !== null && formattedMaxMintable !== undefined ? formattedMaxMintable : prev.formattedMaxMintable,
+        symbol: symbol !== null && symbol !== undefined ? symbol : prev.symbol,
+        name: name !== null && name !== undefined ? name : prev.name,
         loading: false,
         error: null,
         lastUpdated: new Date(),
@@ -870,7 +875,8 @@ function App() {
   return (
     <Routes>
       <Route path="/game" element={<LightCycleGame />} />
-      <Route path="/tools" element={<Tools />} />
+      <Route path="/tools" element={<Navigate to="/analytics" replace />} />
+      <Route path="/analytics" element={<Analytics />} />
       <Route path="/" element={
         <div className="app">
           <div className="container">
@@ -888,7 +894,7 @@ function App() {
                 )}
               </div>
               <div className="header-actions">
-                <Link to="/tools" className="tools-link">Tools</Link>
+                <Link to="/analytics" className="analytics-link">Analytics</Link>
                 <Link to="/game" className="game-link">Play Light Cycle →</Link>
               </div>
             </header>

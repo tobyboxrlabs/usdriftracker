@@ -22,13 +22,6 @@ export const CONFIG = {
   // RIFPRO token address (for future metrics) - will be checksummed when used
   RIFPRO_ADDRESS: import.meta.env.VITE_RIFPRO_ADDRESS || '0xF4d27C56595eD59B66cC7f03CFF5193E4Bd74a61',
   
-  // Money on Chain State contract addresses (try primary first, then fallback)
-  MOC_STATE_ADDRESSES: [
-    import.meta.env.VITE_MOC_STATE_ADDRESS || '0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257', // Primary MoCState
-    '0x541f68a796fe5ae3a381d2aa5a50b975632e40a6', // Legacy mocstateContract (deprecated but may have some functions)
-    '0xb8a6beba78c3e73f6a66ddacfaeb240ae22ca709', // MoC Settlement
-  ],
-  
   // Additional contract addresses for future metrics
   USDRIF_FEE_COLLECTOR: '0x4905f643db489d9561617638d31875b6bff79077',
   PROTOCOL_REVENUE_DISTRIBUTOR: '0xf7fdf7F777C43Cd31c4c37Ee851F08A51abD2dB5',

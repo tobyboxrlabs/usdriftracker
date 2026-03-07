@@ -2,6 +2,7 @@
  * Mini line graph component for displaying metric trends
  * Uses SVG to draw a simple line chart
  */
+import { useId } from 'react'
 import { HistoryPoint } from './history'
 
 interface MiniLineGraphProps {
@@ -10,8 +11,6 @@ interface MiniLineGraphProps {
   height?: number
   color?: string
 }
-
-let gradientIdCounter = 0
 
 export const MiniLineGraph = ({ 
   data, 
@@ -23,8 +22,8 @@ export const MiniLineGraph = ({
     return null // Need at least 2 points to draw a line
   }
 
-  // Generate unique gradient ID
-  const gradientId = `gradient-${++gradientIdCounter}`
+  // Generate unique gradient ID using React's useId hook
+  const gradientId = useId()
 
   // Normalize data to fit within graph bounds
   const padding = 4
@@ -37,9 +36,10 @@ export const MiniLineGraph = ({
   const valueRange = maxValue - minValue || 1 // Avoid division by zero
 
   // Generate SVG path
+  // Fixed: y calculation - subtract padding only once
   const points = data.map((point, index) => {
     const x = padding + (index / (data.length - 1)) * graphWidth
-    const y = padding + height - ((point.value - minValue) / valueRange) * graphHeight - padding * 2
+    const y = height - padding - ((point.value - minValue) / valueRange) * graphHeight
     return `${x},${y}`
   })
 

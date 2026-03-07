@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { setCorsHeaders, setSecurityHeaders } from './security.js'
+import { setCorsHeaders, setSecurityHeaders, checkRateLimit, getClientIp } from './security.js'
 
 // Expected client version (git commit hash from build)
 // This should match VITE_GIT_COMMIT_HASH from the frontend build
@@ -31,6 +31,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ 
         error: 'Method not allowed',
         message: 'Only GET requests are supported'
+      })
+    }
+
+    // Rate limiting: 60 requests per minute per IP
+    const clientIp = getClientIp(req)
+    if (!checkRateLimit(clientIp, 60, 60000)) {
+      console.warn('[analytics] Rate limit exceeded for IP:', clientIp)
+      return res.status(429).json({
+        error: 'Too many requests',
+        message: 'Rate limit exceeded. Please try again later.',
+        retryAfter: 60
       })
     }
 

@@ -6,6 +6,7 @@
 
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import * as XLSX from 'xlsx'
+import { setCorsHeaders, setSecurityHeaders, checkRateLimit, getClientIp } from './security.js'
 
 interface Transaction {
   time: string
@@ -18,8 +19,29 @@ interface Transaction {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set security headers
+  setSecurityHeaders(res)
+  
+  // Set CORS headers (restricted to allowed origins)
+  setCorsHeaders(req, res)
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Rate limiting: 30 requests per minute per IP
+  const clientIp = getClientIp(req)
+  if (!checkRateLimit(clientIp, 30, 60000)) {
+    console.warn('[export-excel] Rate limit exceeded for IP:', clientIp)
+    return res.status(429).json({
+      error: 'Too many requests',
+      message: 'Rate limit exceeded. Please try again later.',
+      retryAfter: 60
+    })
   }
 
   try {

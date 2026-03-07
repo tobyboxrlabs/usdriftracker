@@ -37,6 +37,89 @@
   gap: 15px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inline-progress {
+  display: flex;
+  align-items: center;      /* Vertically center all children - this should align bar and text centers */
+  gap: 10px;
+  min-width: 220px;         /* FIXED WIDTH - ALWAYS RESERVES SPACE */
+  width: 220px;             /* LOCK WIDTH */
+  justify-content: center;  /* CENTER PROGRESS BAR AND PERCENTAGE */
+  height: auto;             /* Let height adjust naturally */
+  line-height: 1;           /* Prevent line-height from affecting alignment */
+  /* Ensure both children are centered on the same baseline */
+  align-content: center;     /* Additional alignment for flex items */
+}
+
+.inline-progress .loading-progress-bar {
+  flex: 1;
+  height: 8px;              /* Increased from 6px for better visibility and alignment */
+  min-width: 100px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;      /* Ensure bar content is centered */
+  margin: 0;                 /* Remove any default margins */
+  padding: 0;                /* Remove any default padding */
+  align-self: center;        /* Explicitly center within flex container */
+  position: relative;       /* For precise positioning */
+}
+
+.inline-progress .loading-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff88);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+  transition: width 0.3s ease;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.inline-progress .loading-progress-fill.complete {
+  background: linear-gradient(90deg, #00ff88, #00ffff);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+  animation: success-flash 0.5s ease;
+}
+
+.inline-progress .loading-progress-text {
+  font-size: 0.85rem;
+  color: #00ffff;
+  opacity: 0.9;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  min-width: 45px;           /* INCREASED FROM 40px */
+  text-align: center;        /* CHANGED FROM right TO center */
+  letter-spacing: 1px;
+  display: flex;             /* ADD FLEX */
+  align-items: center;       /* VERTICAL CENTER */
+  justify-content: center;   /* HORIZONTAL CENTER */
+  line-height: 1;            /* Use 1 to minimize line-height impact */
+  height: auto;              /* Let height be determined by content */
+  margin: 0;                 /* Remove any default margins */
+  padding: 0;                /* Remove any default padding */
+  align-self: center;         /* Explicitly center within flex container */
+  box-sizing: border-box;     /* Include padding/border in height calculation */
+  position: relative;        /* For precise positioning */
+  /* Bar is 8px tall. Text with 0.85rem and line-height: 1 is approximately 13.6px tall */
+  /* To visually center: shift text down by half the difference: (13.6 - 8) / 2 ≈ 2.8px */
+  /* But account for text baseline, so shift slightly less: 2px */
+  transform: translateY(2px);  /* Shift text down to align with bar's visual center */
+}
+
+/* Mobile responsive: Stack controls vertically on very small screens */
+@media (max-width: 375px) {
+  .analyser-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .analyser-controls button {
+    width: 100%;  /* Full width on mobile */
+    min-width: unset;
+  }
 }
 
 .analyser-controls label {
@@ -89,6 +172,15 @@
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  min-width: 104px;  /* 20% less: 130px * 0.8 = 104px */
+  width: 104px;      /* Fixed width prevents text-change shift */
+  text-align: center; /* Center text within button */
+  line-height: 1.4;   /* Consistent line-height for height calculation */
+  box-sizing: border-box; /* Include border in height calculation */
+  height: 42px;       /* Explicit height: 10px padding top + 14px font * 1.4 line-height + 10px padding bottom + 4px border = 42px */
+  display: flex;      /* Use flexbox for vertical centering */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
 }
 
 .analyser-controls button:hover:not(:disabled) {
@@ -116,13 +208,100 @@
 
 .loading-message,
 .no-data {
-  text-align: center;
+  text-align: left;         /* Left align for progress text alignment */
   padding: 40px;
   color: #00ffff;
   opacity: 0.6;
   font-family: 'Rajdhani', sans-serif;
   font-size: 1.1rem;
   letter-spacing: 1px;
+}
+
+.loading-message > div:first-child {
+  text-align: left;         /* Left align the phase label to match progress bar */
+  margin-bottom: 10px;      /* Add spacing between phase label and progress bar */
+}
+
+.loading-overlay {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 20, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+  padding: 20px 40px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+}
+
+.loading-progress {
+  margin-top: 20px;
+  max-width: 500px;
+  margin-left: 0;           /* Left align instead of center */
+  margin-right: auto;
+}
+
+.loading-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.loading-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.loading-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff88);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  transition: width 0.3s ease;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes success-flash {
+  0% { 
+    opacity: 1; 
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  }
+  50% { 
+    opacity: 1; 
+    box-shadow: 0 0 25px rgba(0, 255, 136, 1);
+  }
+  100% { 
+    opacity: 1; 
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+  }
+}
+
+.loading-progress-fill.complete {
+  background: linear-gradient(90deg, #00ff88, #00ffff);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+  animation: success-flash 0.5s ease;
+}
+
+.loading-progress-text {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-family: 'Rajdhani', sans-serif;
+  text-align: left;         /* Left align text */
+  letter-spacing: 1px;
+  min-width: 45px;         /* Reserve space for percentage */
+  white-space: nowrap;      /* Prevent wrapping */
 }
 
 .transactions-table-container {
@@ -133,8 +312,16 @@
 .table-filters {
   margin-bottom: 20px;
   padding-bottom: 15px;
+  padding-top: 2px;         /* Space for refresh button hover transform */
   border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+  overflow: visible;         /* Ensure buttons aren't clipped on hover */
 }
+
 
 .filter-label {
   display: flex;
@@ -153,6 +340,13 @@
   gap: 10px;
 }
 
+.right-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-left: auto;
+}
+
 .table-filters {
   display: flex;
   justify-content: space-between;
@@ -163,7 +357,7 @@
 }
 
 .export-button {
-  padding: 10px 24px;
+  padding: 10px 20px;       /* Match analyser-controls button padding for consistent height */
   background: transparent;
   color: #00ffff;
   border: 2px solid #00ffff;
@@ -176,7 +370,15 @@
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-  margin-left: auto;
+  line-height: 1.4;          /* Match other buttons for consistent height */
+  box-sizing: border-box;    /* Include border in height calculation */
+  height: 42px;              /* Explicit height to match other buttons */
+  display: flex;              /* Use flexbox for vertical centering */
+  align-items: center;       /* Center content vertically */
+  justify-content: center;    /* Center content horizontally */
+  min-width: 104px;          /* 20% less: 130px * 0.8 = 104px */
+  width: 104px;              /* Fixed width */
+  text-align: center;        /* Center text within button */
 }
 
 .export-button:hover:not(:disabled) {
@@ -192,19 +394,28 @@
 }
 
 .filter-button {
-  padding: 8px 20px;
+  padding: 7px 12px;         /* Adjusted padding for increased height */
   background: transparent;
   color: #00ffff;
   border: 2px solid #00ffff;
   border-radius: 4px;
   font-family: 'Rajdhani', sans-serif;
-  font-size: 14px;
+  font-size: 12px;           /* Slightly smaller font for smaller button */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  min-width: 80px;           /* 20% smaller: 100px * 0.8 = 80px */
+  width: 80px;               /* 20% smaller width */
+  text-align: center;        /* Center text within button */
+  line-height: 1.4;          /* Match other buttons for consistent height */
+  box-sizing: border-box;     /* Include border in height calculation */
+  height: 30px;              /* 20% increased: 25px * 1.2 = 30px */
+  display: flex;              /* Use flexbox for vertical centering */
+  align-items: center;       /* Center content vertically */
+  justify-content: center;  /* Center content horizontally */
 }
 
 .filter-button:hover {
@@ -246,6 +457,7 @@
   white-space: nowrap;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
 }
+
 
 .transactions-table td {
   padding: 10px 8px;
@@ -297,7 +509,15 @@
   border: 1px solid rgba(0, 255, 255, 0.2);
   border-radius: 4px;
   display: flex;
-  gap: 30px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
@@ -307,6 +527,11 @@
   font-family: 'Rajdhani', sans-serif;
   font-weight: 500;
   opacity: 0.8;
+}
+
+.last-updated {
+  margin-left: auto !important;  /* Right align the last updated text */
+  text-align: right;
 }
 
 @media (max-width: 768px) {
