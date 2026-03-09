@@ -164,10 +164,11 @@ export default function MintRedeemAnalyser() {
     let lastError: Error | null = null
     
     for (const targetUrl of endpointsToTry) {
+      // Determine if this is a direct RPC call or proxy call (declare outside try block for catch block access)
+      const isDirectRpc = !targetUrl.startsWith('/api/')
+      const isDev = import.meta.env.DEV
+      
       try {
-        // Determine if this is a direct RPC call or proxy call
-        const isDirectRpc = !targetUrl.startsWith('/api/')
-        const isDev = import.meta.env.DEV
         const requestHeaders: HeadersInit = { 'Content-Type': 'application/json' }
         
         // Add client version header for proxy calls (required by proxy)
@@ -1196,7 +1197,7 @@ export default function MintRedeemAnalyser() {
                       href={`https://explorer.rootstock.io/block/${tx.blockNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title={tx.blockNumber}
+                      title={tx.blockNumber.toString()}
                     >
                       {tx.blockNumber}
                     </a>
