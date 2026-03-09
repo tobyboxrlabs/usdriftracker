@@ -18,8 +18,30 @@ export const MiniLineGraph = ({
   height = 40,
   color = '#00ffff'
 }: MiniLineGraphProps) => {
+  // Show placeholder when insufficient data points
   if (data.length < 2) {
-    return null // Need at least 2 points to draw a line
+    return (
+      <svg
+        width={width}
+        height={height}
+        style={{ display: 'block', margin: '0 auto' }}
+        className="mini-line-graph"
+        aria-label="Insufficient data to display graph"
+      >
+        <text
+          x={width / 2}
+          y={height / 2}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={color}
+          opacity="0.3"
+          fontSize="10"
+          fontFamily="Rajdhani, sans-serif"
+        >
+          {data.length === 0 ? 'No data' : 'Need 2+ points'}
+        </text>
+      </svg>
+    )
   }
 
   // Generate unique gradient ID using React's useId hook
@@ -30,9 +52,11 @@ export const MiniLineGraph = ({
   const graphWidth = width - padding * 2
   const graphHeight = height - padding * 2
 
+  // Optimize min/max calculation using reduce instead of spread operator
+  // Spread operator can cause stack overflow for large arrays
   const values = data.map(d => d.value)
-  const minValue = Math.min(...values)
-  const maxValue = Math.max(...values)
+  const minValue = values.reduce((min, val) => val < min ? val : min, values[0])
+  const maxValue = values.reduce((max, val) => val > max ? val : max, values[0])
   const valueRange = maxValue - minValue || 1 // Avoid division by zero
 
   // Generate SVG path

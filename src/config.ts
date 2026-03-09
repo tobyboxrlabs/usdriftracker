@@ -1,3 +1,6 @@
+// Standard token decimals (most ERC20 tokens use 18 decimals)
+export const STANDARD_DECIMALS = 18
+
 // Configuration for USDRIF tracker
 export const CONFIG = {
   // Rootstock RPC endpoint

@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import { ethers } from 'ethers'
-import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI } from './config'
-import { saveMetricHistory, getMetricHistory, HistoryPoint } from './history'
+import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI, STANDARD_DECIMALS } from './config'
+import { saveMetricHistory, getMetricHistory, HistoryPoint, METRIC_KEYS } from './history'
+import { normalizeAddress } from './utils/address'
 import { MiniLineGraph } from './MiniLineGraph'
 import LightCycleGame from './LightCycleGame'
 import Analytics from './Analytics'
@@ -290,16 +291,9 @@ function App() {
   const providerCacheRef = useRef<ethers.JsonRpcProvider | null>(null)
   const pollingIntervalRef = useRef<number | null>(null)
 
-  /**
-   * Normalize Ethereum address to checksummed format
-   * Handles invalid checksums by converting to lowercase first
-   */
+  // Use centralized address normalization utility
   const getChecksummedAddress = useCallback((address: string): string => {
-    try {
-      return ethers.getAddress(address)
-    } catch {
-      return ethers.getAddress(address.toLowerCase())
-    }
+    return normalizeAddress(address)
   }, [])
 
   /**
@@ -478,7 +472,7 @@ function App() {
     address: string,
     abi: readonly string[],
     queryFn: (contract: ethers.Contract) => Promise<bigint>,
-    decimals: number = 18
+    decimals: number = STANDARD_DECIMALS
   ): Promise<{ raw: bigint; formatted: string } | null> => {
     try {
       const checksummedAddress = getChecksummedAddress(address)
@@ -500,13 +494,13 @@ function App() {
     try {
       // Mark all metrics as refreshing
       setRefreshingMetrics(new Set([
-        'stRIFSupply',
-        'vaultedUsdrif',
-        'rifproSupply',
-        'minted',
-        'rifPrice',
-        'rifCollateral',
-        'maxMintable',
+        METRIC_KEYS.ST_RIF_SUPPLY,
+        METRIC_KEYS.VAULTED_USDRIF,
+        METRIC_KEYS.RIFPRO_SUPPLY,
+        METRIC_KEYS.MINTED,
+        METRIC_KEYS.RIF_PRICE,
+        METRIC_KEYS.RIF_COLLATERAL,
+        METRIC_KEYS.MAX_MINTABLE,
       ]))
       
       setTokenData(prev => ({ ...prev, loading: true, error: null }))
@@ -591,20 +585,20 @@ function App() {
       )
 
       // Query MoC price feed for mintable calculation (may differ from RLabs)
-      const rifPriceMocResult = await queryOptionalMetric(
-        provider,
-        CONFIG.RIF_PRICE_FEED_MOC,
-        PRICE_FEED_ABI,
-        async (contract) => await contract.read(),
-        18
-      )
+      const rifPriceMocResult = await         queryOptionalMetric(
+          provider,
+          CONFIG.RIF_PRICE_FEED_MOC,
+          PRICE_FEED_ABI,
+          async (contract) => await contract.read(),
+          STANDARD_DECIMALS
+        )
 
       const rifCollateralResult = await queryOptionalMetric(
         provider,
         CONFIG.MOC_V2_CORE,
         MOC_CORE_ABI,
         async (contract) => await contract.getTotalACavailable(),
-        18
+        STANDARD_DECIMALS
       )
 
       // Calculate USDRIF Mintable using the formula:
@@ -618,13 +612,13 @@ function App() {
       if (rifCollateralResult && rifPriceMocResult && formattedMinted) {
         try {
           // Query target coverage ratio from MoC V2 Core (calcCtargemaCA returns ~5.5)
-          const targetCoverageResult = await queryOptionalMetric(
-            provider,
-            CONFIG.MOC_V2_CORE,
-            MOC_CORE_ABI,
-            async (contract) => await contract.calcCtargemaCA(),
-            18
-          )
+          const targetCoverageResult = await         queryOptionalMetric(
+          provider,
+          CONFIG.MOC_V2_CORE,
+          MOC_CORE_ABI,
+          async (contract) => await contract.calcCtargemaCA(),
+          STANDARD_DECIMALS
+        )
 
           if (targetCoverageResult) {
             // Use BigInt math end-to-end to preserve precision
@@ -661,7 +655,7 @@ function App() {
             
             // Set results
             maxMintable = mintableUsdrif
-            formattedMaxMintable = formatAmount(mintableUsdrif, 18)
+            formattedMaxMintable = formatAmount(mintableUsdrif, STANDARD_DECIMALS)
           }
         } catch (error) {
           console.warn('Failed to calculate USDRIF Mintable:', error)
@@ -725,13 +719,13 @@ function App() {
       
       // Update history state
       setHistory({
-        stRIFSupply: getMetricHistory('stRIFSupply'),
-        vaultedUsdrif: getMetricHistory('vaultedUsdrif'),
-        rifproSupply: getMetricHistory('rifproSupply'),
-        minted: getMetricHistory('minted'),
-        rifPrice: getMetricHistory('rifPrice'),
-        rifCollateral: getMetricHistory('rifCollateral'),
-        maxMintable: getMetricHistory('maxMintable'),
+        stRIFSupply: getMetricHistory(METRIC_KEYS.ST_RIF_SUPPLY),
+        vaultedUsdrif: getMetricHistory(METRIC_KEYS.VAULTED_USDRIF),
+        rifproSupply: getMetricHistory(METRIC_KEYS.RIFPRO_SUPPLY),
+        minted: getMetricHistory(METRIC_KEYS.MINTED),
+        rifPrice: getMetricHistory(METRIC_KEYS.RIF_PRICE),
+        rifCollateral: getMetricHistory(METRIC_KEYS.RIF_COLLATERAL),
+        maxMintable: getMetricHistory(METRIC_KEYS.MAX_MINTABLE),
       })
       
       // Clear refreshing indicators
@@ -841,13 +835,13 @@ function App() {
     
     // Load initial history
     setHistory({
-      stRIFSupply: getMetricHistory('stRIFSupply'),
-      vaultedUsdrif: getMetricHistory('vaultedUsdrif'),
-      rifproSupply: getMetricHistory('rifproSupply'),
-      minted: getMetricHistory('minted'),
-      rifPrice: getMetricHistory('rifPrice'),
-      rifCollateral: getMetricHistory('rifCollateral'),
-      maxMintable: getMetricHistory('maxMintable'),
+      stRIFSupply: getMetricHistory(METRIC_KEYS.ST_RIF_SUPPLY),
+      vaultedUsdrif: getMetricHistory(METRIC_KEYS.VAULTED_USDRIF),
+      rifproSupply: getMetricHistory(METRIC_KEYS.RIFPRO_SUPPLY),
+      minted: getMetricHistory(METRIC_KEYS.MINTED),
+      rifPrice: getMetricHistory(METRIC_KEYS.RIF_PRICE),
+      rifCollateral: getMetricHistory(METRIC_KEYS.RIF_COLLATERAL),
+      maxMintable: getMetricHistory(METRIC_KEYS.MAX_MINTABLE),
     })
     
     fetchTokenData()
@@ -964,7 +958,7 @@ function App() {
                 label="Staked RIF in Collective"
                 value={tokenData.formattedStRIFSupply}
                 unit="stRIF"
-                isRefreshing={refreshingMetrics.has('stRIFSupply')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.ST_RIF_SUPPLY)}
                 history={history.stRIFSupply}
                 helpText="Sourced from the stRIF token contract (totalSupply). Represents the total amount of RIF tokens staked in the collective."
               />
@@ -972,7 +966,7 @@ function App() {
                 label="Staked USDRIF in USD Vault"
                 value={tokenData.formattedVaultedUsdrif}
                 unit="VUSD"
-                isRefreshing={refreshingMetrics.has('vaultedUsdrif')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.VAULTED_USDRIF)}
                 history={history.vaultedUsdrif}
                 helpText="Sourced from the VUSD token contract (0xd8169270417050dCEf119597a7F6F5EE98dd2fd3) using totalSupply(). Represents the total amount of USDRIF staked in the USD vault."
               />
@@ -980,7 +974,7 @@ function App() {
                 label="RIFPRO Total Supply"
                 value={tokenData.formattedRifproSupply}
                 unit="RIFPRO"
-                isRefreshing={refreshingMetrics.has('rifproSupply')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.RIFPRO_SUPPLY)}
                 history={history.rifproSupply}
                 helpText="Sourced from the RIFPRO token contract (totalSupply). Represents the total supply of RIFPRO tokens in circulation."
               />
@@ -988,7 +982,7 @@ function App() {
                 label="USDRIF Minted"
                 value={tokenData.formattedMinted}
                 unit="USD"
-                isRefreshing={refreshingMetrics.has('minted')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.MINTED)}
                 history={history.minted}
                 helpText="Sourced from the USDRIF token contract (totalSupply). Represents the total amount of USDRIF tokens that have been minted."
               />
@@ -997,7 +991,7 @@ function App() {
                 value={tokenData.formattedRifPrice}
                 unit="USD"
                 formatOptions={{ maximumFractionDigits: 6, prefix: '$' }}
-                isRefreshing={refreshingMetrics.has('rifPrice')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.RIF_PRICE)}
                 history={history.rifPrice}
                 helpText="Sourced from the RLabs price feed oracle (0xbed51d83cc4676660e3fc3819dfad8238549b975) using the read() function. Represents the current RIF/USD price."
               />
@@ -1005,7 +999,7 @@ function App() {
                 label="RIF Collateral Backing USDRIF"
                 value={tokenData.formattedRifCollateral}
                 unit="RIFPRO"
-                isRefreshing={refreshingMetrics.has('rifCollateral')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.RIF_COLLATERAL)}
                 history={history.rifCollateral}
                 helpText="Sourced from MoC V2 Core contract (0xA27024Ed70035E46dba712609fc2Afa1c97aA36A) using getTotalACavailable(). Represents the total RIF collateral available in the system (~212M RIF)."
               />
@@ -1013,7 +1007,7 @@ function App() {
                 label="USDRIF Mintable"
                 value={tokenData.formattedMaxMintable}
                 unit="USD"
-                isRefreshing={refreshingMetrics.has('maxMintable')}
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.MAX_MINTABLE)}
                 history={history.maxMintable}
                 helpText="Calculated using: (Total RIF Collateral ÷ Coverage Ratio) × RIF Price - Already Minted USDRIF. Coverage ratio sourced from MoC V2 Core calcCtargemaCA() (~5.5). RIF price from MoC price feed for calculation."
               />

@@ -11,6 +11,17 @@ export interface HistoryPoint {
 const STORAGE_PREFIX = 'rif_metrics_history_'
 const MAX_POINTS_PER_METRIC = 100 // Keep last 100 data points
 
+// Constants for metric keys (prevents typos and enables refactoring)
+export const METRIC_KEYS = {
+  ST_RIF_SUPPLY: 'stRIFSupply',
+  VAULTED_USDRIF: 'vaultedUsdrif',
+  RIFPRO_SUPPLY: 'rifproSupply',
+  MINTED: 'minted',
+  RIF_PRICE: 'rifPrice',
+  RIF_COLLATERAL: 'rifCollateral',
+  MAX_MINTABLE: 'maxMintable',
+} as const
+
 /**
  * Check if localStorage is available (client-side only)
  * Vercel builds run server-side, so we need to guard against SSR

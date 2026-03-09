@@ -144,10 +144,16 @@ export default function MintRedeemAnalyser() {
     ]
     
     // Build list of endpoints to try
-    // If proxy returns 410, fall back to direct RPC calls (may have CORS issues but better than failing)
+    // In dev mode, skip proxy (doesn't exist locally) and go straight to direct RPC calls
+    // In production, try proxy first (handles CORS), then fall back to direct RPC calls
     const endpointsToTry = isDev
-      ? [primaryRpcEndpoint, ...fallbackEndpoints] // In dev, try direct endpoints
+      ? [
+          // In dev, try direct RPC calls first (proxy doesn't exist)
+          primaryRpcEndpoint,
+          ...fallbackEndpoints
+        ]
       : [
+          // In production, try proxy first
           `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
           ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`),
           // Fallback to direct RPC calls if proxy is unavailable
@@ -161,6 +167,7 @@ export default function MintRedeemAnalyser() {
       try {
         // Determine if this is a direct RPC call or proxy call
         const isDirectRpc = !targetUrl.startsWith('/api/')
+        const isDev = import.meta.env.DEV
         const requestHeaders: HeadersInit = { 'Content-Type': 'application/json' }
         
         // Add client version header for proxy calls (required by proxy)
@@ -180,8 +187,14 @@ export default function MintRedeemAnalyser() {
           }),
         })
         
-        // Handle 410 Gone and other client errors - try next endpoint
+        // Handle 410 Gone and 404 Not Found - try next endpoint
+        // 404 is expected in dev mode when proxy doesn't exist, so log at debug level
         if (response.status === 410 || response.status === 404) {
+          if (response.status === 404 && isDev && !isDirectRpc) {
+            // Proxy doesn't exist in dev - this is expected, skip quietly
+            lastError = new Error(`Proxy unavailable in dev mode`)
+            continue
+          }
           console.warn(`[RPC] Endpoint ${targetUrl} returned ${response.status}, trying next endpoint...`)
           lastError = new Error(`RPC endpoint unavailable: ${response.status} ${response.statusText}`)
           continue
@@ -213,6 +226,19 @@ export default function MintRedeemAnalyser() {
         // Success - return result
         return data.result
       } catch (rpcError) {
+        // Check if it's a CORS error (common in browser when making direct RPC calls)
+        const isCorsError = rpcError instanceof TypeError && 
+          (rpcError.message.includes('CORS') || 
+           rpcError.message.includes('Failed to fetch') ||
+           rpcError.message.includes('network'))
+        
+        // If it's a CORS error from a direct RPC call, skip it and try next endpoint
+        if (isCorsError && isDirectRpc) {
+          console.warn(`[RPC] CORS error with direct RPC call to ${targetUrl}, skipping and trying next endpoint...`)
+          lastError = rpcError as Error
+          continue
+        }
+        
         // If it's a network error or parse error, try next endpoint
         if (rpcError instanceof SyntaxError || 
             (rpcError instanceof Error && (rpcError.message.includes('fetch') || rpcError.message.includes('network')))) {
@@ -246,7 +272,7 @@ export default function MintRedeemAnalyser() {
       
       // Transfer event signature
       const transferEventTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-      const zeroAddressChecksummed = ZERO_ADDRESS.toLowerCase()
+      const zeroAddressNormalized = ZERO_ADDRESS.toLowerCase()
       
       // Fetch Transfer events for both tokens and RIF collateral
       const [usdrifLogs, rifproLogs, rifLogs] = await Promise.all([
@@ -278,9 +304,9 @@ export default function MintRedeemAnalyser() {
         const fromChecksummed = fromAddr.toLowerCase()
         const toChecksummed = toAddr.toLowerCase()
         
-        if (fromChecksummed === zeroAddressChecksummed && toChecksummed !== zeroAddressChecksummed) {
+        if (fromChecksummed === zeroAddressNormalized && toChecksummed !== zeroAddressNormalized) {
           allEvents.push({ log, tokenType: 'USDRIF', from: fromChecksummed, to: toChecksummed, value, direction: 'MINT' })
-        } else if (toChecksummed === zeroAddressChecksummed && fromChecksummed !== zeroAddressChecksummed) {
+        } else if (toChecksummed === zeroAddressNormalized && fromChecksummed !== zeroAddressNormalized) {
           allEvents.push({ log, tokenType: 'USDRIF', from: fromChecksummed, to: toChecksummed, value, direction: 'REDEEM' })
         }
       }
@@ -298,9 +324,9 @@ export default function MintRedeemAnalyser() {
         const fromChecksummed = fromAddr.toLowerCase()
         const toChecksummed = toAddr.toLowerCase()
         
-        if (fromChecksummed === zeroAddressChecksummed && toChecksummed !== zeroAddressChecksummed) {
+        if (fromChecksummed === zeroAddressNormalized && toChecksummed !== zeroAddressNormalized) {
           allEvents.push({ log, tokenType: 'RifPro', from: fromChecksummed, to: toChecksummed, value, direction: 'MINT' })
-        } else if (toChecksummed === zeroAddressChecksummed && fromChecksummed !== zeroAddressChecksummed) {
+        } else if (toChecksummed === zeroAddressNormalized && fromChecksummed !== zeroAddressNormalized) {
           allEvents.push({ log, tokenType: 'RifPro', from: fromChecksummed, to: toChecksummed, value, direction: 'REDEEM' })
         }
       }
@@ -1131,7 +1157,7 @@ export default function MintRedeemAnalyser() {
                 <th>Type</th>
                 <th>Amount</th>
                 <th>Receiver</th>
-                <th>Block Number</th>
+                <th>Block</th>
               </tr>
             </thead>
             <tbody>
@@ -1162,14 +1188,15 @@ export default function MintRedeemAnalyser() {
                       rel="noopener noreferrer"
                       title={tx.receiver}
                     >
-                      {tx.receiver.substring(0, 8)}...{tx.receiver.substring(tx.receiver.length - 6)}
+                      {tx.receiver}
                     </a>
                   </td>
-                  <td>
+                  <td className="address-cell">
                     <a
                       href={`https://explorer.rootstock.io/block/${tx.blockNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      title={tx.blockNumber}
                     >
                       {tx.blockNumber}
                     </a>
@@ -1189,6 +1216,22 @@ export default function MintRedeemAnalyser() {
                   <>, USDRIF: {filteredTransactions.filter(tx => tx.type.includes('USDRIF')).length} | 
                   RifPro: {filteredTransactions.filter(tx => tx.type.includes('RifPro')).length}</>
                 )}
+                {(() => {
+                  // Calculate USDRIF total (sum of AMOUNT column for visible USDRIF rows)
+                  const usdrifTotal = filteredTransactions
+                    .filter(tx => tx.type.includes('USDRIF'))
+                    .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
+                  
+                  // Calculate RIFPRO total (sum of AMOUNT column for visible RIFPRO rows)
+                  const rifproTotal = filteredTransactions
+                    .filter(tx => tx.type.includes('RifPro'))
+                    .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
+                  
+                  return (
+                    <>, USDRIF total: {formatAmountDisplay(usdrifTotal.toString(), 0)} | 
+                    RIFPRO total: {formatAmountDisplay(rifproTotal.toString(), 0)}</>
+                  )
+                })()}
               </p>
               {lastUpdated && (
                 <p className="last-updated">

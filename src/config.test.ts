@@ -29,10 +29,15 @@ describe('Config', () => {
     expect(MOC_STATE_ABI.length).toBeGreaterThan(0)
   })
 
-  it('has valid MoC State addresses', () => {
-    expect(CONFIG.MOC_STATE_ADDRESSES).toBeDefined()
-    expect(Array.isArray(CONFIG.MOC_STATE_ADDRESSES)).toBe(true)
-    expect(CONFIG.MOC_STATE_ADDRESSES.length).toBeGreaterThan(0)
+  it('has valid RPC alternatives', () => {
+    expect(CONFIG.ROOTSTOCK_RPC_ALTERNATIVES).toBeDefined()
+    expect(Array.isArray(CONFIG.ROOTSTOCK_RPC_ALTERNATIVES)).toBe(true)
+    expect(CONFIG.ROOTSTOCK_RPC_ALTERNATIVES.length).toBeGreaterThan(0)
+  })
+
+  it('has a client version string', () => {
+    expect(CONFIG.CLIENT_VERSION).toBeTruthy()
+    expect(typeof CONFIG.CLIENT_VERSION).toBe('string')
   })
 })
 

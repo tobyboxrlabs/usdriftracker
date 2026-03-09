@@ -458,6 +458,68 @@
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
 }
 
+/* Narrow TIME column to fit "2026-03-09 00:27:02" format */
+.transactions-table th:first-child,
+.transactions-table td:first-child {
+  width: 198px;
+  max-width: 198px;
+  min-width: 198px;
+}
+
+/* Narrow STATUS column (2nd column) - just wide enough for "Success" */
+.transactions-table th:nth-child(2),
+.transactions-table td:nth-child(2) {
+  width: 90px;
+  max-width: 90px;
+  min-width: 90px;
+}
+
+/* Narrow Asset column (3rd column) */
+.transactions-table th:nth-child(3),
+.transactions-table td:nth-child(3) {
+  width: 80px;
+  max-width: 80px;
+  min-width: 80px;
+}
+
+/* Right align Type column (4th column) - narrow width for "Mint"/"Redeem" */
+.transactions-table th:nth-child(4),
+.transactions-table td:nth-child(4) {
+  text-align: right;
+  width: 70px;
+  max-width: 70px;
+  min-width: 70px;
+}
+
+/* Right align Amount column (5th column) - narrow width */
+.transactions-table th:nth-child(5),
+.transactions-table td:nth-child(5) {
+  text-align: right;
+  width: 120px;
+  max-width: 120px;
+  min-width: 120px;
+  padding-right: 9px; /* 10% increase: 8px * 1.1 = 8.8px, rounded to 9px */
+}
+
+/* Receiver column (6th column) - width to fit Ethereum addresses (42 chars) without wrapping */
+.transactions-table th:nth-child(6),
+.transactions-table td:nth-child(6) {
+  width: 380px; /* Fixed width to fit Ethereum address: 0x + 40 hex chars without wrapping */
+  max-width: 380px; /* Prevent expansion */
+  min-width: 380px; /* Prevent shrinking below address width */
+  white-space: nowrap; /* Prevent wrapping */
+  padding-left: 8px; /* Standard spacing */
+  padding-right: 8px; /* Standard spacing */
+}
+
+/* Block column (7th column) - fixed width for block numbers */
+.transactions-table th:nth-child(7),
+.transactions-table td:nth-child(7) {
+  padding-left: 8px; /* Standard spacing */
+  width: 90px; /* Fixed width for block numbers */
+  max-width: 90px; /* Prevent expansion */
+  min-width: 90px; /* Prevent shrinking */
+}
 
 .transactions-table td {
   padding: 10px 8px;
