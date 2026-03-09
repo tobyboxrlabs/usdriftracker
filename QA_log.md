@@ -18,6 +18,22 @@
 - Env var validation
 - Consider websocket updates
 
+### New Findings (MintRedeemAnalyser Review)
+- **RPC proxy whitelist mismatch**
+  - Production uses `/api/rpc?target=...` with `ROOTSTOCK_RPC_ALTERNATIVES`.
+  - `api/rpc.ts` only allows `public-node.rsk.co` and `rsk.publicnode.com`.
+  - Any other endpoint will 400 in production.
+  - **Fix:** keep `ROOTSTOCK_RPC_ALTERNATIVES` aligned with proxy whitelist.
+- **Duplicate `isDev` declaration inside loop**
+  - Redundant `isDev` inside `makeRpcCall` loop.
+  - **Fix:** remove inner `isDev`.
+- **Blockscout rate limiting risk**
+  - Large volume of requests without adaptive backoff.
+  - **Fix:** add exponential backoff / centralized rate limiter.
+- **Silent Blockscout failures**
+  - `status !== '1'` returns empty array without surfacing error.
+  - **Fix:** bubble warning or UI error for non‑success responses.
+
 ### New Issue (Vercel Build)
 - **TypeScript JSX typings missing on Vercel build**
   - **Error:** `JSX element implicitly has type 'any'` and `Could not find a declaration file for module 'react/jsx-runtime'`

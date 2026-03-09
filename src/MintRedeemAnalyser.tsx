@@ -81,42 +81,143 @@ function formatAmountDisplay(amount: string, decimals: number = 0): string {
   })
 }
 
+// Global rate limiter for Blockscout API calls with adaptive throttling
+class BlockscoutRateLimiter {
+  private lastCallTime = 0
+  private callQueue: Array<() => void> = []
+  private isProcessing = false
+  private consecutiveFailures = 0
+  private readonly MIN_DELAY = 200 // Minimum delay between calls (ms) - increased for better rate limiting
+  private readonly MAX_DELAY = 5000 // Maximum delay (5 seconds)
+  private readonly MAX_RETRIES = 3
+  
+  async throttle(): Promise<void> {
+    return new Promise((resolve) => {
+      this.callQueue.push(resolve)
+      this.processQueue()
+    })
+  }
+  
+  private async processQueue(): Promise<void> {
+    if (this.isProcessing || this.callQueue.length === 0) return
+    
+    this.isProcessing = true
+    
+    while (this.callQueue.length > 0) {
+      const resolve = this.callQueue.shift()!
+      
+      // Calculate adaptive delay based on failures
+      const adaptiveDelay = Math.min(
+        this.MIN_DELAY * Math.pow(2, Math.min(this.consecutiveFailures, 4)),
+        this.MAX_DELAY
+      )
+      
+      const timeSinceLastCall = Date.now() - this.lastCallTime
+      const delayNeeded = Math.max(adaptiveDelay - timeSinceLastCall, 0)
+      
+      if (delayNeeded > 0) {
+        await new Promise(r => setTimeout(r, delayNeeded))
+      }
+      
+      this.lastCallTime = Date.now()
+      resolve()
+    }
+    
+    this.isProcessing = false
+  }
+  
+  recordSuccess(): void {
+    this.consecutiveFailures = 0
+  }
+  
+  recordFailure(): void {
+    this.consecutiveFailures++
+  }
+  
+  getConsecutiveFailures(): number {
+    return this.consecutiveFailures
+  }
+}
+
+const blockscoutRateLimiter = new BlockscoutRateLimiter()
+
 async function fetchLogsFromBlockscout(
   address: string,
   fromBlock: number,
   toBlock: number,
-  topic0: string
+  topic0: string,
+  retryCount = 0
 ): Promise<BlockscoutLog[]> {
+  // Use global rate limiter to throttle all Blockscout API calls
+  await blockscoutRateLimiter.throttle()
+  
   const url = `${BLOCKSCOUT_API}?module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}&topic0=${topic0}&page=1&offset=10000`
   
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Blockscout API error: ${response.status} ${response.statusText}`)
-  }
-  
-  // Read response body once
-  const text = await response.text()
-  
-  // Check if response body is empty
-  if (!text || text.trim().length === 0) {
-    return []
-  }
-  
-  // Check if response is JSON
-  const contentType = response.headers.get('content-type')
-  if (!contentType || !contentType.includes('application/json')) {
-    throw new Error(`Blockscout API returned non-JSON response: ${text.substring(0, 200)}`)
-  }
-  
   try {
-    const data = JSON.parse(text) as BlockscoutResponse
-    if (data.status !== '1') {
+    const response = await fetch(url)
+    
+    // Handle rate limiting (429 Too Many Requests) with exponential backoff
+    if (response.status === 429) {
+      blockscoutRateLimiter.recordFailure()
+      if (retryCount < 3) {
+        const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000)
+        console.warn(`[Blockscout] Rate limited (429), retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
+      }
+      throw new Error(`Blockscout API rate limited. Too many requests. Please try again later or reduce the lookback period.`)
+    }
+    
+    if (!response.ok) {
+      blockscoutRateLimiter.recordFailure()
+      // Provide user-friendly error messages
+      if (response.status === 503) {
+        throw new Error(`Blockscout API is temporarily unavailable (503). Please try again in a few moments.`)
+      }
+      throw new Error(`Blockscout API error (${response.status}): ${response.statusText}. Please try again later.`)
+    }
+    
+    // Record success for rate limiter
+    blockscoutRateLimiter.recordSuccess()
+    
+    // Read response body once
+    const text = await response.text()
+    
+    // Check if response body is empty
+    if (!text || text.trim().length === 0) {
       return []
     }
     
-    return data.result || []
-  } catch (parseError) {
-    throw new Error(`Failed to parse Blockscout API response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}. Response: ${text.substring(0, 200)}`)
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      blockscoutRateLimiter.recordFailure()
+      throw new Error(`Blockscout API returned non-JSON response: ${text.substring(0, 200)}`)
+    }
+    
+    try {
+      const data = JSON.parse(text) as BlockscoutResponse
+      if (data.status !== '1') {
+        // Status "0" with "No logs found" is a valid empty result, not an error
+        if (data.status === '0' && (data.message?.toLowerCase().includes('no logs found') || data.message?.toLowerCase().includes('no logs'))) {
+          return []
+        }
+        
+        // For other non-success statuses, surface as error for UI feedback
+        const errorMessage = data.message || 'Unknown error'
+        blockscoutRateLimiter.recordFailure()
+        // Provide user-friendly error message
+        throw new Error(`Blockscout API returned an error (status: ${data.status}). ${errorMessage}. Please try again later or reduce the lookback period.`)
+      }
+      
+      return data.result || []
+    } catch (parseError) {
+      blockscoutRateLimiter.recordFailure()
+      throw new Error(`Failed to parse Blockscout API response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}. Response: ${text.substring(0, 200)}`)
+    }
+  } catch (fetchError) {
+    blockscoutRateLimiter.recordFailure()
+    throw fetchError
   }
 }
 
@@ -166,7 +267,6 @@ export default function MintRedeemAnalyser() {
     for (const targetUrl of endpointsToTry) {
       // Determine if this is a direct RPC call or proxy call (declare outside try block for catch block access)
       const isDirectRpc = !targetUrl.startsWith('/api/')
-      const isDev = import.meta.env.DEV
       
       try {
         const requestHeaders: HeadersInit = { 'Content-Type': 'application/json' }
