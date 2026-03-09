@@ -125,7 +125,7 @@ export default function MintRedeemAnalyser() {
   const [transactions, setTransactions] = useState<MintRedeemTransaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [days, setDays] = useState(7)
+  const [days, setDays] = useState(1)
   const [tokenFilter, setTokenFilter] = useState<'USDRIF' | 'RifPro' | 'All'>('All')
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
