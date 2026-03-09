@@ -9,7 +9,7 @@ export default function Analytics() {
         <div className="analytics-header-title-row">
           <h1>Analytics</h1>
         </div>
-        <p className="subtitle">Transaction analytics and insights...</p>
+        <p className="subtitle">Transaction analytics and insights... 😊</p>
         <div className="analytics-header-actions">
           <Link to="/" className="back-link">← Back to Metrics</Link>
           <Link to="/game" className="game-link">Play Light Cycle →</Link>
