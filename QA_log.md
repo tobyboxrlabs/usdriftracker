@@ -18,6 +18,16 @@
 - Env var validation
 - Consider websocket updates
 
+### New Issue (Vercel Build)
+- **TypeScript JSX typings missing on Vercel build**
+  - **Error:** `JSX element implicitly has type 'any'` and `Could not find a declaration file for module 'react/jsx-runtime'`
+  - **Cause:** Vercel installs only `dependencies` by default; `@types/react` and `@types/react-dom` are in `devDependencies`, so `tsc` runs without JSX typings.
+  - **Fix Options:**
+    1. Move `@types/react` and `@types/react-dom` to `dependencies` (preferred for Vercel builds).
+    2. Set Vercel env `VERCEL_USE_NODE_ENV=development` to install devDependencies during build.
+    3. If using custom build script, run `npm install --include=dev`.
+  - **Recommendation:** Move `@types/react` and `@types/react-dom` to `dependencies` to keep builds deterministic on Vercel.
+
 ---
 
 ## Code Review Summary - USDRIF Tracker (Resolved Items)
