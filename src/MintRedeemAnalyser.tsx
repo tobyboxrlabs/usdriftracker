@@ -1184,7 +1184,7 @@ export default function MintRedeemAnalyser() {
                   </td>
                   <td className="address-cell">
                     <a
-                      href={`https://explorer.rootstock.io/address/${tx.receiver}`}
+                      href={`https://rootstock.blockscout.com/address/${tx.receiver}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={tx.receiver}
@@ -1194,7 +1194,7 @@ export default function MintRedeemAnalyser() {
                   </td>
                   <td className="address-cell">
                     <a
-                      href={`https://explorer.rootstock.io/block/${tx.blockNumber}`}
+                      href={`https://rootstock.blockscout.com/block/${tx.blockNumber}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={tx.blockNumber.toString()}
