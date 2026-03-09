@@ -116,7 +116,7 @@ jobs:
                 },
                 source: {
                   repository: ("https://github.com/" + $repo),
-                  ref: $sha
+                  ref: "main"
                 },
                 target: {
                   autoBranch: false,
