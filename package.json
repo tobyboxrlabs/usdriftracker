@@ -17,6 +17,7 @@
     "@vercel/edge": "^1.2.2",
     "@vercel/kv": "^3.0.0",
     "@vercel/node": "^3.0.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "dotenv": "^17.2.3",
     "ethers": "^6.13.0",
     "ioredis": "^5.8.2",
@@ -24,6 +25,8 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.12.0",
     "redis": "^5.9.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -31,11 +34,8 @@
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "@types/node": "^25.3.2",
-    "@vitejs/plugin-react": "^4.3.1",
     "@vitest/ui": "^1.0.4",
     "jsdom": "^23.0.1",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.2",
     "vitest": "^1.0.4"
   }
 }
