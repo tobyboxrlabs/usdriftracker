@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 10  # Maximum 10 minutes for the entire job
 
     steps:
-      - name: Run Security Whitehat Cloud Agent v0.5
+      - name: Run Security Whitehat Cloud Agent v0.6
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           REPO: ${{ github.repository }}
