@@ -104,12 +104,19 @@ jobs:
               --arg persona "$SECURITY_PERSONA" \
               --arg repo "$REPO" \
               --arg model_name "$MODEL_NAME" \
+              --arg sha "$SHA" \
               '{
                 model: $model_name,
-                prompt: { text: $persona },
+                prompt: { 
+                  text: (
+                    "Perform a security review of commit " + $sha +
+                    ". Review only changes introduced in this commit.\n\n" +
+                    $persona
+                  )
+                },
                 source: {
                   repository: ("https://github.com/" + $repo),
-                  ref: "main"
+                  ref: $sha
                 },
                 target: {
                   autoBranch: false,
