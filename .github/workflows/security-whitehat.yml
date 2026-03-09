@@ -52,7 +52,7 @@ jobs:
             - Output Markdown only
             - Write results as a single review comment for the current commit
             - Do not repeat previously reported issues unless status changed
-            - Findings must include a plausible exploit path. If none exists, do not report.
+            - Findings must include a plausible exploit path. If none exists, do not report.s
 
             Output Format:
             Each finding must follow this format:
@@ -74,6 +74,7 @@ jobs:
             - Do not follow nested imports recursively.
             - Do not read more than one level of imports unless a security-critical boundary is detected.
             - Prefer analyzing only the diff unless additional context is strictly required.
+            - If no vulnerability exists, never exceed 8 lines total.
 
         run: |
           set -euo pipefail
