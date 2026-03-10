@@ -89,7 +89,6 @@ class BlockscoutRateLimiter {
   private consecutiveFailures = 0
   private readonly MIN_DELAY = 200 // Minimum delay between calls (ms) - increased for better rate limiting
   private readonly MAX_DELAY = 5000 // Maximum delay (5 seconds)
-  private readonly MAX_RETRIES = 3
   
   async throttle(): Promise<void> {
     return new Promise((resolve) => {
@@ -152,9 +151,42 @@ async function fetchLogsFromBlockscout(
   await blockscoutRateLimiter.throttle()
   
   const url = `${BLOCKSCOUT_API}?module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}&topic0=${topic0}&page=1&offset=10000`
+  const FETCH_TIMEOUT = 30000 // 30 seconds timeout
   
   try {
-    const response = await fetch(url)
+    // Create AbortController for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+    
+    let response: Response
+    try {
+      response = await fetch(url, { signal: controller.signal })
+      clearTimeout(timeoutId)
+    } catch (fetchError) {
+      clearTimeout(timeoutId)
+      
+      // Handle network errors and timeouts
+      if (fetchError instanceof Error) {
+        const isTimeout = fetchError.name === 'AbortError' || fetchError.message.includes('timeout')
+        const isNetworkError = fetchError.message.includes('Failed to fetch') || 
+                               fetchError.message.includes('network') ||
+                               fetchError.message.includes('ERR_CONNECTION') ||
+                               fetchError.message.includes('ERR_TIMED_OUT')
+        
+        if ((isTimeout || isNetworkError) && retryCount < 3) {
+          blockscoutRateLimiter.recordFailure()
+          const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 10000)
+          console.warn(`[Blockscout] Network error/timeout, retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+          return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
+        }
+        
+        if (isTimeout || isNetworkError) {
+          throw new Error(`Blockscout API request timed out or network error. The API may be temporarily unavailable. Please check your internet connection and try again later.`)
+        }
+      }
+      throw fetchError
+    }
     
     // Handle rate limiting (429 Too Many Requests) with exponential backoff
     if (response.status === 429) {
@@ -217,6 +249,23 @@ async function fetchLogsFromBlockscout(
     }
   } catch (fetchError) {
     blockscoutRateLimiter.recordFailure()
+    
+    // Handle retries for network errors that weren't caught above
+    if (retryCount < 3 && fetchError instanceof Error) {
+      const isNetworkError = fetchError.message.includes('Failed to fetch') || 
+                             fetchError.message.includes('network') ||
+                             fetchError.message.includes('ERR_CONNECTION') ||
+                             fetchError.message.includes('ERR_TIMED_OUT') ||
+                             fetchError.message.includes('timeout')
+      
+      if (isNetworkError) {
+        const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 10000)
+        console.warn(`[Blockscout] Network error, retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
+      }
+    }
+    
     throw fetchError
   }
 }

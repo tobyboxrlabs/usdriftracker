@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import MintRedeemAnalyser from './MintRedeemAnalyser'
+import VaultDepositWithdrawAnalyser from './VaultDepositWithdrawAnalyser'
 import './Analytics.css'
 
 export default function Analytics() {
@@ -18,6 +19,7 @@ export default function Analytics() {
 
       <div className="analytics-container">
         <MintRedeemAnalyser />
+        <VaultDepositWithdrawAnalyser />
       </div>
     </div>
   )
