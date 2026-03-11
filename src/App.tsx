@@ -443,6 +443,8 @@ function App() {
     }
     
     // Try direct endpoints (works in dev, or as fallback)
+    // In dev mode, try direct endpoints but silently skip CORS errors to avoid console spam
+    const isDev = import.meta.env.DEV
     for (const endpoint of endpoints) {
       try {
         const provider = new ethers.JsonRpcProvider(endpoint)
@@ -454,7 +456,22 @@ function App() {
         providerCacheRef.current = provider
         return provider
       } catch (error) {
-        console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
+        // Silently skip CORS/network errors (they're expected for some endpoints)
+        // This prevents console spam while still allowing the app to try all endpoints
+        if (error instanceof Error && (
+          error.message.includes('CORS') || 
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('network') ||
+          error.message.includes('ERR_FAILED') ||
+          error.message.includes('ERR_CONNECTION')
+        )) {
+          // Silently continue to next endpoint without logging
+          continue
+        }
+        // Only log non-CORS errors (actual RPC errors)
+        if (!isDev) {
+          console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
+        }
         continue
       }
     }

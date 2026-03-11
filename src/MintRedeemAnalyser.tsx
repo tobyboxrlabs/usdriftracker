@@ -279,6 +279,7 @@ export default function MintRedeemAnalyser() {
   const [tokenFilter, setTokenFilter] = useState<'USDRIF' | 'RifPro' | 'All'>('All')
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [isCollapsed, setIsCollapsed] = useState(true)
 
   // Helper function to make RPC calls
   // In dev: goes straight to RPC endpoint
@@ -1093,8 +1094,11 @@ export default function MintRedeemAnalyser() {
   }, [days, makeRpcCall])
 
   useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
+    // Only fetch transactions when expanded
+    if (!isCollapsed) {
+      fetchTransactions()
+    }
+  }, [fetchTransactions, isCollapsed])
 
   const exportToExcel = useCallback((txsToExport: MintRedeemTransaction[]) => {
     try {
@@ -1183,10 +1187,19 @@ export default function MintRedeemAnalyser() {
   }, [])
 
   return (
-    <div className="mint-redeem-analyser">
+    <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
         <h2>USDRIF Mint/Redeem Analyser</h2>
-        <div className="analyser-controls">
+        <button 
+          className="collapse-toggle"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
+          title={isCollapsed ? 'Expand' : 'Collapse'}
+        >
+          {isCollapsed ? '▶' : '▼'}
+        </button>
+        {!isCollapsed && (
+          <div className="analyser-controls">
           <div className="filter-toggle">
             <button
               className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
@@ -1235,10 +1248,13 @@ export default function MintRedeemAnalyser() {
               XLS
             </button>
           </div>
-        </div>
+          </div>
+        )}
       </div>
 
-      {error && (
+      {!isCollapsed && (
+        <>
+          {error && (
         <div className="error-message">
           Error: {error}
         </div>
@@ -1394,6 +1410,8 @@ export default function MintRedeemAnalyser() {
               )
             })()}
         </div>
+      )}
+        </>
       )}
     </div>
   )

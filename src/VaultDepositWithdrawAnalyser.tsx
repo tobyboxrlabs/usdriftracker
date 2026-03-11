@@ -323,6 +323,7 @@ export default function VaultDepositWithdrawAnalyser() {
   const [days, setDays] = useState(1)
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [isCollapsed, setIsCollapsed] = useState(true)
 
   // Helper function to make RPC calls
   const makeRpcCall = useCallback(async (method: string, params: any[]): Promise<any> => {
@@ -683,8 +684,11 @@ export default function VaultDepositWithdrawAnalyser() {
   }, [days, makeRpcCall])
 
   useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
+    // Only fetch transactions when expanded
+    if (!isCollapsed) {
+      fetchTransactions()
+    }
+  }, [fetchTransactions, isCollapsed])
 
   const exportToExcel = useCallback((txsToExport: VaultTransaction[]) => {
     try {
@@ -758,10 +762,19 @@ export default function VaultDepositWithdrawAnalyser() {
   }, [])
 
   return (
-    <div className="mint-redeem-analyser">
+    <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
         <h2>USD Vault Deposits/Withdrawals Analyser</h2>
-        <div className="analyser-controls">
+        <button 
+          className="collapse-toggle"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
+          title={isCollapsed ? 'Expand' : 'Collapse'}
+        >
+          {isCollapsed ? '▶' : '▼'}
+        </button>
+        {!isCollapsed && (
+          <div className="analyser-controls">
           <div className="filter-toggle">
             {/* No filter buttons needed for vault - only one asset type */}
           </div>
@@ -788,9 +801,12 @@ export default function VaultDepositWithdrawAnalyser() {
               XLS
             </button>
           </div>
-        </div>
+          </div>
+        )}
       </div>
 
+      {!isCollapsed && (
+        <>
       {error && (
         <div className="error-message">
           Error: {error}
@@ -921,6 +937,8 @@ export default function VaultDepositWithdrawAnalyser() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )
