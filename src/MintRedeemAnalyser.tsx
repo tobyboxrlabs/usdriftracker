@@ -147,10 +147,32 @@ async function fetchLogsFromBlockscout(
   topic0: string,
   retryCount = 0
 ): Promise<BlockscoutLog[]> {
+  // Validate block numbers before making API call
+  if (!Number.isInteger(fromBlock) || fromBlock < 0) {
+    throw new Error(`Invalid fromBlock: ${fromBlock}. Must be a non-negative integer.`)
+  }
+  if (!Number.isInteger(toBlock) || toBlock < 0) {
+    throw new Error(`Invalid toBlock: ${toBlock}. Must be a non-negative integer.`)
+  }
+  if (toBlock < fromBlock) {
+    throw new Error(`Invalid block range: toBlock (${toBlock}) must be >= fromBlock (${fromBlock}).`)
+  }
+  
   // Use global rate limiter to throttle all Blockscout API calls
   await blockscoutRateLimiter.throttle()
   
-  const url = `${BLOCKSCOUT_API}?module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}&topic0=${topic0}&page=1&offset=10000`
+  // Use URLSearchParams for proper URL encoding to prevent injection attacks
+  const params = new URLSearchParams({
+    module: 'logs',
+    action: 'getLogs',
+    address: address,
+    fromBlock: fromBlock.toString(),
+    toBlock: toBlock.toString(),
+    topic0: topic0,
+    page: '1',
+    offset: '10000'
+  })
+  const url = `${BLOCKSCOUT_API}?${params.toString()}`
   const FETCH_TIMEOUT = 30000 // 30 seconds timeout
   
   try {
@@ -1189,7 +1211,7 @@ export default function MintRedeemAnalyser() {
   return (
     <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
-        <h2>USDRIF Mint/Redeem Analyser</h2>
+        <h2>USDRIF Mint/Redeem</h2>
         <button 
           className="collapse-toggle"
           onClick={() => setIsCollapsed(!isCollapsed)}

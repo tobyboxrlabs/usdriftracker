@@ -745,7 +745,7 @@ export default function VaultDepositWithdrawAnalyser() {
       
       XLSX.utils.sheet_add_json(ws, summaryData, { origin: `A${summaryStartRow}`, skipHeader: true })
 
-      const sheetName = 'USD Vault Transactions'
+      const sheetName = 'vUSD Transactions'
       XLSX.utils.book_append_sheet(wb, ws, sheetName)
 
       const today = new Date()
@@ -764,7 +764,7 @@ export default function VaultDepositWithdrawAnalyser() {
   return (
     <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
-        <h2>USD Vault Deposits/Withdrawals Analyser</h2>
+        <h2>vUSD Depo/Withdraw</h2>
         <button 
           className="collapse-toggle"
           onClick={() => setIsCollapsed(!isCollapsed)}

@@ -15,6 +15,9 @@ import requests
 from dataclasses import dataclass, asdict
 
 # Configuration
+# SECURITY NOTE: These URLs are hardcoded to prevent SSRF attacks.
+# DO NOT modify this script to accept user-provided URLs without
+# implementing proper URL validation and allowlisting.
 RSK_STATS_URL = "https://stats.rootstock.io"
 RSK_BLOCKSCOUT_STATS_URL = "https://rootstock.blockscout.com/stats"
 MEMPOOL_API_URL = "https://mempool.space/api/v1/mining/hashrate"
@@ -44,6 +47,43 @@ class HashRateData:
     ratio: Optional[float]  # Overall ratio using hierarchical fallback
     ratio_best_guess: Optional[float]  # Ratio using mempool.space (BTC) + stats.rootstock.io (RSK)
     error: Optional[str] = None
+
+
+def validate_hex_string(hex_str: str, expected_length: Optional[int] = None) -> bool:
+    """
+    Validate hex string format to prevent injection attacks
+    
+    Args:
+        hex_str: String to validate
+        expected_length: Optional expected length (without '0x' prefix)
+    
+    Returns:
+        True if valid hex string, False otherwise
+    """
+    if not hex_str or not isinstance(hex_str, str):
+        return False
+    # Remove '0x' prefix if present
+    clean_hex = hex_str[2:] if hex_str.startswith('0x') else hex_str
+    # Check if all characters are valid hex digits
+    if not all(c in '0123456789abcdefABCDEF' for c in clean_hex):
+        return False
+    # Check length if specified
+    if expected_length and len(clean_hex) != expected_length:
+        return False
+    return True
+
+
+def validate_block_number(block_num: int) -> bool:
+    """
+    Validate block number is reasonable to prevent DoS attacks
+    
+    Args:
+        block_num: Block number to validate
+    
+    Returns:
+        True if valid, False otherwise
+    """
+    return isinstance(block_num, int) and 0 <= block_num <= 10_000_000  # Reasonable upper bound
 
 
 def get_rsk_hashrate_from_rpc() -> Tuple[Optional[float], Optional[str]]:
@@ -224,6 +264,12 @@ def parse_hashrate_string(hashrate_str: str) -> Optional[float]:
 def get_rsk_hashrate_from_stats_io() -> Tuple[Optional[float], Optional[str]]:
     """
     Fetch RSK hash rate from stats.rootstock.io using Selenium
+    
+    SECURITY NOTE: This function executes JavaScript from an external website.
+    The Selenium browser runs in a headless, isolated environment, but if the
+    external site is compromised, malicious code could execute. This is a
+    known risk of web scraping. Ensure this script runs in a sandboxed
+    environment and monitor for unexpected behavior.
     
     Uses Selenium to load the page, execute JavaScript, wait for WebSocket data to load,
     and extract the hash rate from the DOM.
@@ -468,7 +514,15 @@ def get_rsk_hashrate_from_stats() -> Tuple[Optional[float], Optional[str]]:
         if not latest_block_num_hex:
             return None, "No block number returned from Blockscout API"
         
+        # Validate hex string format before parsing
+        if not validate_hex_string(latest_block_num_hex):
+            return None, f"Invalid block number format from Blockscout API: {latest_block_num_hex}"
+        
         latest_block_num = int(latest_block_num_hex, 16)
+        
+        # Validate block number range
+        if not validate_block_number(latest_block_num):
+            return None, f"Invalid block number range: {latest_block_num}"
         
         # Fetch multiple recent blocks to calculate average block time and difficulty
         blocks_to_fetch = 10
@@ -511,6 +565,10 @@ def get_rsk_hashrate_from_stats() -> Tuple[Optional[float], Optional[str]]:
                 difficulty_hex = block.get("difficulty", "0x0")
                 
                 if timestamp_hex == "0x0" or difficulty_hex == "0x0":
+                    continue
+                
+                # Validate hex strings before parsing
+                if not validate_hex_string(timestamp_hex) or not validate_hex_string(difficulty_hex):
                     continue
                 
                 timestamp = int(timestamp_hex, 16)

@@ -11,6 +11,9 @@ from dataclasses import dataclass, asdict
 from typing import Optional
 import requests
 
+# SECURITY NOTE: This URL is hardcoded to prevent SSRF attacks.
+# DO NOT modify this script to accept user-provided URLs without
+# implementing proper URL validation and allowlisting.
 BASE_URL = "https://mempool.space"
 TAG = b"RSKBLOCK:"  # Rootstock merged-mining tag
 
@@ -98,6 +101,43 @@ def get_tx_json(txid: str) -> dict:
     return result
 
 
+def validate_hex_string(hex_str: str, expected_length: Optional[int] = None) -> bool:
+    """
+    Validate hex string format to prevent injection attacks
+    
+    Args:
+        hex_str: String to validate
+        expected_length: Optional expected length (without '0x' prefix)
+    
+    Returns:
+        True if valid hex string, False otherwise
+    """
+    if not hex_str or not isinstance(hex_str, str):
+        return False
+    # Remove '0x' prefix if present
+    clean_hex = hex_str[2:] if hex_str.startswith('0x') else hex_str
+    # Check if all characters are valid hex digits
+    if not all(c in '0123456789abcdefABCDEF' for c in clean_hex):
+        return False
+    # Check length if specified
+    if expected_length and len(clean_hex) != expected_length:
+        return False
+    return True
+
+
+def validate_block_number(block_num: int) -> bool:
+    """
+    Validate block number is reasonable to prevent DoS attacks
+    
+    Args:
+        block_num: Block number to validate
+    
+    Returns:
+        True if valid, False otherwise
+    """
+    return isinstance(block_num, int) and 0 <= block_num <= 10_000_000  # Reasonable upper bound
+
+
 def find_rsk_tag_in_hex(hex_str: str, tag: bytes = TAG) -> tuple[bool, Optional[int], Optional[str]]:
     """
     Search for RSKBLOCK: tag in hex-encoded scriptSig
@@ -108,8 +148,12 @@ def find_rsk_tag_in_hex(hex_str: str, tag: bytes = TAG) -> tuple[bool, Optional[
     if not hex_str:
         return False, None, None
     
+    # Validate hex string format
+    if not validate_hex_string(hex_str.replace('0x', '')):
+        return False, None, None
+    
     try:
-        raw_bytes = bytes.fromhex(hex_str)
+        raw_bytes = bytes.fromhex(hex_str.replace('0x', ''))
     except ValueError:
         return False, None, None
     
@@ -128,8 +172,16 @@ def find_rsk_tag_in_hex(hex_str: str, tag: bytes = TAG) -> tuple[bool, Optional[
 
 def scan_block(height: int) -> BlockScanResult:
     """Scan a single block for RSK merged-mining tag"""
+    # Validate block height
+    if not validate_block_number(height):
+        raise ValueError(f"Invalid block height: {height}")
+    
     # Get block hash
     block_hash = get_block_hash(height)
+    
+    # Validate block hash format (should be 64 hex characters)
+    if not validate_hex_string(block_hash, expected_length=64):
+        raise ValueError(f"Invalid block hash format: {block_hash}")
     
     # Get block info (includes timestamp)
     block_info = get_block_info(block_hash)
@@ -209,14 +261,26 @@ def scan_last_n_blocks(n: int = 5) -> list[BlockScanResult]:
 def main():
     """Main entry point"""
     num_blocks = 5
+    MAX_BLOCKS = 1000  # Maximum blocks to prevent DoS attacks
     
     # Allow override via command line argument
     if len(sys.argv) > 1:
         try:
             num_blocks = int(sys.argv[1])
+            # Validate bounds to prevent DoS attacks
+            if num_blocks < 1:
+                print(f"Error: num_blocks must be >= 1", file=sys.stderr)
+                print(f"Usage: {sys.argv[0]} [num_blocks]", file=sys.stderr)
+                print(f"  num_blocks: Number of blocks to scan (default: 5, max: {MAX_BLOCKS})", file=sys.stderr)
+                sys.exit(1)
+            if num_blocks > MAX_BLOCKS:
+                print(f"Error: num_blocks exceeds maximum of {MAX_BLOCKS}", file=sys.stderr)
+                print(f"Usage: {sys.argv[0]} [num_blocks]", file=sys.stderr)
+                print(f"  num_blocks: Number of blocks to scan (default: 5, max: {MAX_BLOCKS})", file=sys.stderr)
+                sys.exit(1)
         except ValueError:
             print(f"Usage: {sys.argv[0]} [num_blocks]", file=sys.stderr)
-            print(f"  num_blocks: Number of blocks to scan (default: 5)", file=sys.stderr)
+            print(f"  num_blocks: Number of blocks to scan (default: 5, max: {MAX_BLOCKS})", file=sys.stderr)
             sys.exit(1)
     
     try:
