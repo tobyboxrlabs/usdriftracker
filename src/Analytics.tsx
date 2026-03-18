@@ -20,7 +20,7 @@ export default function Analytics() {
 
   const usdrifExpanded = analyser === 'usdrif'
   const vusdExpanded = analyser === 'vusd'
-  const btcExpanded = analyser === 'btc'
+  const vbtcExpanded = analyser === 'vbtc'
 
   return (
     <div className="analytics-page">
@@ -45,8 +45,8 @@ export default function Analytics() {
           initialDays={vusdExpanded ? days : undefined}
         />
         <BTCVaultAnalyser
-          initialExpanded={btcExpanded}
-          initialDays={btcExpanded ? days : undefined}
+          initialExpanded={vbtcExpanded}
+          initialDays={vbtcExpanded ? days : undefined}
         />
       </div>
     </div>
