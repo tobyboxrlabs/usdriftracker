@@ -31,6 +31,7 @@ export default function LightCycleGame() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [playerName, setPlayerName] = useState('')
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
+  const [showSubmitForm, setShowSubmitForm] = useState(false) // Progressive disclosure: only show name input when user clicks "Submit to Leaderboard"
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
 
 
@@ -356,6 +357,7 @@ export default function LightCycleGame() {
     setScore(0)
     setSpeed(INITIAL_SPEED)
     setScoreSubmitted(false)
+    setShowSubmitForm(false)
   }
 
   return (
@@ -434,35 +436,46 @@ export default function LightCycleGame() {
             <div className="game-over-content">
               <h2>GAME OVER</h2>
               <p className="final-score">Final Score: {score}</p>
-              
-              {!scoreSubmitted && (
-                <>
-                  <div className="player-name-input">
-                    <input
-                      type="text"
-                      placeholder="Enter your name (optional)"
-                      value={playerName}
-                      onChange={(e) => setPlayerName(e.target.value)}
-                      maxLength={20}
-                      className="player-name-field"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !scoreSubmitted) {
-                          submitScore(score, playerName || undefined)
-                        }
-                      }}
-                    />
-                  </div>
-                  <button 
-                    onClick={() => !scoreSubmitted && submitScore(score, playerName || undefined)}
-                    className="game-submit-score-button"
-                    disabled={scoreSubmitted}
-                  >
-                    Submit Score
-                  </button>
-                </>
-              )}
 
-              {scoreSubmitted && (
+              <button onClick={resetGame} className="game-restart-button game-restart-button--primary">
+                Play Again
+              </button>
+
+              {!scoreSubmitted ? (
+                !showSubmitForm ? (
+                  <button
+                    onClick={() => setShowSubmitForm(true)}
+                    className="game-submit-score-button game-submit-score-button--secondary"
+                  >
+                    Submit to Leaderboard
+                  </button>
+                ) : (
+                  <>
+                    <div className="player-name-input">
+                      <input
+                        type="text"
+                        placeholder="Enter your name (optional)"
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                        maxLength={20}
+                        className="player-name-field"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !scoreSubmitted) {
+                            submitScore(score, playerName || undefined)
+                          }
+                        }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => !scoreSubmitted && submitScore(score, playerName || undefined)}
+                      className="game-submit-score-button"
+                      disabled={scoreSubmitted}
+                    >
+                      Submit Score
+                    </button>
+                  </>
+                )
+              ) : (
                 <>
                   {import.meta.env.DEV ? (
                     <p className="score-submitted dev-warning">
@@ -473,10 +486,6 @@ export default function LightCycleGame() {
                   )}
                 </>
               )}
-
-              <button onClick={resetGame} className="game-restart-button">
-                Play Again
-              </button>
             </div>
           </div>
         )}

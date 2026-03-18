@@ -239,6 +239,13 @@
   transform: translateY(-2px);
 }
 
+/* Primary CTA: Play Again - more prominent */
+.game-restart-button--primary {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  padding: 14px 28px;
+}
+
 .game-instructions {
   margin-top: 30px;
   text-align: center;
@@ -380,6 +387,19 @@
 .game-submit-score-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Secondary CTA: Submit to Leaderboard - subtle, below Play Again */
+.game-submit-score-button--secondary {
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  opacity: 0.85;
+  border-color: rgba(0, 255, 255, 0.6);
+}
+
+.game-submit-score-button--secondary:hover {
+  opacity: 1;
+  border-color: #00ffff;
 }
 
 .leaderboard-section {

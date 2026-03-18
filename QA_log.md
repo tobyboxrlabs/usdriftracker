@@ -18,6 +18,12 @@
 - Env var validation
 - Consider websocket updates
 
+### New Issue (Tests)
+- **Vitest failing due to missing `ethers.id` mock**
+  - **Error:** `TypeError: ethers.id is not a function` from `src/BTCVaultAnalyser.tsx`
+  - **Cause:** `src/App.test.tsx` mocks `ethers` but doesn’t include `id`, while `Analytics` (imported by `App`) imports `BTCVaultAnalyser` which uses `ethers.id`.
+  - **Fix:** Extend the test mock to include `id` (e.g. `id: vi.fn(() => '0x...')`) or switch to partial mocking that preserves `ethers.id`.
+
 ### New Findings (MintRedeemAnalyser Review)
 - **RPC proxy whitelist mismatch**
   - Production uses `/api/rpc?target=...` with `ROOTSTOCK_RPC_ALTERNATIVES`.

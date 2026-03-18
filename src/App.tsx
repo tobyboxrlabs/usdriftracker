@@ -418,33 +418,26 @@ function App() {
       }
     }
 
-    const isProduction = !import.meta.env.DEV
     const endpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [CONFIG.ROOTSTOCK_RPC]
+    const isDev = import.meta.env.DEV
     
-    // In production, try proxy endpoint first to avoid CORS
-    if (isProduction) {
+    // In production (or vercel dev): try proxy first (avoids CORS)
+    // In dev with plain vite: skip proxy (it 404s), go straight to direct
+    if (!isDev) {
       for (const endpoint of endpoints) {
         try {
-          // Create provider with proxy
           const provider = new ProxyJsonRpcProvider(endpoint)
-          
-          // Test connection
           await provider.getBlockNumber()
-          console.log(`✅ Using RPC proxy endpoint: ${endpoint}`)
-          
-          // Cache the provider instance
+          console.log(`✅ Using RPC proxy: ${endpoint}`)
           providerCacheRef.current = provider
           return provider
         } catch (error) {
-          console.warn(`RPC proxy for ${endpoint} failed, trying next...`, error)
           continue
         }
       }
     }
     
-    // Try direct endpoints (works in dev, or as fallback)
-    // In dev mode, try direct endpoints but silently skip CORS errors to avoid console spam
-    const isDev = import.meta.env.DEV
+    // Direct endpoints (dev fallback when proxy unavailable, or production fallback)
     for (const endpoint of endpoints) {
       try {
         const provider = new ethers.JsonRpcProvider(endpoint)
@@ -980,14 +973,6 @@ function App() {
                 helpText="Sourced from the stRIF token contract (totalSupply). Represents the total amount of RIF tokens staked in the collective."
               />
               <MetricDisplay
-                label="Staked USDRIF in USD Vault"
-                value={tokenData.formattedVaultedUsdrif}
-                unit="VUSD"
-                isRefreshing={refreshingMetrics.has(METRIC_KEYS.VAULTED_USDRIF)}
-                history={history.vaultedUsdrif}
-                helpText="Sourced from the VUSD token contract (0xd8169270417050dCEf119597a7F6F5EE98dd2fd3) using totalSupply(). Represents the total amount of USDRIF staked in the USD vault."
-              />
-              <MetricDisplay
                 label="RIFPRO Total Supply"
                 value={tokenData.formattedRifproSupply}
                 unit="RIFPRO"
@@ -1002,6 +987,14 @@ function App() {
                 isRefreshing={refreshingMetrics.has(METRIC_KEYS.MINTED)}
                 history={history.minted}
                 helpText="Sourced from the USDRIF token contract (totalSupply). Represents the total amount of USDRIF tokens that have been minted."
+              />
+              <MetricDisplay
+                label="Staked USDRIF in USD Vault"
+                value={tokenData.formattedVaultedUsdrif}
+                unit="VUSD"
+                isRefreshing={refreshingMetrics.has(METRIC_KEYS.VAULTED_USDRIF)}
+                history={history.vaultedUsdrif}
+                helpText="Sourced from the VUSD token contract (0xd8169270417050dCEf119597a7F6F5EE98dd2fd3) using totalSupply(). Represents the total amount of USDRIF staked in the USD vault."
               />
               <MetricDisplay
                 label="RIF Price"

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
+import { RootstockLogo } from './RootstockLogo'
 import './MintRedeemAnalyser.css'
 
 interface VaultTransaction {
@@ -316,18 +317,22 @@ function formatAmountDisplay(amount: string, decimals: number = 0): string {
   })
 }
 
-export default function VaultDepositWithdrawAnalyser() {
+interface VaultDepositWithdrawAnalyserProps {
+  initialExpanded?: boolean
+  initialDays?: number
+}
+
+export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialDays }: VaultDepositWithdrawAnalyserProps = {}) {
   const [transactions, setTransactions] = useState<VaultTransaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [days, setDays] = useState(1)
+  const [days, setDays] = useState(initialDays ?? 1)
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
 
   // Helper function to make RPC calls
   const makeRpcCall = useCallback(async (method: string, params: any[]): Promise<any> => {
-    const isDev = import.meta.env.DEV
     const primaryRpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
     
     const fallbackEndpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [
@@ -335,6 +340,8 @@ export default function VaultDepositWithdrawAnalyser() {
       'https://rsk.publicnode.com',
     ]
     
+    // In production: proxy first. In dev (vite only): skip proxy (404s), use direct
+    const isDev = import.meta.env.DEV
     const endpointsToTry = isDev
       ? [primaryRpcEndpoint, ...fallbackEndpoints]
       : [
@@ -369,8 +376,8 @@ export default function VaultDepositWithdrawAnalyser() {
         })
         
         if (response.status === 410 || response.status === 404) {
-          if (response.status === 404 && isDev && !isDirectRpc) {
-            lastError = new Error(`Proxy unavailable in dev mode`)
+          if (response.status === 404 && !isDirectRpc) {
+            lastError = new Error(`RPC proxy unavailable (run 'npm run dev' for vercel dev with API)`)
             continue
           }
           lastError = new Error(`RPC endpoint unavailable: ${response.status} ${response.statusText}`)
@@ -764,7 +771,11 @@ export default function VaultDepositWithdrawAnalyser() {
   return (
     <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
-        <h2>vUSD Depo/Withdraw</h2>
+        <h2>USD Vault</h2>
+        <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
+          <RootstockLogo className="network-badge__logo" />
+          Mainnet
+        </span>
         <button 
           className="collapse-toggle"
           onClick={() => setIsCollapsed(!isCollapsed)}

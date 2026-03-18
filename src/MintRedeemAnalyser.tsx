@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
+import { RootstockLogo } from './RootstockLogo'
 import './MintRedeemAnalyser.css'
 
 interface MintRedeemTransaction {
@@ -45,6 +46,12 @@ const MOC_CONTRACT_ADDRESSES = [
   CONFIG.MOC_V2_CORE, // MoC V2 Core
   '0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257', // MoC State
 ]
+const MOC_CONTRACT_NAMES: Record<string, string> = {
+  [MOC_CONTRACT_ADDRESSES[0].toLowerCase()]: 'MoC',
+  [CONFIG.MOC_V2_CORE.toLowerCase()]: 'MoC V2 Core',
+  [MOC_CONTRACT_ADDRESSES[2].toLowerCase()]: 'MoC State',
+}
+const ROC_CONTRACTS_LABEL = MOC_CONTRACT_ADDRESSES.map(a => MOC_CONTRACT_NAMES[a.toLowerCase()]).join(', ')
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 // MoC Contract ABI for minting/redeeming functions and events
@@ -293,21 +300,25 @@ async function fetchLogsFromBlockscout(
 }
 
 
-export default function MintRedeemAnalyser() {
+interface MintRedeemAnalyserProps {
+  initialExpanded?: boolean
+  initialDays?: number
+}
+
+export default function MintRedeemAnalyser({ initialExpanded, initialDays }: MintRedeemAnalyserProps = {}) {
   const [transactions, setTransactions] = useState<MintRedeemTransaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [days, setDays] = useState(1)
+  const [days, setDays] = useState(initialDays ?? 1)
   const [tokenFilter, setTokenFilter] = useState<'USDRIF' | 'RifPro' | 'All'>('All')
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
 
   // Helper function to make RPC calls
   // In dev: goes straight to RPC endpoint
   // In production: uses proxy for CORS handling
   const makeRpcCall = useCallback(async (method: string, params: any[]): Promise<any> => {
-    const isDev = import.meta.env.DEV
     const primaryRpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
     
     // Fallback RPC endpoints
@@ -316,20 +327,13 @@ export default function MintRedeemAnalyser() {
       'https://rsk.publicnode.com',
     ]
     
-    // Build list of endpoints to try
-    // In dev mode, skip proxy (doesn't exist locally) and go straight to direct RPC calls
-    // In production, try proxy first (handles CORS), then fall back to direct RPC calls
+    // In production: proxy first. In dev (vite only): skip proxy (404s), use direct
+    const isDev = import.meta.env.DEV
     const endpointsToTry = isDev
-      ? [
-          // In dev, try direct RPC calls first (proxy doesn't exist)
-          primaryRpcEndpoint,
-          ...fallbackEndpoints
-        ]
+      ? [primaryRpcEndpoint, ...fallbackEndpoints]
       : [
-          // In production, try proxy first
           `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
           ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`),
-          // Fallback to direct RPC calls if proxy is unavailable
           primaryRpcEndpoint,
           ...fallbackEndpoints
         ]
@@ -363,9 +367,8 @@ export default function MintRedeemAnalyser() {
         // Handle 410 Gone and 404 Not Found - try next endpoint
         // 404 is expected in dev mode when proxy doesn't exist, so log at debug level
         if (response.status === 410 || response.status === 404) {
-          if (response.status === 404 && isDev && !isDirectRpc) {
-            // Proxy doesn't exist in dev - this is expected, skip quietly
-            lastError = new Error(`Proxy unavailable in dev mode`)
+          if (response.status === 404 && !isDirectRpc) {
+            lastError = new Error(`RPC proxy unavailable (run 'npm run dev' for vercel dev with API)`)
             continue
           }
           console.warn(`[RPC] Endpoint ${targetUrl} returned ${response.status}, trying next endpoint...`)
@@ -510,7 +513,7 @@ export default function MintRedeemAnalyser() {
       // Set total count for progress tracking
       const totalTxs = uniqueTxHashes.length
       if (totalTxs > 0) {
-        setLoadingProgress({ current: 0, total: totalTxs, phase: 'Fetching MoC events...' })
+        setLoadingProgress({ current: 0, total: totalTxs, phase: `Fetch RoC events... ${ROC_CONTRACTS_LABEL}` })
       }
       
       // Now fetch MoC events - query by transaction hash from Blockscout API
@@ -539,6 +542,10 @@ export default function MintRedeemAnalyser() {
       // Query MoC events from all known contract addresses
       const mocEvents: Array<{ log: BlockscoutLog; contractAddress: string }> = []
       for (const mocAddress of MOC_CONTRACT_ADDRESSES) {
+        const contractName = MOC_CONTRACT_NAMES[mocAddress.toLowerCase()] || 'MoC'
+        if (totalTxs > 0) {
+          setLoadingProgress(prev => prev ? { ...prev, phase: `Fetch RoC events... ${contractName}` } : null)
+        }
         console.log(`[DEBUG] Querying MoC events from ${mocAddress}...`)
         const [mintEvents, mintVendorsEvents, redeemEvents, redeemVendorsEvents] = await Promise.all([
           fetchLogsFromBlockscout(mocAddress.toLowerCase(), fromBlock, currentBlock, mintEventTopic),
@@ -575,7 +582,7 @@ export default function MintRedeemAnalyser() {
         // Update progress (MoC events phase: ~25% of total work)
         if (totalTxs > 0) {
           const progress = Math.floor(((i + BATCH_SIZE) / mocQueryLimit) * 25)
-          setLoadingProgress({ current: Math.min(progress, 25), total: 100, phase: `Fetching MoC events... (${Math.min(i + BATCH_SIZE, mocQueryLimit)}/${mocQueryLimit})` })
+          setLoadingProgress({ current: Math.min(progress, 25), total: 100, phase: `Fetch RoC events... ${ROC_CONTRACTS_LABEL} (${Math.min(i + BATCH_SIZE, mocQueryLimit)}/${mocQueryLimit})` })
         }
         
         // Process batch in parallel
@@ -1211,7 +1218,11 @@ export default function MintRedeemAnalyser() {
   return (
     <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="analyser-header">
-        <h2>USDRIF Mint/Redeem</h2>
+        <h2>USDRIF</h2>
+        <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
+          <RootstockLogo className="network-badge__logo" />
+          Mainnet
+        </span>
         <button 
           className="collapse-toggle"
           onClick={() => setIsCollapsed(!isCollapsed)}

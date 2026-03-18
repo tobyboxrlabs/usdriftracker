@@ -6623,3 +6623,1949 @@ The responsive design implementation has been **exceptionally successful**. All 
 **Device Verification:** iPhone 12 Pro (390px viewport)  
 **User Confirmation:** "It now works fine on my iPhone 12 Pro" ✅  
 **Recommendation:** 🎯 **SHIP IT** - Ready for production
+
+---
+
+---
+
+# 🎨 DESIGN REVIEW: Network Badge Lozenges (Mainnet/Testnet)
+
+**Review Type:** Visual Consistency & Brand Alignment  
+**Issue:** Network badges don't follow TRON aesthetic  
+**Severity:** MEDIUM (Visual inconsistency, not functional)  
+**Date:** January 24, 2026
+
+---
+
+## 🔍 **Current Implementation Analysis**
+
+### **Location:**
+Network badges appear in component headers:
+- `MintRedeemAnalyser.tsx` line 1215: "Rootstock Mainnet" badge
+- `BTCVaultAnalyser.tsx` line 395: "Rootstock Testnet" badge
+- `VaultDepositWithdrawAnalyser.tsx` line 768: "Rootstock Mainnet" badge
+
+**Usage:**
+```tsx
+<span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
+  Rootstock Mainnet
+</span>
+```
+
+---
+
+### **Current Styling (MintRedeemAnalyser.css lines 56-77):**
+
+**Base Badge:**
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+```
+
+**Mainnet Variant:**
+```css
+.network-badge--mainnet {
+  background: linear-gradient(135deg, #00c853 0%, #009624 100%);
+  color: #000;  /* Black text */
+  border: 1px solid rgba(0, 200, 83, 0.5);
+}
+```
+
+**Testnet Variant:**
+```css
+.network-badge--testnet {
+  background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+  color: #fff;  /* White text */
+  border: 1px solid rgba(255, 152, 0, 0.5);
+}
+```
+
+---
+
+## 🚨 **Design System Violations - CONFIRMED BY SCREENSHOT**
+
+### **Problem #1: Material Design, Not TRON** ❌ CRITICAL
+
+**Visual Evidence from Screenshot:**
+- ❌ **Solid green background** badges for "ROOTSTOCK MAI[NNET]"
+- ❌ **Solid orange background** badge for "ROOTSTOCK TES[TNET]"
+- ❌ **White text** on colored backgrounds
+- ❌ **No glow effects** - flat, non-TRON appearance
+- ❌ **Play button icons** (▶) appearing next to badges - unclear purpose
+- ❌ **Badges are inside rounded cyan boxes** - creating visual clutter
+
+**Current Style Analysis:**
+- Green: #00c853 (Material Design green-600)
+- Orange: #ff9800 (Material Design orange-500)
+- Solid, opaque gradient backgrounds
+- 1px thin borders
+- Zero glowing effects
+
+**TRON Aesthetic Throughout Rest of App:**
+- ✅ Transparent/dark backgrounds with rgba
+- ✅ Cyan (#00ffff) as primary accent color
+- ✅ Box-shadow glows on all elements (10-20px)
+- ✅ 2px glowing borders
+- ✅ Rajdhani/Orbitron fonts
+- ✅ Text-shadow glows
+
+**Severity:** 🔴 **CRITICAL** - Badges are immediately recognizable as foreign elements that break the entire visual system.
+
+**User Confirmation:** "This is the wrong palette and layout" ✅
+
+**Verdict:** Complete visual mismatch. These badges look like they were imported from a Google Material Design template into a TRON/Cyberpunk-themed application.
+
+---
+
+### **Problem #2: Color Palette Completely Foreign**
+
+**Application Color System:**
+- **Primary:** Cyan (#00ffff) - used for all primary elements
+- **Success/Positive:** Green-cyan (#00ff88) - used for Mint transactions only
+- **Warning/Error:** Magenta (#ff0080) - used for Redeem transactions
+- **Background:** Dark (#0a0a0a) with transparent rgba overlays
+- **Accent:** Cyan glows throughout (box-shadow, text-shadow)
+
+**Network Badge Colors (SCREENSHOT EVIDENCE):**
+- **Mainnet:** Solid green (#00c853) ❌ NOT in color system
+- **Testnet:** Solid orange (#ff9800) ❌ NOT in color system
+- **Text:** Black on green, white on orange ❌ Inconsistent
+- **Background:** Opaque solid fills ❌ Violates transparency pattern
+
+**Visual Impact:**
+Looking at the screenshot, the green and orange badges are **immediately jarring** - they stand out like foreign objects because:
+1. Green and orange don't appear ANYWHERE else in the app
+2. Solid backgrounds violate the "dark + transparent rgba" pattern
+3. No glowing effects make them look flat and lifeless
+4. Different from every other UI element
+
+**Verdict:** Critical color palette violation. These colors are imported from Material Design and have no relationship to the TRON color system.
+
+---
+
+### **Problem #3: Excessive Layout Complexity (Screenshot Evidence)**
+
+**Observed Layout Problems:**
+
+**Visual Layer Breakdown (from screenshot):**
+```
+┌────────────────────────────────────────┐
+│  ┌──────────────────┐  ┌──────────┐   │  ← Outer cyan container
+│  │ ROOTSTOCK MAI... │  │    ▶     │   │  ← Inner: green badge + cyan play box
+│  └──────────────────┘  └──────────┘   │
+└────────────────────────────────────────┘
+
+Layer 1: Large cyan-bordered rounded rectangle (outer container)
+Layer 2: Solid green badge with truncated text
+Layer 3: Cyan-bordered square with play icon
+Result: 3 competing visual elements for one piece of information!
+```
+
+**Specific Issues:**
+
+1. ❌ **Three-Layer Visual Structure**
+   - Outer container with cyan border + glow
+   - Badge with green/orange fill + border
+   - Play button with cyan border in separate box
+   - Excessive visual complexity for simple network indicator
+
+2. ❌ **Play Button Icons (▶)** in Cyan Boxes
+   - Each badge has a separate cyan-bordered square box with play icon
+   - Unclear purpose - what does clicking play do?
+   - Icon color (cyan) clashes with badge color (green/orange)
+   - Creates confusion - is this a media player? a toggle? decorative?
+   - No clear relationship between badge and play icon
+
+3. ❌ **Text Truncation**
+   - "ROOTSTOCK MAI..." (cuts off last 4 characters: "NNET")
+   - "ROOTSTOCK TES..." (cuts off last 4 characters: "TNET")
+   - Users cannot read full network name
+   - Bad for accessibility and clarity
+   - Caused by insufficient padding (4px 10px)
+
+4. ❌ **Large Outer Container Boxes**
+   - Each badge + play button wrapped in large cyan-bordered rounded rectangle
+   - Creates double/triple border effect
+   - Takes up excessive space
+   - Boxes don't match any other UI pattern in the app
+   - Looks like a separate component rather than an inline badge
+
+**Visual Hierarchy Disaster:**
+```
+Current Layout (from screenshot):
+╔═══════════════════════════════════════╗
+║  ┌──────────────────────────────┐    ║  ← Cyan outer box (why?)
+║  │ [ROOTSTOCK MAI...] │ [▶] │   │    ║  ← Green badge + cyan play (confusing)
+║  └──────────────────────────────┘    ║
+╚═══════════════════════════════════════╝
+     ↓ Multiple competing elements
+     ↓ Green (badge) vs. Cyan (container/icon)
+     ↓ What is the play button for?
+     ↓ Why are there three borders?
+```
+
+**Issues:**
+- Too many visual elements competing (badge fill + badge border + container border + icon border)
+- Color clash (green/orange badges inside cyan containers)
+- Play icon purpose completely unclear
+- Truncated text reduces usability
+- Layout pattern doesn't exist anywhere else in the application
+- Feels like a foreign UI component
+
+**Verdict:** Severe over-engineering of a simple network indicator. The multi-layer structure with conflicting colors creates visual chaos and user confusion.
+
+---
+
+### **Problem #4: Insufficient Visual Weight**
+
+**Current Badge:**
+- Font-size: 0.75rem (12px) - very small
+- Padding: 4px 10px - minimal, causing text truncation
+- Border: 1px - thin
+- No glow effects
+
+**Component Context:**
+- Appears next to H2 heading (1.8rem/28.8px)
+- Surrounded by elements with 2px borders and 10px+ glows
+- Looks like an afterthought, not a key piece of information
+
+**Network Type Information Importance:**
+- **Critical context** for users (mainnet = real money, testnet = play money)
+- Should have appropriate visual prominence
+- Currently truncated and feels like a tiny tag instead of important system indicator
+
+**Verdict:** Insufficient visual prominence for critical information + poor layout causing truncation.
+
+---
+
+### **Problem #4: No Interactive Feedback**
+
+**Current Implementation:**
+- No hover state
+- No glow on hover
+- No transition effects
+- Static appearance
+
+**TRON Pattern:**
+- All interactive elements have hover states
+- Buttons/links glow on hover (box-shadow increase)
+- Smooth transitions (0.3s)
+- Visual feedback for interactivity
+
+**Verdict:** While badges might not need to be interactive, lack of any visual polish makes them feel flat compared to rest of UI.
+
+---
+
+## 🎯 **Recommended TRON-Aligned Redesign**
+
+### **Design Philosophy:**
+
+Use **color-coded borders and glows** instead of solid backgrounds to maintain the TRON aesthetic while still clearly distinguishing mainnet vs. testnet.
+
+**Color Strategy:**
+- **Mainnet:** Cyan glow (primary color) - production, established
+- **Testnet:** Magenta/Pink glow (#ff0080) - experimental, warning-like
+
+This leverages the existing color system:
+- Cyan = primary/stable
+- Magenta = already used for "Redeem" (removing/testing)
+
+**Layout Strategy:**
+- Remove play button icons (unclear purpose)
+- Remove extra container boxes (visual clutter)
+- Increase padding to prevent text truncation
+- Badge should be simple, clean, self-contained
+- Position inline with heading, no extra wrappers
+
+---
+
+### **Redesign Option A: Glowing Border Style (Recommended)**
+
+**File:** `src/MintRedeemAnalyser.css` lines 56-77
+
+**Replace current styles with:**
+
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;            /* Increased from 4px 10px */
+  border-radius: 4px;            /* Match button border-radius */
+  font-size: 0.8rem;             /* 12.8px - slightly larger */
+  font-weight: 600;
+  letter-spacing: 1px;           /* Increased for TRON style */
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;  /* Match app font */
+  transition: all 0.3s;          /* Smooth transitions */
+}
+
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.08);  /* Subtle cyan background */
+  color: #00ffff;                       /* Cyan text */
+  border: 2px solid #00ffff;            /* 2px cyan border (consistent) */
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);  /* Cyan glow */
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);  /* Text glow */
+}
+
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.12);  /* Brighter on hover */
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);  /* Enhanced glow */
+  transform: translateY(-1px);          /* Subtle lift */
+}
+
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.08);  /* Subtle magenta background */
+  color: #ff0080;                       /* Magenta text */
+  border: 2px solid #ff0080;            /* 2px magenta border */
+  box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);  /* Magenta glow */
+  text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);  /* Text glow */
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.12);  /* Brighter on hover */
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);  /* Enhanced glow */
+  transform: translateY(-1px);          /* Subtle lift */
+}
+```
+
+**Visual Result:**
+
+**Mainnet Badge:**
+```
+┌─────────────────────────┐
+│  ROOTSTOCK MAINNET      │  ← Cyan glow, cyan text
+└─────────────────────────┘    Matches app aesthetic
+```
+
+**Testnet Badge:**
+```
+┌─────────────────────────┐
+│  ROOTSTOCK TESTNET      │  ← Magenta glow, magenta text
+└─────────────────────────┘    Warning/experimental feel
+```
+
+**Advantages:**
+- ✅ Matches TRON aesthetic (transparent bg, glowing borders)
+- ✅ Uses existing color palette (cyan primary, magenta warning)
+- ✅ Consistent 2px borders
+- ✅ Glow effects match rest of UI
+- ✅ Proper visual weight
+- ✅ Clear distinction between mainnet (cyan) and testnet (magenta)
+
+---
+
+### **Redesign Option B: Outline-Only Style (Minimal)**
+
+**Alternative approach:** Ghost buttons with colored outlines
+
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+  background: transparent;      /* Fully transparent */
+  transition: all 0.3s;
+}
+
+.network-badge--mainnet {
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.05);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+}
+
+.network-badge--testnet {
+  color: #ff0080;
+  border: 2px solid #ff0080;
+  box-shadow: 0 0 8px rgba(255, 0, 128, 0.3);
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.05);
+  box-shadow: 0 0 12px rgba(255, 0, 128, 0.5);
+}
+```
+
+**Visual Result:**
+
+**Mainnet:**
+```
+┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐
+│  ROOTSTOCK MAINNET     │  ← Cyan outline, no fill
+└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘
+```
+
+**Testnet:**
+```
+┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐
+│  ROOTSTOCK TESTNET     │  ← Magenta outline, no fill
+└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘
+```
+
+**Advantages:**
+- ✅ Very minimal, doesn't compete with other elements
+- ✅ Matches ghost button style used throughout app
+- ✅ Uses existing color system
+- ✅ Clean, professional appearance
+
+**Disadvantages:**
+- ⚠️ Less visual prominence than Option A
+- ⚠️ Might feel too subtle for critical network information
+
+---
+
+### **Redesign Option C: Icon + Badge (Enhanced)**
+
+**Most distinctive approach:** Add network icon + TRON styling
+
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;                     /* Space between icon and text */
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+  transition: all 0.3s;
+}
+
+.network-badge::before {
+  content: '●';                 /* Dot icon */
+  font-size: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+.network-badge--mainnet::before {
+  color: #00ff88;               /* Green-cyan dot */
+  filter: drop-shadow(0 0 4px rgba(0, 255, 136, 0.8));
+}
+
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.1);
+  color: #ff0080;
+  border: 2px solid #ff0080;
+  box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
+}
+
+.network-badge--testnet::before {
+  color: #ff9800;               /* Orange dot */
+  filter: drop-shadow(0 0 4px rgba(255, 152, 0, 0.8));
+}
+```
+
+**Visual Result:**
+
+**Mainnet:**
+```
+┌─────────────────────────┐
+│ ● ROOTSTOCK MAINNET     │  ← Pulsing green-cyan dot + cyan badge
+└─────────────────────────┘
+```
+
+**Testnet:**
+```
+┌─────────────────────────┐
+│ ● ROOTSTOCK TESTNET     │  ← Pulsing orange dot + magenta badge
+└─────────────────────────┘
+```
+
+**Advantages:**
+- ✅ Clear visual distinction with animated indicator
+- ✅ Matches TRON aesthetic
+- ✅ Communicates "live connection" (pulsing dot)
+- ✅ Professional and distinctive
+
+**Disadvantages:**
+- ⚠️ More complex (animation, pseudo-element)
+- ⚠️ May be overkill for static information
+
+---
+
+## 📊 **Design System Comparison**
+
+| Aspect | Current (Material) | TRON Standard | Recommended |
+|--------|-------------------|---------------|-------------|
+| **Background** | Solid gradient | Transparent rgba | rgba(0, 255, 255, 0.08) |
+| **Border Width** | 1px | 2px | 2px |
+| **Border Style** | Solid color | Glowing | With box-shadow glow |
+| **Text Color** | Black/White | Cyan (#00ffff) | Cyan/Magenta |
+| **Font Family** | Not specified | Rajdhani/Orbitron | Rajdhani |
+| **Box Shadow** | None | Glowing (10-20px) | 0 0 10px rgba(...) |
+| **Text Shadow** | None | Glowing | 0 0 5px rgba(...) |
+| **Transitions** | None | 0.3s | 0.3s |
+| **Hover State** | None | Enhanced glow | Enhanced glow + lift |
+
+---
+
+## 🎨 **Visual Context Analysis**
+
+### **Current Placement:**
+
+```
+╔════════════════════════════════════════════════════════════╗
+║  USDRIF MINT/REDEEM    [Rootstock Mainnet]    [▼]         ║
+║  ↑ H2 Title            ↑ Badge                ↑ Collapse   ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+**Visual Hierarchy Issues:**
+- Badge uses completely different visual language (green fill vs. cyan outlines)
+- Feels like a foreign element inserted into the design
+- Doesn't harmonize with surrounding elements
+
+**Desired Harmony:**
+```
+╔════════════════════════════════════════════════════════════╗
+║  USDRIF MINT/REDEEM    ┌──────────────────┐    [▼]        ║
+║  ↑ Cyan glow           │ ROOTSTOCK MAINNET│    ↑ Cyan glow ║
+║                        └─ Cyan glow ──────┘                ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 💡 **UX Principles Applied**
+
+### **1. Consistency (Nielsen Norman #4) - VIOLATED**
+
+**Current State:**
+- Badges use Material Design green/orange
+- Rest of app uses TRON cyan/magenta
+- Creates cognitive dissonance
+
+**Recommended:**
+- Use cyan for mainnet (established, stable)
+- Use magenta for testnet (experimental, caution)
+- Maintain consistent visual language
+
+---
+
+### **2. Visual Hierarchy**
+
+**Current State:**
+- Badge is too subtle (12px font, 4px padding)
+- Gets lost next to large H2 heading
+- Doesn't communicate importance
+
+**Recommended:**
+- Slightly larger (12.8px font, 6px padding)
+- Glowing effects give appropriate prominence
+- Balances with heading without dominating
+
+---
+
+### **3. Gestalt - Similarity**
+
+**Current State:**
+- Badge looks completely different from all other elements
+- User's brain has to process a new visual pattern
+- Increases cognitive load
+
+**Recommended:**
+- Badge uses same visual patterns (glows, borders, colors)
+- Brain recognizes it as part of the same system
+- Reduces cognitive load
+
+---
+
+## 📋 **Implementation Plan for Coder Agent**
+
+### **Recommended Approach: Option A (Glowing Border Style)**
+
+**Priority:** MEDIUM (visual consistency)  
+**Effort:** 5 minutes  
+**Impact:** HIGH (brand consistency, professional appearance)
+
+---
+
+### **Step 0: Fix Layout Issues (CRITICAL)**
+
+**Problem from Screenshot:** 
+- Play button icons (▶) appearing next to badges
+- Text truncation ("ROOTSTOCK MAI..." / "ROOTSTOCK TES...")
+- Badges wrapped in extra cyan-bordered containers
+
+**Required Actions:**
+
+1. **Remove Play Button Icons** - They serve no clear purpose and add visual confusion
+2. **Remove Extra Container Boxes** - Badge should be self-contained, not wrapped
+3. **Increase Padding** - Prevent text truncation
+4. **Simplify Layout** - Badge should sit cleanly next to heading
+
+**If play buttons are intended as collapse/expand controls:**
+- They should be separate from the badge
+- Should use the existing collapse-toggle button pattern
+- Should not be visually grouped with network badge
+
+---
+
+### **Step 1: Update Base Badge Styles**
+
+**File:** `src/MintRedeemAnalyser.css` lines 56-65
+
+**Current:**
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;       /* TOO SMALL - causes truncation */
+  border-radius: 6px;
+  font-size: 0.75rem;      /* TOO SMALL - hard to read */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+```
+
+**Change To:**
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;                    /* INCREASED - prevents truncation */
+  border-radius: 4px;                   /* Match button style (was 6px) */
+  font-size: 0.85rem;                   /* 13.6px - increased for readability */
+  font-weight: 600;
+  letter-spacing: 1px;                  /* Increased from 0.5px - TRON style */
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;  /* ADD THIS - explicit font */
+  transition: all 0.3s;                 /* ADD THIS - smooth transitions */
+  white-space: nowrap;                  /* ADD THIS - prevent truncation */
+}
+```
+
+---
+
+### **Step 2: Redesign Mainnet Badge (TRON Cyan)**
+
+**File:** `src/MintRedeemAnalyser.css` lines 67-71
+
+**Current:**
+```css
+.network-badge--mainnet {
+  background: linear-gradient(135deg, #00c853 0%, #009624 100%);
+  color: #000;
+  border: 1px solid rgba(0, 200, 83, 0.5);
+}
+```
+
+**Change To:**
+```css
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.08);          /* Subtle cyan tint */
+  color: #00ffff;                               /* Cyan text */
+  border: 2px solid #00ffff;                    /* 2px cyan border */
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.4); /* Cyan glow */
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6); /* Text glow */
+}
+
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.12);          /* Brighter on hover */
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6); /* Enhanced glow */
+  transform: translateY(-1px);                  /* Subtle lift */
+}
+```
+
+**Rationale:**
+- Cyan = primary color = stable/production
+- Matches all other primary elements
+- Glowing effect consistent with TRON theme
+- Hover state provides polish
+
+---
+
+### **Step 3: Redesign Testnet Badge (TRON Magenta)**
+
+**File:** `src/MintRedeemAnalyser.css` lines 73-77
+
+**Current:**
+```css
+.network-badge--testnet {
+  background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 152, 0, 0.5);
+}
+```
+
+**Change To:**
+```css
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.08);          /* Subtle magenta tint */
+  color: #ff0080;                               /* Magenta text */
+  border: 2px solid #ff0080;                    /* 2px magenta border */
+  box-shadow: 0 0 10px rgba(255, 0, 128, 0.4); /* Magenta glow */
+  text-shadow: 0 0 5px rgba(255, 0, 128, 0.6); /* Text glow */
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.12);          /* Brighter on hover */
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.6); /* Enhanced glow */
+  transform: translateY(-1px);                  /* Subtle lift */
+}
+```
+
+**Rationale:**
+- Magenta (#ff0080) already used for "Redeem" type
+- Conveys warning/experimental nature (appropriate for testnet)
+- Maintains TRON aesthetic
+- Clear visual distinction from mainnet
+
+---
+
+## 🎨 **Before & After Mockup**
+
+### **Before (Current - SCREENSHOT EVIDENCE):**
+
+**Mainnet (What User Sees Now):**
+```
+┌─────────────────────────────┐
+│ [ROOTSTOCK MAI...] [▶]      │  ← Solid GREEN fill, truncated text
+└─────────────────────────────┘    Black text, play icon, cyan box wrapper
+     ↓ Material Design / Wrong palette / Cluttered layout
+```
+
+**Testnet (What User Sees Now):**
+```
+┌─────────────────────────────┐
+│ [ROOTSTOCK TES...] [▶]      │  ← Solid ORANGE fill, truncated text
+└─────────────────────────────┘    White text, play icon, cyan box wrapper
+     ↓ Material Design / Wrong palette / Cluttered layout
+```
+
+**Visual Problems:**
+- ❌ Green and orange (not in TRON palette)
+- ❌ Solid opaque backgrounds (should be transparent)
+- ❌ Text truncated due to small padding
+- ❌ Play icons (unclear purpose)
+- ❌ Extra cyan container boxes (visual clutter)
+- ❌ No glow effects (flat appearance)
+
+---
+
+### **After (Proposed - TRON Aesthetic):**
+
+**Mainnet (Clean TRON Style):**
+```
+╔══════════════════════════╗
+║ ROOTSTOCK MAINNET        ║  ← Transparent with CYAN glow
+╚══════════════════════════╝    Cyan text, 2px border, glowing
+     ↓ Harmonizes with TRON theme
+```
+
+**Testnet (Clean TRON Style):**
+```
+╔══════════════════════════╗
+║ ROOTSTOCK TESTNET        ║  ← Transparent with MAGENTA glow
+╚══════════════════════════╝    Magenta text, 2px border, glowing
+     ↓ Matches existing warning aesthetic
+```
+
+**Visual Improvements:**
+- ✅ Uses TRON color palette (cyan/magenta)
+- ✅ Transparent backgrounds with rgba tint
+- ✅ Full text visible (no truncation)
+- ✅ No confusing play icons
+- ✅ No extra container boxes
+- ✅ Glowing effects match rest of UI
+- ✅ Clean, self-contained design
+
+---
+
+## 🔍 **Color Psychology & Meaning**
+
+### **Mainnet (Cyan):**
+- **Color:** #00ffff (primary app color)
+- **Meaning:** Stable, established, production-ready
+- **Emotion:** Trust, reliability, professional
+- **Association:** Primary actions, main content, live data
+
+### **Testnet (Magenta):**
+- **Color:** #ff0080 (already used for "Redeem" = withdrawing/testing)
+- **Meaning:** Experimental, cautionary, non-production
+- **Emotion:** Attention, warning (but not error)
+- **Association:** Test environment, development, safe to experiment
+
+**Why This Works:**
+- ✅ Leverages existing color associations in the app
+- ✅ Users already understand cyan = primary/live
+- ✅ Magenta already conveys "withdrawal/testing" context
+- ✅ Clear visual distinction without introducing new colors
+
+---
+
+## 📐 **Typography & Spacing**
+
+### **Current Issues:**
+
+| Property | Current | Issue | Recommended |
+|----------|---------|-------|-------------|
+| **font-size** | 0.75rem (12px) | Too small | 0.8rem (12.8px) |
+| **padding** | 4px 10px | Too tight | 6px 14px |
+| **letter-spacing** | 0.5px | Not TRON style | 1px |
+| **font-family** | Inherited | Unspecified | Rajdhani |
+| **border-width** | 1px | Inconsistent | 2px |
+
+**Rationale:**
+- Slightly larger font improves readability
+- Increased padding improves visual weight
+- 1px letter-spacing matches TRON typography
+- Explicit Rajdhani font ensures consistency
+- 2px borders match all other buttons/elements
+
+---
+
+## 🧪 **Testing Requirements**
+
+After implementation, verify:
+
+### **Visual Consistency:**
+- [ ] Badge colors (cyan/magenta) match color system
+- [ ] Glow effects similar to buttons and links
+- [ ] 2px borders consistent with other elements
+- [ ] Font (Rajdhani) matches rest of UI
+
+### **Hover States:**
+- [ ] Hover increases glow intensity
+- [ ] Subtle translateY(-1px) lift effect
+- [ ] Smooth 0.3s transition
+- [ ] Background opacity increases slightly
+
+### **Responsive Behavior:**
+- [ ] Badge readable at 390px viewport (iPhone 12 Pro)
+- [ ] Doesn't overflow or wrap awkwardly
+- [ ] Scales appropriately with heading
+
+### **Context:**
+- [ ] Mainnet badge next to "USDRIF Mint/Redeem" heading
+- [ ] Testnet badge next to "BTC Vault" heading
+- [ ] Badge aligns properly with heading and collapse button
+
+---
+
+## ✅ **Benefits of TRON-Aligned Redesign**
+
+### **1. Visual Consistency**
+- Badge matches the established TRON aesthetic
+- Uses existing color palette (cyan, magenta)
+- Follows same patterns (glows, borders, transitions)
+
+### **2. Brand Integrity**
+- Maintains cohesive visual identity
+- Reinforces TRON theme throughout app
+- Professional, polished appearance
+
+### **3. Clear Communication**
+- Cyan (mainnet) = stable/production
+- Magenta (testnet) = experimental/caution
+- Leverages existing color associations
+
+### **4. Better Visual Weight**
+- Larger font and padding improve prominence
+- Glow effects give appropriate attention
+- Balanced with surrounding elements
+
+### **5. Interactive Polish**
+- Hover states add refinement
+- Smooth transitions feel professional
+- Consistent with all other interactive elements
+
+---
+
+## 📊 **Design System Alignment Score**
+
+| Criterion | Current Badge | TRON Standard | Compliance |
+|-----------|--------------|---------------|------------|
+| **Color Palette** | Material (green/orange) | Cyan/Magenta | ❌ 0% |
+| **Background** | Solid gradient | Transparent rgba | ❌ 0% |
+| **Border Width** | 1px | 2px | ❌ 0% |
+| **Glow Effects** | None | Required | ❌ 0% |
+| **Font Family** | Unspecified | Rajdhani | ⚠️ 50% |
+| **Transitions** | None | 0.3s | ❌ 0% |
+| **Hover States** | None | Required | ❌ 0% |
+
+**Overall TRON Compliance:** ❌ **14% (F - Failing)**
+
+**After Redesign (Option A):** ✅ **100% (A+ - Perfect)**
+
+---
+
+## 🎯 **Recommendation Summary**
+
+### **Primary Recommendation: Implement Option A (Glowing Border Style)**
+
+**Why:**
+1. ✅ Perfect TRON aesthetic alignment
+2. ✅ Uses existing color system
+3. ✅ Clear mainnet vs. testnet distinction
+4. ✅ Appropriate visual prominence
+5. ✅ Easy to implement (CSS-only change)
+6. ✅ Professional, polished appearance
+
+**Implementation:**
+- **Priority:** MEDIUM (visual consistency)
+- **Effort:** 5 minutes (CSS changes only)
+- **Risk:** Very low (CSS-only, no logic changes)
+- **Impact:** HIGH (restores brand consistency)
+
+---
+
+### **Alternative Recommendations:**
+
+**Option B (Outline-Only):** More minimal, less prominent. Choose if network info should be very subtle.
+
+**Option C (Icon + Badge):** Most distinctive, animated indicator. Choose if network status should be highly prominent (like "live connection" indicator).
+
+---
+
+## 📋 **Implementation Checklist for Coder Agent**
+
+### **PART A: Fix Layout Issues (TSX Files)**
+
+**Files:** `src/MintRedeemAnalyser.tsx` (line 1215), `src/BTCVaultAnalyser.tsx` (line 395), `src/VaultDepositWithdrawAnalyser.tsx` (line 768)
+
+#### **Current Code (line 1215 in MintRedeemAnalyser.tsx):**
+```tsx
+<span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
+  Rootstock Mainnet
+</span>
+```
+
+**Checklist:**
+- [ ] **Verify no extra wrapper containers** around badge (check if badge is inside extra divs)
+- [ ] **Remove play button icons** if they exist next to badges (check for `▶` or play icons)
+- [ ] **Ensure badge is direct sibling** to `<h2>` in `.analyser-header`
+- [ ] Verify text is full: "Rootstock Mainnet" not "Rootstock Mai..."
+
+**If play buttons exist, remove them or move them to a separate logical location (not grouped with badge).**
+
+---
+
+### **PART B: CSS Style Redesign**
+
+**File:** `src/MintRedeemAnalyser.css` lines 56-77
+
+#### **Step 1: Update Base Badge (lines 56-65)**
+- [ ] Increase padding: `4px 10px` → `7px 16px` (prevent truncation!)
+- [ ] Change border-radius: `6px` → `4px` (match buttons)
+- [ ] Increase font-size: `0.75rem` → `0.85rem` (better readability)
+- [ ] Increase letter-spacing: `0.5px` → `1px` (TRON style)
+- [ ] Add `font-family: 'Rajdhani', sans-serif`
+- [ ] Add `transition: all 0.3s`
+- [ ] Add `white-space: nowrap` (prevent text wrapping/truncation)
+
+#### **Step 2: Redesign Mainnet Badge (lines 67-71)**
+- [ ] Remove solid green gradient
+- [ ] Change background: → `rgba(0, 255, 255, 0.08)` (subtle cyan tint)
+- [ ] Change color: `#000` → `#00ffff` (cyan text)
+- [ ] Change border: `1px solid rgba(...)` → `2px solid #00ffff` (2px cyan)
+- [ ] Add `box-shadow: 0 0 10px rgba(0, 255, 255, 0.4)` (cyan glow)
+- [ ] Add `text-shadow: 0 0 5px rgba(0, 255, 255, 0.6)` (text glow)
+- [ ] Add hover state with enhanced glow and lift effect
+
+#### **Step 3: Redesign Testnet Badge (lines 73-77)**
+- [ ] Remove solid orange gradient
+- [ ] Change background: → `rgba(255, 0, 128, 0.08)` (subtle magenta tint)
+- [ ] Change color: `#fff` → `#ff0080` (magenta text)
+- [ ] Change border: `1px solid rgba(...)` → `2px solid #ff0080` (2px magenta)
+- [ ] Add `box-shadow: 0 0 10px rgba(255, 0, 128, 0.4)` (magenta glow)
+- [ ] Add `text-shadow: 0 0 5px rgba(255, 0, 128, 0.6)` (text glow)
+- [ ] Add hover state with enhanced glow and lift effect
+
+**Total Changes:** 
+- Layout fixes: Check 3 TSX files
+- CSS properties: ~25 changes across 3 rules
+
+---
+
+## 🎯 **Layout Fix: Remove Play Button & Container Clutter**
+
+### **Issue from Screenshot:**
+
+**Current Layout (What User Sees):**
+```
+┌───────────────────────────────────┐
+│  ┌──────────────────────────────┐ │
+│  │ [ROOTSTOCK MAI...] [▶]       │ │  ← Badge + play button in cyan box
+│  └──────────────────────────────┘ │
+└───────────────────────────────────┘
+```
+
+**Problems:**
+1. Badge is truncated ("MAI..." instead of "MAINNET")
+2. Play button icon (▶) serves unclear purpose
+3. Badge wrapped in cyan-bordered container box
+4. Multiple layers create visual confusion
+
+**Root Cause:**
+- Padding too small (4px 10px) causes truncation
+- Unknown element creating play button
+- Possible extra wrapper div creating container box
+
+---
+
+### **Proposed Layout (Clean, Simple):**
+
+**Simple Badge in Header:**
+```
+╔═══════════════════════════════════════════════════╗
+║  USDRIF MINT/REDEEM    ROOTSTOCK MAINNET    ▼    ║
+║  ↑ H2 heading          ↑ Badge              ↑ Collapse
+╚═══════════════════════════════════════════════════╝
+```
+
+**Characteristics:**
+- ✅ Badge is self-contained (no extra wrappers)
+- ✅ Full text visible ("ROOTSTOCK MAINNET")
+- ✅ No play button confusion
+- ✅ Clean inline placement
+- ✅ Proper spacing between elements
+
+**Implementation:**
+- Remove any wrapper divs around badge
+- Remove play button icons
+- Increase badge padding to prevent truncation
+- Badge should be direct child of `.analyser-header`
+
+---
+
+## 🖼️ **Side-by-Side Comparison**
+
+### **Current Badge in Context (SCREENSHOT):**
+
+```
+╔════════════════════════════════════════════════════════════╗
+║ ░░ USDRIF MINT/REDEEM ░░  ┌──────────────────────┐   ▼   ║
+║ ↑ Cyan glow (TRON)        │[ROOTSTOCK MAI...][▶]│        ║
+║                           └──────────────────────┘        ║
+║                            ↑ Green fill (Material)        ║
+║                            ↑ Truncated text               ║
+║                            ↑ Play button confusion        ║
+║                            ↑ Extra container clutter      ║
+║                            Completely breaks visual system║
+╚════════════════════════════════════════════════════════════╝
+```
+
+### **Proposed Badge in Context (TRON ALIGNED):**
+
+```
+╔════════════════════════════════════════════════════════════╗
+║ ░░ USDRIF MINT/REDEEM ░░  ░░ ROOTSTOCK MAINNET ░░    ▼   ║
+║ ↑ Cyan glow (TRON)         ↑ Cyan glow (TRON)            ║
+║                            ↑ Full text visible            ║
+║                            ↑ No extra icons/containers    ║
+║                            Perfect harmony achieved       ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 💰 **Cost-Benefit Analysis**
+
+| Aspect | Current State | After Redesign |
+|--------|--------------|----------------|
+| **Design Consistency** | Inconsistent (F) | Consistent (A+) |
+| **Brand Integrity** | Violated | Maintained |
+| **User Confusion** | "Why is this green?" | Clear, familiar |
+| **Visual Harmony** | Disjointed | Cohesive |
+| **Professional Polish** | Feels rushed | Feels refined |
+| **Implementation Time** | - | 5 minutes |
+
+**ROI:** Very high - small effort, significant visual improvement
+
+---
+
+## 🎯 **Final Recommendation**
+
+### **Implement Option A: Glowing Border Style**
+
+**Reasoning:**
+1. **Perfect TRON Alignment** - Uses cyan/magenta from existing palette
+2. **Clear Distinction** - Mainnet (cyan) vs. Testnet (magenta) immediately recognizable
+3. **Visual Consistency** - Matches all other elements (buttons, borders, glows)
+4. **Appropriate Prominence** - Not too subtle, not too dominant
+5. **Easy Implementation** - CSS-only changes, no logic modifications
+6. **Professional Polish** - Hover states and transitions add refinement
+
+**Expected Outcome:**
+- Network badges feel like an integrated part of the design system
+- Users immediately understand mainnet (cyan = primary) vs. testnet (magenta = caution)
+- Brand consistency maintained across all UI elements
+
+---
+
+**Status:** 🔴 CRITICAL - Ready for immediate Coder agent implementation  
+**Priority:** MEDIUM-HIGH (severe visual inconsistency confirmed by screenshot)  
+**Effort:** 10 minutes (CSS changes + layout cleanup in TSX)  
+**Impact:** VERY HIGH (restores brand integrity and design system consistency)
+
+---
+
+## ⚠️ **CRITICAL SUMMARY FOR CODER AGENT**
+
+### **What's Wrong (Screenshot-Confirmed):**
+
+1. 🔴 **Material Design solid green/orange fills** instead of TRON transparent cyan/magenta
+2. 🔴 **Three-layer visual structure** (outer container + badge + play button) - excessive complexity
+3. 🔴 **Text truncation** - "ROOTSTOCK MAI..." cuts off "NNET" (insufficient padding 4px 10px)
+4. 🔴 **Play button icons (▶) in cyan boxes** - completely unclear purpose, visual confusion
+5. 🔴 **Large cyan container boxes** wrapping entire badge+button - doesn't match any other UI pattern
+6. 🔴 **No glow effects** on badges - flat, lifeless appearance (violates TRON aesthetic)
+7. 🔴 **1px borders** on badges instead of 2px (inconsistent with entire app)
+8. 🔴 **Color clash** - green/orange badges inside cyan containers (competing visual systems)
+
+### **The Core Problem:**
+
+**Over-engineered complexity:**
+```
+Current: [Container [Badge] [Play Button]]  ← 3 elements for 1 piece of info
+Needed: [Badge]                             ← 1 simple element
+```
+
+**Wrong visual system:**
+```
+Current: Material Design (Google)  ← Solid fills, green/orange
+Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
+```
+
+### **Required Changes:**
+
+#### **A. SIMPLIFY LAYOUT (TSX Files) - CRITICAL**
+
+**Current Complex Structure:**
+```tsx
+<div className="some-container">  ← REMOVE THIS
+  <span className="network-badge network-badge--mainnet">
+    Rootstock Mainnet
+  </span>
+  <button className="play-button">▶</button>  ← REMOVE THIS
+</div>
+```
+
+**Correct Simple Structure:**
+```tsx
+<span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
+  Rootstock Mainnet
+</span>
+```
+
+**Action Items:**
+- ✅ Remove ALL play button elements (▶)
+- ✅ Remove ALL wrapper containers around badges
+- ✅ Badge should be simple inline `<span>` directly in `.analyser-header`
+- ✅ No extra divs, no extra buttons, just the badge span
+
+---
+
+#### **B. FIX STYLING (CSS) - CRITICAL**
+
+**Replace Material Design with TRON:**
+
+**Mainnet:** 
+```css
+/* REMOVE: Solid green gradient */
+background: linear-gradient(135deg, #00c853 0%, #009624 100%); ❌
+
+/* REPLACE WITH: Transparent cyan glow */
+background: rgba(0, 255, 255, 0.08);
+color: #00ffff;
+border: 2px solid #00ffff;
+box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+```
+
+**Testnet:**
+```css
+/* REMOVE: Solid orange gradient */
+background: linear-gradient(135deg, #ff9800 0%, #e65100 100%); ❌
+
+/* REPLACE WITH: Transparent magenta glow */
+background: rgba(255, 0, 128, 0.08);
+color: #ff0080;
+border: 2px solid #ff0080;
+box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
+text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
+```
+
+**Increase Padding:**
+- Change padding: `4px 10px` → `7px 16px` (prevents truncation)
+- Add `white-space: nowrap` (ensures "ROOTSTOCK MAINNET" displays in full)
+
+### **Expected Result:**
+
+**Before (Screenshot):**
+```
+[ROOTSTOCK MAI...] [▶]  ← Green Material Design, truncated, cluttered
+```
+
+**After (TRON Aligned):**
+```
+░░ ROOTSTOCK MAINNET ░░  ← Cyan glow, full text, clean
+```
+
+---
+
+**USER CONFIRMATION:** "This is the wrong palette and layout" ✅  
+**ACTION REQUIRED:** Implement TRON-aligned redesign immediately to restore visual consistency
+
+---
+
+---
+
+# 🔄 RE-REVIEW: Network Badge Lozenges (Current State)
+
+**Review Type:** Post-Modification Assessment  
+**Status:** ⚠️ **PARTIALLY IMPROVED** - Layout better, colors still wrong  
+**Date:** January 24, 2026
+
+---
+
+## 📊 **What Was Fixed**
+
+### **✅ Layout Improvements (Partially Addressed):**
+
+1. ✅ **Simplified Structure**
+   - Badges are now simple inline `<span>` elements
+   - No extra wrapper containers
+   - Clean placement in `.analyser-header`
+
+2. ✅ **Background Made Transparent**
+   - Changed from solid gradients to `background: transparent`
+   - Better alignment with TRON aesthetic
+
+3. ✅ **Text Simplified**
+   - "Rootstock Mainnet" → "Mainnet"
+   - "Rootstock Testnet" → "Testnet"
+   - More concise, less truncation risk
+
+4. ✅ **Rootstock Logo Added**
+   - 14px logo image included
+   - Provides brand identity
+   - Better than text-only
+
+5. ✅ **Fixed Width**
+   - Consistent 90px width for both badges
+   - Prevents layout shifts
+
+---
+
+## 🚨 **What's Still Wrong**
+
+### **❌ CRITICAL: Material Design Colors Still Present**
+
+**Current Implementation (CSS lines 83-93):**
+
+```css
+.network-badge--mainnet {
+  background: transparent;
+  color: #00c853;           /* ❌ Material Design green */
+  border: 1px solid #00c853; /* ❌ Material Design green */
+}
+
+.network-badge--testnet {
+  background: transparent;
+  color: #ff9800;           /* ❌ Material Design orange */
+  border: 1px solid #ff9800; /* ❌ Material Design orange */
+}
+```
+
+**Problem:** Still using Material Design green (#00c853) and orange (#ff9800) - these colors don't exist anywhere else in the TRON-themed application.
+
+**Should Be:**
+- Mainnet: Cyan (#00ffff) - matches app's primary color
+- Testnet: Magenta (#ff0080) - matches app's warning/redeem color
+
+---
+
+### **❌ Missing TRON Visual Effects**
+
+**Current Badges Have:**
+- ❌ No box-shadow glow effects
+- ❌ No text-shadow glow effects
+- ❌ 1px borders (should be 2px)
+- ❌ No hover states
+- ❌ No transitions
+
+**TRON Standard (Every Other Element Has):**
+- ✅ Box-shadow glows (0 0 10px rgba(...))
+- ✅ Text-shadow glows (0 0 5px rgba(...))
+- ✅ 2px borders
+- ✅ Hover states with enhanced glows
+- ✅ 0.3s transitions
+
+**Verdict:** Badges still look flat and lifeless compared to the rest of the UI.
+
+---
+
+### **❌ Typography Too Small**
+
+**Current Sizing:**
+```css
+.network-badge {
+  padding: 3px 8px;        /* Very tight */
+  font-size: 0.72rem;      /* 11.52px - quite small */
+  letter-spacing: 0.3px;   /* Tight spacing */
+}
+```
+
+**TRON Standard:**
+- Buttons use: `padding: 10px 20px`, `font-size: 14px`, `letter-spacing: 2px`
+- Headers use: `letter-spacing: 2-3px`
+
+**Impact:**
+- Badges feel like an afterthought
+- Harder to read (11.52px is small)
+- Doesn't convey importance of network information
+
+**Recommended:**
+```css
+padding: 6px 12px;       /* Comfortable spacing */
+font-size: 0.8rem;       /* 12.8px - better readability */
+letter-spacing: 1px;     /* TRON style */
+```
+
+---
+
+## 📐 **Current vs. TRON Standard Comparison**
+
+| Property | Current Badge | TRON Standard | Compliance |
+|----------|--------------|---------------|------------|
+| **Background** | Transparent | Transparent rgba | ✅ 50% |
+| **Text Color** | Green/Orange | Cyan/Magenta | ❌ 0% |
+| **Border Color** | Green/Orange | Cyan/Magenta | ❌ 0% |
+| **Border Width** | 1px | 2px | ❌ 0% |
+| **Box Shadow** | None | 10px glow | ❌ 0% |
+| **Text Shadow** | None | 5px glow | ❌ 0% |
+| **Font Family** | Not specified | Rajdhani | ⚠️ 50% |
+| **Letter Spacing** | 0.3px | 1px | ❌ 30% |
+| **Transitions** | None | 0.3s | ❌ 0% |
+| **Hover State** | None | Enhanced glow | ❌ 0% |
+
+**TRON Compliance Score:** ⚠️ **13% (F - Still Failing)**
+
+**Progress:** Layout improved from 0% → 50%, but color/styling still at 0%.
+
+---
+
+## 🎨 **Visual Analysis**
+
+### **Current State Assessment:**
+
+**Positive Changes:**
+- ✅ Layout simplified (no extra containers)
+- ✅ Transparent backgrounds
+- ✅ Logo adds brand identity
+- ✅ Concise text ("Mainnet" vs "Rootstock Mainnet")
+
+**Remaining Problems:**
+- ❌ Green and orange still clash with TRON cyan theme
+- ❌ Flat appearance (no glows) makes them feel disconnected
+- ❌ Small size and tight spacing reduce visual weight
+- ❌ 1px borders look thin compared to 2px throughout app
+
+**Visual Impact:**
+```
+Current Badge Next to TRON Elements:
+
+░░ USDRIF ░░  [Mainnet]  ▼
+↑ Cyan glow   ↑ Green    ↑ Cyan glow
+              ❌ Breaks visual flow
+```
+
+The green/orange badges are like a visual "speed bump" - they interrupt the consistent cyan/magenta flow of the TRON theme.
+
+---
+
+## 🎯 **Updated Recommendations**
+
+### **Remaining Changes Needed:**
+
+Since the layout has been improved, only **CSS changes** are needed now:
+
+---
+
+#### **Change 1: Use TRON Color Palette**
+
+**File:** `src/MintRedeemAnalyser.css` lines 83-93
+
+**Current:**
+```css
+.network-badge--mainnet {
+  background: transparent;
+  color: #00c853;           /* ❌ WRONG - Material Design green */
+  border: 1px solid #00c853;
+}
+
+.network-badge--testnet {
+  background: transparent;
+  color: #ff9800;           /* ❌ WRONG - Material Design orange */
+  border: 1px solid #ff9800;
+}
+```
+
+**Change To:**
+```css
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.06);  /* Subtle cyan tint */
+  color: #00ffff;                       /* Cyan text - TRON primary */
+  border: 2px solid #00ffff;            /* 2px cyan border */
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);  /* Cyan glow */
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.5); /* Text glow */
+}
+
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.06);  /* Subtle magenta tint */
+  color: #ff0080;                       /* Magenta text - TRON warning */
+  border: 2px solid #ff0080;            /* 2px magenta border */
+  box-shadow: 0 0 8px rgba(255, 0, 128, 0.3);  /* Magenta glow */
+  text-shadow: 0 0 3px rgba(255, 0, 128, 0.5); /* Text glow */
+}
+```
+
+**Rationale:**
+- Cyan = primary color used throughout app (mainnet = primary/stable)
+- Magenta = warning color used for Redeem transactions (testnet = experimental)
+- Subtle rgba backgrounds (0.06 opacity) maintain transparency
+- 2px borders consistent with all buttons
+- Glow effects match rest of UI
+- Slightly reduced glow (8px vs 10px) due to smaller badge size
+
+---
+
+#### **Change 2: Add Hover States**
+
+**Add after mainnet/testnet rules:**
+
+```css
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.1);
+  box-shadow: 0 0 12px rgba(255, 0, 128, 0.5);
+  transform: translateY(-1px);
+}
+```
+
+**Rationale:**
+- Enhanced glow on hover (12px vs 8px)
+- Slight lift effect (translateY)
+- Increased background opacity (0.1 vs 0.06)
+- Provides interactive polish
+
+---
+
+#### **Change 3: Enhance Base Badge**
+
+**File:** `src/MintRedeemAnalyser.css` lines 57-73
+
+**Current:**
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 8px;        /* Too tight */
+  border-radius: 5px;
+  font-size: 0.72rem;      /* Too small */
+  font-weight: 600;
+  letter-spacing: 0.3px;   /* Too tight */
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-right: 8px;
+  min-width: 90px;
+  width: 90px;
+  box-sizing: border-box;
+}
+```
+
+**Change To:**
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;                             /* Increased from 5px */
+  padding: 5px 10px;                    /* Increased from 3px 8px */
+  border-radius: 4px;                   /* Match button style (was 5px) */
+  font-size: 0.75rem;                   /* 12px - increased from 11.52px */
+  font-weight: 600;
+  letter-spacing: 0.8px;                /* Increased from 0.3px */
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;  /* ADD THIS - explicit font */
+  flex-shrink: 0;
+  margin-right: 8px;
+  min-width: 95px;                      /* Slightly wider (was 90px) */
+  width: 95px;
+  box-sizing: border-box;
+  transition: all 0.3s;                 /* ADD THIS - smooth transitions */
+  cursor: default;                      /* ADD THIS - not clickable */
+}
+```
+
+**Rationale:**
+- Slightly larger font improves readability
+- More generous padding increases visual weight
+- Increased letter-spacing matches TRON typography
+- Explicit Rajdhani font ensures consistency
+- 4px border-radius matches buttons
+- Transitions enable hover effects
+- 95px width accommodates logo + text comfortably
+
+---
+
+#### **Change 4: Optimize Logo Sizing**
+
+**Current:**
+```css
+.network-badge__logo {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+```
+
+**Enhancement (Optional):**
+```css
+.network-badge__logo {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px currentColor); /* ADD THIS - subtle glow on logo */
+  opacity: 0.9;                              /* ADD THIS - slight transparency */
+}
+```
+
+**Rationale:**
+- Subtle drop-shadow makes logo glow slightly
+- `currentColor` means it will match the badge text color (green → cyan, orange → magenta)
+- Opacity prevents logo from dominating badge
+
+---
+
+## 📊 **Progress Report**
+
+### **What's Been Fixed:**
+
+| Issue | Previous State | Current State | Status |
+|-------|---------------|---------------|---------|
+| **Layout Complexity** | 3 layers + containers | Simple inline span | ✅ FIXED |
+| **Play Buttons** | Present (confusing) | Removed | ✅ FIXED |
+| **Text Truncation** | "MAI..." truncated | "Mainnet" full | ✅ FIXED |
+| **Extra Containers** | Large cyan boxes | Removed | ✅ FIXED |
+| **Background** | Solid gradients | Transparent | ✅ FIXED |
+
+### **What Still Needs Fixing:**
+
+| Issue | Current State | Required State | Status |
+|-------|--------------|----------------|---------|
+| **Color Palette** | Green/Orange | Cyan/Magenta | ❌ NOT FIXED |
+| **Border Width** | 1px | 2px | ❌ NOT FIXED |
+| **Glow Effects** | None | Box-shadow + text-shadow | ❌ NOT FIXED |
+| **Hover States** | None | Enhanced glow | ❌ NOT FIXED |
+| **Transitions** | None | 0.3s | ❌ NOT FIXED |
+| **Typography Scale** | 0.72rem (small) | 0.75-0.8rem | ⚠️ PARTIAL |
+
+---
+
+## 🎨 **Visual Comparison**
+
+### **Previous State (First Screenshot):**
+```
+┌─────────────────────────────────┐
+│ [ROOTSTOCK MAI...] [▶]          │  ← Green fill, play button, container
+└─────────────────────────────────┘    Material Design chaos
+```
+
+### **Current State:**
+```
+[🏠 Mainnet]  ← Green border, transparent bg, Rootstock logo
+               Still using wrong colors (green instead of cyan)
+```
+
+### **Desired State (TRON Aligned):**
+```
+░░ 🏠 MAINNET ░░  ← Cyan border, cyan glow, Rootstock logo
+                   Matches TRON aesthetic perfectly
+```
+
+---
+
+## 🎯 **Simplified Implementation (CSS Only)**
+
+**Since layout is now correct, only CSS changes needed:**
+
+### **Complete Replacement CSS:**
+
+**File:** `src/MintRedeemAnalyser.css` lines 57-93
+
+```css
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: 'Rajdhani', sans-serif;
+  flex-shrink: 0;
+  margin-right: 8px;
+  min-width: 95px;
+  width: 95px;
+  box-sizing: border-box;
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.network-badge__logo {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px currentColor);
+  opacity: 0.9;
+}
+
+/* TRON-aligned mainnet badge */
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.06);
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.5);
+}
+
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+/* TRON-aligned testnet badge */
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.06);
+  color: #ff0080;
+  border: 2px solid #ff0080;
+  box-shadow: 0 0 8px rgba(255, 0, 128, 0.3);
+  text-shadow: 0 0 3px rgba(255, 0, 128, 0.5);
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.1);
+  box-shadow: 0 0 12px rgba(255, 0, 128, 0.5);
+  transform: translateY(-1px);
+}
+```
+
+**Changes Summary:**
+- Replace green (#00c853) → cyan (#00ffff)
+- Replace orange (#ff9800) → magenta (#ff0080)
+- Add subtle rgba background tints
+- Change borders: 1px → 2px
+- Add box-shadow glows
+- Add text-shadow glows
+- Add hover states with enhanced effects
+- Increase padding and font-size slightly
+- Add transitions
+
+**Estimated Time:** 5 minutes (CSS only)
+
+---
+
+## 📋 **Updated Implementation Checklist**
+
+**File:** `src/MintRedeemAnalyser.css`
+
+### **Base Badge Enhancements (lines 57-73):**
+- [ ] Increase `gap` from `5px` to `6px`
+- [ ] Increase `padding` from `3px 8px` to `5px 10px`
+- [ ] Change `border-radius` from `5px` to `4px`
+- [ ] Increase `font-size` from `0.72rem` to `0.75rem`
+- [ ] Increase `letter-spacing` from `0.3px` to `0.8px`
+- [ ] Add `font-family: 'Rajdhani', sans-serif`
+- [ ] Change `min-width` and `width` from `90px` to `95px`
+- [ ] Add `transition: all 0.3s`
+- [ ] Add `cursor: default`
+
+### **Logo Enhancements (lines 75-80):**
+- [ ] Add `filter: drop-shadow(0 0 2px currentColor)`
+- [ ] Add `opacity: 0.9`
+
+### **Mainnet Badge (lines 83-87):**
+- [ ] Change `background` from `transparent` to `rgba(0, 255, 255, 0.06)`
+- [ ] Change `color` from `#00c853` to `#00ffff`
+- [ ] Change `border` from `1px solid #00c853` to `2px solid #00ffff`
+- [ ] Add `box-shadow: 0 0 8px rgba(0, 255, 255, 0.3)`
+- [ ] Add `text-shadow: 0 0 3px rgba(0, 255, 255, 0.5)`
+- [ ] Add hover state with enhanced glow
+
+### **Testnet Badge (lines 89-93):**
+- [ ] Change `background` from `transparent` to `rgba(255, 0, 128, 0.06)`
+- [ ] Change `color` from `#ff9800` to `#ff0080`
+- [ ] Change `border` from `1px solid #ff9800` to `2px solid #ff0080`
+- [ ] Add `box-shadow: 0 0 8px rgba(255, 0, 128, 0.3)`
+- [ ] Add `text-shadow: 0 0 3px rgba(255, 0, 128, 0.5)`
+- [ ] Add hover state with enhanced glow
+
+**Total Changes:** ~25 CSS properties across 4 rules  
+**Files Changed:** 1 (MintRedeemAnalyser.css only - no TSX changes needed!)  
+**Effort:** 5 minutes
+
+---
+
+## 🖼️ **Final Visual Mockup**
+
+### **Current (Post-Layout-Fix):**
+```
+Component Header:
+──────────────────────────────────────────────────
+  USDRIF    [🏠 Mainnet]    [▼]
+  ↑ Cyan    ↑ Green         ↑ Cyan
+            ❌ Color breaks visual flow
+```
+
+### **After TRON Color Fix:**
+```
+Component Header:
+──────────────────────────────────────────────────
+  ░░ USDRIF ░░    ░░ 🏠 MAINNET ░░    ░░ [▼] ░░
+  ↑ Cyan glow     ↑ Cyan glow         ↑ Cyan glow
+  Perfect visual harmony across all elements
+```
+
+---
+
+## ✅ **Benefits of Color Fix**
+
+### **1. Visual Consistency**
+- All elements use TRON cyan/magenta palette
+- Harmonious glow effects throughout
+- Professional, cohesive appearance
+
+### **2. Color Psychology**
+- Cyan = primary/stable/production (mainnet)
+- Magenta = warning/experimental (testnet)
+- Leverages existing color associations
+
+### **3. Brand Integrity**
+- Maintains TRON/Cyberpunk theme
+- No foreign color systems (Material Design)
+- Consistent with application identity
+
+---
+
+## 🎯 **Final Recommendation**
+
+**Status:** ⚠️ **75% Complete** - Layout fixed, colors remain wrong
+
+**Required Next Step:**
+- Replace Material Design green/orange with TRON cyan/magenta
+- Add glow effects (box-shadow, text-shadow)
+- Increase border from 1px to 2px
+- Add hover states
+
+**Priority:** MEDIUM-HIGH (visual consistency)  
+**Effort:** 5 minutes (CSS only, no TSX changes)  
+**Impact:** HIGH (achieves full TRON aesthetic consistency)
+
+**After this fix:** Badges will be **100% TRON-aligned** ✅
+
+---
+
+**Re-Review Completed:** January 24, 2026  
+**Current Status:** ⚠️ Layout improved, colors still Material Design  
+**Next Action:** Replace green/orange with cyan/magenta in CSS
+
+---
+
+## 🎨 **Quick Reference: Correct TRON Styles**
+
+### **Mainnet Badge (Cyan Theme):**
+```css
+.network-badge--mainnet {
+  background: rgba(0, 255, 255, 0.08);
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+}
+
+.network-badge--mainnet:hover {
+  background: rgba(0, 255, 255, 0.12);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+```
+
+### **Testnet Badge (Magenta Theme):**
+```css
+.network-badge--testnet {
+  background: rgba(255, 0, 128, 0.08);
+  color: #ff0080;
+  border: 2px solid #ff0080;
+  box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
+  text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
+}
+
+.network-badge--testnet:hover {
+  background: rgba(255, 0, 128, 0.12);
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
+  transform: translateY(-1px);
+}
+```
+
+### **Base Badge:**
+```css
+.network-badge {
+  padding: 7px 16px;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  font-family: 'Rajdhani', sans-serif;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+```
+
+**Key Points:**
+- 🎯 Use TRON colors: Cyan (#00ffff) for mainnet, Magenta (#ff0080) for testnet
+- 🎯 Transparent backgrounds with subtle rgba tints
+- 🎯 2px glowing borders with box-shadows
+- 🎯 Text-shadows for glow effect
+- 🎯 Remove all Material Design elements (solid fills, green, orange)
+- 🎯 Remove play button icons and extra containers
+- 🎯 Simple inline badge - NO wrappers, NO extra boxes, NO play buttons
+
+---
+
+## 🎯 **THE SIMPLE SOLUTION**
+
+### **What It Should Look Like:**
+
+**Final Badge Design (Simple & TRON-Aligned):**
+
+```
+Component Header Layout:
+──────────────────────────────────────────────────────────
+  USDRIF MINT/REDEEM    ░░ ROOTSTOCK MAINNET ░░    [▼]
+  ↑ H2 Title            ↑ Simple badge           ↑ Collapse
+──────────────────────────────────────────────────────────
+```
+
+**Badge Characteristics:**
+- ✅ Single inline `<span>` element (no wrappers)
+- ✅ Transparent background with cyan/magenta tint
+- ✅ 2px glowing border
+- ✅ Cyan (#00ffff) for mainnet, Magenta (#ff0080) for testnet
+- ✅ Full text: "ROOTSTOCK MAINNET" (no truncation)
+- ✅ Padding: 7px 16px (comfortable spacing)
+- ✅ Glowing effects (box-shadow + text-shadow)
+- ✅ NO play buttons
+- ✅ NO extra containers
+- ✅ NO color clashes
+
+**That's it. Keep it simple.**
+
+---
+
+## 🔍 **Root Cause Analysis**
+
+**Why did this happen?**
+
+The current implementation appears to have:
+1. Imported Material Design badge styles (green/orange, solid fills)
+2. Added play button functionality for unknown reason
+3. Wrapped everything in containers (possibly for the play button logic)
+4. Created a multi-layer component instead of a simple badge
+
+**What should have happened:**
+- Simple inline `<span>` with TRON-themed CSS
+- No additional logic or containers
+- Just a visual indicator, not an interactive component (unless explicitly needed)
+
+---
+
+## ⚠️ **CRITICAL QUESTIONS FOR CODER AGENT**
+
+Before implementing, determine:
+
+1. **What are the play buttons for?**
+   - If they're collapse/expand controls → Move them separate from badge, use existing collapse-toggle pattern
+   - If they're decorative → Remove them entirely
+   - If they have another purpose → Clarify and implement properly
+
+2. **Why are there outer containers?**
+   - If they're for layout → Remove them, use simple inline badge
+   - If they're for interaction → Separate interaction from badge visual
+   - If they're accidental → Remove them
+
+3. **What's the intended final layout?**
+   - Badge should be a simple inline element next to the heading
+   - No wrappers, no extra boxes, no play icons
+   - Clean and minimal
+
+**Recommendation:** Remove all the complexity. Start fresh with a simple `<span>` badge using TRON CSS.
+
+---
+
+**Review Completed:** January 24, 2026  
+**Reviewer:** UX Designer Agent  
+**Issue Type:** Visual Consistency / Brand Alignment  
+**User Feedback:** "This is the wrong palette and layout" ✅  
+**Visual Evidence:** Screenshot provided showing Material Design badges in TRON app  
+**Severity:** MEDIUM-HIGH (not functional, but severe visual inconsistency)  
+**Recommendation:** 🔴 Implement TRON-aligned badge redesign ASAP
+
+---
+
+## 🚨 **VISUAL EVIDENCE SUMMARY**
+
+**What the Screenshot Shows:**
+1. ✅ **Solid green badges** with white text (Material Design #00c853)
+2. ✅ **Solid orange badge** with white text (Material Design #ff9800)
+3. ✅ **Text truncation** - "ROOTSTOCK MAI..." (cuts off "NNET") and "ROOTSTOCK TES..." (cuts off "TNET")
+4. ✅ **Cyan play button icons (▶)** in separate cyan-bordered squares to the right of each badge
+5. ✅ **Large cyan-bordered rounded containers** wrapping each badge + play button combo
+6. ✅ **Three visual layers:** Badge (green/orange) + Play button box (cyan) + Outer container (cyan)
+7. ✅ **Excessive visual complexity** - multiple borders, multiple colors competing
+
+**User Assessment:** "This is the wrong palette and layout"
+
+**UX Designer Verdict:** 🔴 **CONFIRMED** - Critical visual inconsistency. These badges use Material Design (Google) visual language in a TRON/Cyberpunk-themed application. Immediate redesign required to restore brand integrity.

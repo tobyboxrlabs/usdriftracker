@@ -36,6 +36,13 @@ export const CONFIG = {
   // MoC V2 Core contract (for RIF collateral)
   MOC_V2_CORE: '0xA27024Ed70035E46dba712609fc2Afa1c97aA36A',
   
+  // RSK Testnet (BTC Vault analyser)
+  RSK_TESTNET_RPC: 'https://public-node.testnet.rsk.co',
+  RSK_TESTNET_BLOCKSCOUT_V2: 'https://rootstock-testnet.blockscout.com/api/v2',
+  
+  // BTC Vault Contracts (RSK Testnet)
+  BTC_VAULT_RBTC_ASYNC_VAULT_PROXY: '0x7B7308f5147e80d23f58DaE2A01BCcAF8Aa0C4F1',
+  
   // Refresh interval in milliseconds (120 seconds)
   REFRESH_INTERVAL: 120000,
   
@@ -79,4 +86,17 @@ export const MOC_CORE_ABI = [
   'function acToken() view returns (address)',
   'function calcCtargemaCA() view returns (uint256)',
   'function getCglb() view returns (uint256)',
+] as const
+
+// BTC Vault event signatures (RSK Testnet)
+export const BTC_VAULT_ABI = [
+  'event DepositRequest(address indexed user, address indexed receiver, uint256 amount, address indexed token, uint256 shares)',
+  'event NativeDepositRequested(address indexed user, address indexed receiver, uint256 amount, uint256 shares)',
+  'event DepositClaimed(address indexed user, address indexed receiver, address indexed token, uint256 amount, uint256 shares, uint256 epochId)',
+  'event DepositRequestCancelled(address indexed user, address indexed receiver, uint256 amount, uint256 shares)',
+  'event NativeDepositRequestCancelled(address indexed user, address indexed receiver, uint256 amount, uint256 shares)',
+  'event RedeemRequest(address indexed user, address indexed receiver, uint256 shares, address indexed token, uint256 amount)',
+  'event RedeemClaimed(address indexed user, address indexed receiver, address indexed token, uint256 shares, address indexed assetToken, uint256 amount, uint256 epochId)',
+  'event RedeemRequestCancelled(address indexed user, address indexed receiver, uint256 shares, uint256 amount)',
+  'event SyntheticYieldApplied(uint256 indexed epochId, address indexed caller, uint256 amount)',
 ] as const

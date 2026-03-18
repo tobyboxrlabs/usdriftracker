@@ -72,12 +72,12 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
 ### Running Locally
 
-**Option 1: Vite Dev Server (Frontend only)**
+**Option 1: Vite (quick, no login – may see CORS errors for RPC)**
 ```bash
 npm run dev
 ```
 
-**Option 2: Vercel Dev (Frontend + API)**
+**Option 2: Vercel Dev (full RPC support – requires `vercel login` once)**
 ```bash
 npm run dev:vercel
 ```

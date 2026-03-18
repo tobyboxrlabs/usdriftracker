@@ -500,11 +500,11 @@ body::before {
   right: 15px;
   transform: translateY(-50%);
   font-size: 0.7rem;
-  color: rgba(0, 255, 255, 0.5);
+  color: rgba(0, 255, 255, 0.75); /* Bumped from 0.5 for WCAG contrast */
   font-family: 'Rajdhani', sans-serif;
   text-align: center;
   min-width: 80px;
-  opacity: 0.6;
+  opacity: 0.85; /* Bumped from 0.6 for WCAG AA compliance */
 }
 
 .mini-line-graph {
@@ -583,7 +583,7 @@ body::before {
   font-family: 'Rajdhani', sans-serif;
   font-size: 0.9rem;
   color: #00ffff;
-  opacity: 0.6;
+  opacity: 0.75; /* Bumped from 0.6 for WCAG AA contrast (~4.5:1 minimum) */
   letter-spacing: 1px;
 }
 

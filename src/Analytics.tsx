@@ -1,9 +1,27 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import MintRedeemAnalyser from './MintRedeemAnalyser'
 import VaultDepositWithdrawAnalyser from './VaultDepositWithdrawAnalyser'
+import BTCVaultAnalyser from './BTCVaultAnalyser'
 import './Analytics.css'
 
+const VALID_DAYS = [1, 7, 30, 90] as const
+
+function parseDays(param: string | null): number {
+  if (!param) return 7
+  const n = parseInt(param, 10)
+  return VALID_DAYS.includes(n as typeof VALID_DAYS[number]) ? n : 7
+}
+
 export default function Analytics() {
+  const [searchParams] = useSearchParams()
+  const analyser = searchParams.get('analyser')
+  const daysParam = searchParams.get('days')
+  const days = parseDays(daysParam)
+
+  const usdrifExpanded = analyser === 'usdrif'
+  const vusdExpanded = analyser === 'vusd'
+  const btcExpanded = analyser === 'btc'
+
   return (
     <div className="analytics-page">
       <header className="analytics-header">
@@ -18,8 +36,18 @@ export default function Analytics() {
       </header>
 
       <div className="analytics-container">
-        <MintRedeemAnalyser />
-        <VaultDepositWithdrawAnalyser />
+        <MintRedeemAnalyser
+          initialExpanded={usdrifExpanded}
+          initialDays={usdrifExpanded ? days : undefined}
+        />
+        <VaultDepositWithdrawAnalyser
+          initialExpanded={vusdExpanded}
+          initialDays={vusdExpanded ? days : undefined}
+        />
+        <BTCVaultAnalyser
+          initialExpanded={btcExpanded}
+          initialDays={btcExpanded ? days : undefined}
+        />
       </div>
     </div>
   )

@@ -29,6 +29,7 @@
   align-items: center;
   margin-bottom: 25px;
   padding-bottom: 20px;
+  padding-right: 48px; /* Reserve space for collapse toggle - prevents badge overlap */
   border-bottom: 2px solid rgba(0, 255, 255, 0.3);
   flex-wrap: wrap;
   gap: 20px;
@@ -51,6 +52,44 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   flex: 1;
+}
+
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 0.72rem; /* 20% larger than 0.6rem */
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-right: 8px;
+  min-width: 90px; /* Consistent width for Mainnet and Testnet */
+  width: 90px;
+  box-sizing: border-box;
+}
+
+.network-badge__logo {
+  width: 14px; /* 20% larger than 12px */
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Border-only lozenges (no fill) */
+.network-badge--mainnet {
+  background: transparent;
+  color: #00c853;
+  border: 1px solid #00c853;
+}
+
+.network-badge--testnet {
+  background: transparent;
+  color: #ff9800;
+  border: 1px solid #ff9800;
 }
 
 .collapse-toggle {
@@ -136,6 +175,17 @@
   animation: success-flash 0.5s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .inline-progress .loading-progress-fill,
+  .loading-progress-fill {
+    animation: none;
+  }
+  .inline-progress .loading-progress-fill.complete,
+  .loading-progress-fill.complete {
+    animation: none;
+  }
+}
+
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
   color: #00ffff;
@@ -171,6 +221,24 @@
   .analyser-controls button {
     width: 100%;  /* Full width on mobile */
     min-width: unset;
+  }
+
+  /* Inline progress bar: stack vertically on narrow screens */
+  .inline-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    width: 100%;
+    min-width: unset;
+  }
+
+  .inline-progress .loading-progress-bar {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .inline-progress .loading-progress-text {
+    text-align: left;
   }
 }
 
@@ -224,8 +292,8 @@
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-  min-width: 104px;  /* 20% less: 130px * 0.8 = 104px */
-  width: 104px;      /* Fixed width prevents text-change shift */
+  min-width: 130px; /* Fixed width prevents layout shift when Loading... */
+  width: 130px;
   text-align: center; /* Center text within button */
   line-height: 1.4;   /* Consistent line-height for height calculation */
   box-sizing: border-box; /* Include border in height calculation */
@@ -428,8 +496,8 @@
   display: flex;              /* Use flexbox for vertical centering */
   align-items: center;       /* Center content vertically */
   justify-content: center;    /* Center content horizontally */
-  min-width: 104px;          /* 20% less: 130px * 0.8 = 104px */
-  width: 104px;              /* Fixed width */
+  min-width: 130px;           /* Match Refresh button for visual consistency */
+  width: 130px;
   text-align: center;        /* Center text within button */
 }
 
@@ -643,15 +711,14 @@
   padding-right: 9px; /* 10% increase: 8px * 1.1 = 8.8px, rounded to 9px */
 }
 
-/* Receiver column (6th column) - width to fit Ethereum addresses (42 chars) without wrapping */
+/* Receiver column (6th column) - consistent spacing, addresses wrap with word-break */
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
-  width: 380px; /* Fixed width to fit Ethereum address: 0x + 40 hex chars without wrapping */
-  max-width: 380px; /* Prevent expansion */
-  min-width: 380px; /* Prevent shrinking below address width */
-  white-space: nowrap; /* Prevent wrapping */
-  padding-left: 8px; /* Standard spacing */
-  padding-right: 8px; /* Standard spacing */
+  max-width: 420px;
+  width: auto;
+  word-break: break-all;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Block column (7th column) - fixed width for block numbers */
