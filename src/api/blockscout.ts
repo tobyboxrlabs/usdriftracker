@@ -252,10 +252,8 @@ export async function fetchLogsV2(
       if (nextPageParams?.index !== undefined) params.append('index', String(nextPageParams.index))
       if (nextPageParams?.items_count !== undefined) params.append('items_count', String(nextPageParams.items_count))
       if (nextPageParams?.block_number !== undefined) params.append('block_number', String(nextPageParams.block_number))
-      if (pageCount === 0) {
-        params.append('filter[from_block]', String(fromBlock))
-        params.append('filter[to_block]', String(toBlock))
-      }
+      // Note: Rootstock Blockscout returns 422 when filter[from_block]/filter[to_block] are sent.
+      // Rely on client-side filtering by block_number instead.
       if (params.toString()) url += '?' + params.toString()
 
       const controller = new AbortController()

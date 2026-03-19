@@ -24,6 +24,24 @@
 
 ---
 
+## API Rate Limiting (2026-02-11)
+
+### Current Implementation
+- In-memory rate limiting in `api/security.ts` via `checkRateLimit()`
+- All endpoints protected: rpc (100/min), analytics (60/min), export-excel (30/min), scores (10/min)
+- Per-IP limits; map cleanup when size > 1000
+
+### Limitations
+- Resets on serverless cold start
+- Per-instance limits (no global limit across instances)
+
+### Future Improvements (Optional)
+1. Consider Redis/Vercel KV for shared rate limiting at scale
+2. Add Retry-After header on 429 responses
+3. Document rate limits in API docs
+
+---
+
 ## Refactor Plan Item 3 – Completed (2026-01-24)
 
 Extracted components from `App.tsx` into new files:

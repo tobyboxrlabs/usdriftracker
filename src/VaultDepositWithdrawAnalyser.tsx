@@ -163,9 +163,11 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
             if (txInfoResponse.ok) {
               const txInfoData = await txInfoResponse.json()
               if (txInfoData.status === '1' && txInfoData.result) {
+                // gettxinfo returns result.success (boolean); if missing, assume Success
+                const success = txInfoData.result.success !== false
                 return {
                   txHash,
-                  status: txInfoData.result.status === '1' ? 'Success' as const : 'Failed' as const
+                  status: success ? 'Success' as const : 'Failed' as const
                 }
               }
             }
