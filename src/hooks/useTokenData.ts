@@ -4,6 +4,7 @@ import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI, STANDARD_DECIMALS } fr
 import { saveMetricHistory, getMetricHistory, HistoryPoint, METRIC_KEYS } from '../history'
 import { normalizeAddress } from '../utils/address'
 import { formatAmount as formatAmountUtil } from '../utils/amount'
+import { logger } from '../utils/logger'
 
 export interface TokenData {
   stRIFSupply: string
@@ -78,18 +79,18 @@ class ProxyJsonRpcProvider extends ethers.JsonRpcProvider {
 
           if (!response.ok) {
             const errorText = await response.text()
-            console.error(`[ProxyJsonRpcProvider] RPC proxy error ${response.status}:`, errorText.substring(0, 200))
+            logger.rpc.error(`RPC proxy error ${response.status}:`, errorText.substring(0, 200))
 
             if (response.status === 410) {
               try {
                 const errorData = JSON.parse(errorText)
                 if (errorData.code === 'OUTDATED_CLIENT') {
-                  console.warn('[ProxyJsonRpcProvider] ⚠️ Client version outdated - stopping polling')
+                  logger.rpc.warn('Client version outdated - stopping polling')
                   throw new Error('OUTDATED_CLIENT')
                 }
               } catch {
                 if (response.status === 410) {
-                  console.warn('[ProxyJsonRpcProvider] ⚠️ Received 410 Gone - client may be outdated')
+                  logger.rpc.warn('Received 410 Gone - client may be outdated')
                   throw new Error('OUTDATED_CLIENT')
                 }
               }
@@ -100,11 +101,11 @@ class ProxyJsonRpcProvider extends ethers.JsonRpcProvider {
 
           const result = await response.json()
           if (result.error) {
-            console.error('[ProxyJsonRpcProvider] JSON-RPC error:', result.error)
+            logger.rpc.error('JSON-RPC error:', result.error)
           }
           return result
         } catch (fetchError) {
-          console.error('[ProxyJsonRpcProvider] Fetch error:', fetchError)
+          logger.rpc.error('Fetch error:', fetchError)
           throw fetchError
         }
       })
@@ -132,7 +133,7 @@ export function useTokenData() {
         await providerCacheRef.current.getBlockNumber()
         return providerCacheRef.current
       } catch {
-        console.warn('[provider] Cached provider failed, creating new instance')
+        logger.tokenData.warn('Cached provider failed, creating new instance')
         providerCacheRef.current = null
       }
     }
@@ -145,7 +146,7 @@ export function useTokenData() {
         try {
           const provider = new ProxyJsonRpcProvider(endpoint)
           await provider.getBlockNumber()
-          console.log(`✅ Using RPC proxy: ${endpoint}`)
+          logger.rpc.info(`Using RPC proxy: ${endpoint}`)
           providerCacheRef.current = provider
           return provider
         } catch {
@@ -158,7 +159,7 @@ export function useTokenData() {
       try {
         const provider = new ethers.JsonRpcProvider(endpoint)
         await provider.getBlockNumber()
-        console.log(`✅ Using direct RPC endpoint: ${endpoint}`)
+        logger.rpc.info(`Using direct RPC: ${endpoint}`)
         providerCacheRef.current = provider
         return provider
       } catch (error) {
@@ -172,13 +173,13 @@ export function useTokenData() {
           continue
         }
         if (!isDev) {
-          console.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
+          logger.rpc.warn(`RPC endpoint ${endpoint} failed, trying next...`, error)
         }
         continue
       }
     }
 
-    console.error('❌ All RPC endpoints failed')
+    logger.rpc.error('All RPC endpoints failed')
     return null
   }, [])
 
@@ -197,7 +198,7 @@ export function useTokenData() {
         const formatted = formatAmountUtil(raw, decimals)
         return { raw, formatted }
       } catch (error) {
-        console.warn(`Failed to query metric from ${address}:`, error)
+        logger.tokenData.warn(`Failed to query metric from ${address}:`, error)
         return null
       }
     },
@@ -315,7 +316,7 @@ export function useTokenData() {
             formattedMaxMintable = formatAmountUtil(mintableUsdrif, STANDARD_DECIMALS)
           }
         } catch {
-          console.warn('Failed to calculate USDRIF Mintable:')
+          logger.tokenData.warn('Failed to calculate USDRIF Mintable')
         }
       }
 
@@ -340,7 +341,7 @@ export function useTokenData() {
       const historyCounts = Object.fromEntries(
         Object.keys(metricKeys).map((key) => [key, getMetricHistory(key).length])
       )
-      console.log('History data points:', historyCounts)
+      logger.tokenData.debug('History data points:', historyCounts)
 
       setTokenData((prev) => ({
         stRIFSupply: stRIFSupply != null ? stRIFSupply.toString() : prev.stRIFSupply,
@@ -377,11 +378,11 @@ export function useTokenData() {
 
       setRefreshingMetrics(new Set())
     } catch (error) {
-      console.error('Error fetching token data:', error)
+      logger.tokenData.error('Error fetching token data:', error)
 
       if (isMountedRef.current) {
         if (error instanceof Error && error.message === 'OUTDATED_CLIENT') {
-          console.warn('[useTokenData] Client version outdated - stopping polling')
+          logger.tokenData.warn('Client version outdated - stopping polling')
           setIsClientOutdated(true)
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current)

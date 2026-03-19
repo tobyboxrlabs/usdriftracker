@@ -6,6 +6,7 @@ import { fetchLogsV2 } from './api/blockscout'
 import { AnalyserShell } from './components/AnalyserShell'
 import { formatAmount, formatAmountDisplay } from './utils/amount'
 import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
+import { logger } from './utils/logger'
 import { rpcCall } from './utils/rpc'
 import './MintRedeemAnalyser.css'
 
@@ -70,10 +71,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
       const depositTopic = depositEvent.topicHash
       const withdrawTopic = withdrawEvent.topicHash
       
-      console.log(`[DEBUG] Vault event topic hashes:`, {
-        deposit: depositTopic,
-        withdraw: withdrawTopic,
-      })
+      logger.vault.debug('Event topic hashes:', { deposit: depositTopic, withdraw: withdrawTopic })
       
       // Update progress
       setLoadingProgress({ current: 0, total: 100, phase: 'Fetching vault events...' })
@@ -81,7 +79,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
       // Fetch all logs from Blockscout API v2
       const allLogs = await fetchLogsV2(BLOCKSCOUT_API_V2, VAULT_ADDRESS, fromBlock, currentBlock)
       
-      console.log(`[DEBUG] Found ${allLogs.length} total logs`)
+      logger.vault.debug(`Found ${allLogs.length} total logs`)
       
       // Filter for Deposit and Withdraw events
       const vaultEvents = allLogs.filter(log => {
@@ -90,7 +88,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
         return eventTopic === depositTopic || eventTopic === withdrawTopic
       })
       
-      console.log(`[DEBUG] Found ${vaultEvents.length} vault events (Deposit/Withdraw)`)
+      logger.vault.debug(`Found ${vaultEvents.length} vault events (Deposit/Withdraw)`)
       
       setLoadingProgress({ current: 30, total: 100, phase: 'Fetching block timestamps...' })
       
@@ -227,7 +225,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
               try {
                 assets = BigInt(assetsValue)
               } catch (e) {
-                console.warn(`[Vault] Failed to parse assets value: ${assetsValue}`, e)
+                logger.vault.warn(`Failed to parse assets value: ${assetsValue}`, e)
                 continue
               }
             }
@@ -245,7 +243,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
               try {
                 assets = BigInt(assetsValue)
               } catch (e) {
-                console.warn(`[Vault] Failed to parse assets value: ${assetsValue}`, e)
+                logger.vault.warn(`Failed to parse assets value: ${assetsValue}`, e)
                 continue
               }
             }
@@ -254,13 +252,13 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
         
         // Skip if we don't have valid receiver
         if (!receiver) {
-          console.warn(`[Vault] Skipping event - missing receiver, tx: ${log.transaction_hash}`)
+          logger.vault.warn(`Skipping event - missing receiver, tx: ${log.transaction_hash}`)
           continue
         }
         
         // Skip if assets is zero (but log it for debugging)
         if (assets === 0n) {
-          console.warn(`[Vault] Skipping event - zero assets, tx: ${log.transaction_hash}, params:`, params.map(p => `${p.name}=${p.value}`).join(', '))
+          logger.vault.warn(`Skipping event - zero assets, tx: ${log.transaction_hash}`, params.map(p => `${p.name}=${p.value}`).join(', '))
           continue
         }
         
@@ -271,13 +269,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
         
         // Debug logging for first few transactions
         if (txs.length < 3) {
-          console.log(`[Vault] Processing ${isDeposit ? 'Deposit' : 'Withdraw'}:`, {
-            tx: log.transaction_hash,
-            assets: assets.toString(),
-            formattedAmount,
-            receiver,
-            blockNumber,
-          })
+          logger.vault.debug(`${isDeposit ? 'Deposit' : 'Withdraw'}:`, { tx: log.transaction_hash, assets: assets.toString(), formattedAmount, receiver, blockNumber })
         }
         
         txs.push({
@@ -299,9 +291,10 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
       setTransactions(recentTxs)
       setLastUpdated(new Date())
       setLoadingProgress({ current: 100, total: 100, phase: 'Complete' })
+      logger.vault.info(`Fetched ${recentTxs.length} vault txs (${days}d) | blocks ${fromBlock}–${currentBlock}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
-      console.error('Error fetching vault transactions:', err)
+      logger.vault.error('Error fetching vault transactions:', err)
     } finally {
       setLoading(false)
       if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current)
@@ -385,7 +378,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
       const filename = generateDateFilename('usd_vault_txs')
       writeExcelWorkbook(wb, filename)
     } catch (error) {
-      console.error('Error exporting to Excel:', error)
+      logger.vault.error('Error exporting to Excel:', error)
       alert('Failed to export to Excel. Please try again.')
     }
   }, [])
