@@ -980,6 +980,9 @@ function App() {
                 history={history.rifproSupply}
                 helpText="Sourced from the RIFPRO token contract (totalSupply). Represents the total supply of RIFPRO tokens in circulation."
               />
+              <p className="app-disclaimer">
+                Disclaimer: This is an unofficial, AI-generated app built for exploration and testing purposes only. It is not a RootstockLabs official product, and the information shown may be incomplete, inaccurate, or outdated. Do not rely on this app or its data for financial, operational, legal, product, GTM, or other decision-making purposes. Always verify any on-chain data through official Rootstock ecosystem trusted sources.
+              </p>
               <MetricDisplay
                 label="USDRIF Minted"
                 value={tokenData.formattedMinted}

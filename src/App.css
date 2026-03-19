@@ -2,3 +2,17 @@
   width: 100%;
   min-height: 100vh;
 }
+
+.app-disclaimer {
+  font-size: 0.6rem;
+  line-height: 1.3;
+  color: #eee;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.metrics .app-disclaimer {
+  grid-column: 1 / -1;
+}

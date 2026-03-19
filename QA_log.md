@@ -18,6 +18,11 @@
 - Env var validation
 - Consider websocket updates
 
+### Test Fix Applied
+- **Vitest mock updated for `ethers.id`**
+  - Added `ethers.id` to test mock in `src/App.test.tsx`.
+  - `npm test` now passes (13/13).
+
 ### New Issue (Tests)
 - **Vitest failing due to missing `ethers.id` mock**
   - **Error:** `TypeError: ethers.id is not a function` from `src/BTCVaultAnalyser.tsx`

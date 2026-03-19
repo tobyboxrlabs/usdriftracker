@@ -30,6 +30,7 @@ vi.mock('ethers', async () => {
       JsonRpcProvider: MockJsonRpcProvider,
       Contract: vi.fn().mockImplementation(() => mockContract),
       getAddress: vi.fn((address: string) => address),
+      id: vi.fn(() => `0x${'0'.repeat(64)}`),
     },
   }
 })
