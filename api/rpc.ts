@@ -6,6 +6,7 @@ import { getExpectedClientVersion, isClientOutdated } from './shared.js'
 const ALLOWED_RPC_ENDPOINTS = [
   'https://public-node.rsk.co',
   'https://rsk.publicnode.com',
+  'https://public-node.testnet.rsk.co',
 ]
 
 // ============================================================================

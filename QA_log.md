@@ -8,7 +8,7 @@
 - `App.tsx`: history key constants (`METRIC_KEYS`), BigInt mintable math, 0n handling, removed `MOC_STATE_ABI` usage
 - `vite.config.ts`: vitest config typing issue resolved
 - `vercel.json`: SPA rewrite verified
-- **Refactor Set – Priority fixes (2026-01-24):** RIF collateral unit RIF→RIF (MetricsPage); useTokenData custom RPC env (ROOTSTOCK_RPC at front of fallback list); setState-after-unmount (progressTimeoutRef + cleanup in MintRedeemAnalyser, VaultDepositWithdrawAnalyser)
+- **Refactor Set – Fixes verified (2026-01-24):** RIF collateral unit now `RIF` (MetricsPage); useTokenData uses `ROOTSTOCK_RPC` first; progress timeout cleanup in MintRedeemAnalyser/VaultDepositWithdrawAnalyser; Blockscout v2 block range params + MAX_PAGES warning; MintRedeem MoC 50‑tx cap removed; BTC vault uses rpcCall with testnet RPC (proxy whitelist updated)
 
 ### Open (Recommendations)
 - Accessibility improvements (ARIA labels, keyboard hints)
@@ -22,22 +22,16 @@
 ### Refactor Set Review (Latest)
 - ~~**`useTokenData` ignores custom RPC env**~~ **Fixed**
   - ~~`getWorkingProvider` only uses `ROOTSTOCK_RPC_ALTERNATIVES`~~ Now uses `[CONFIG.ROOTSTOCK_RPC, ...(ROOTSTOCK_RPC_ALTERNATIVES || [])]` so `VITE_ROOTSTOCK_RPC` is tried first.
-- **Blockscout v2 fetch ignores block range**
-  - `fetchLogsV2` fetches logs without `fromBlock`/`toBlock` query params, then filters in memory.
-  - **Risk:** large addresses can exceed `MAX_PAGES` (100) and silently return incomplete results.
-  - **Fix:** use API parameters for block range (if supported) or apply server-side filtering with paging logic that respects block bounds.
-- **Mint/Redeem MoC enrichment capped to 50 tx hashes**
-  - `MintRedeemAnalyser` only queries MoC event logs for the first 50 unique tx hashes.
-  - **Risk:** receiver/collateral attribution becomes inaccurate for larger windows.
-  - **Fix:** remove the cap or make it configurable with a warning when truncation occurs.
+- ~~**Blockscout v2 fetch ignores block range**~~ **Mitigated**
+  - Now sends `filter[from_block]` and `filter[to_block]` on first request; adds `block_number` to pagination params. Client-side filtering remains as fallback. Console warning when MAX_PAGES reached.
+- ~~**Mint/Redeem MoC enrichment capped to 50 tx hashes**~~ **Fixed**
+  - Cap removed; all unique tx hashes are now queried for MoC event enrichment.
 - ~~**Potential setState after unmount**~~ **Fixed**
   - MintRedeemAnalyser and VaultDepositWithdrawAnalyser now use `progressTimeoutRef` and clear timeout on unmount.
 - ~~**Unit mismatch for RIF collateral display**~~ **Fixed**
   - RIF Collateral Backing USDRIF now uses `unit="RIF"` (was RIFPRO).
-- **BTC vault analyser uses direct RPC in browser**
-  - `BTCVaultAnalyser` posts to `CONFIG.RSK_TESTNET_RPC` directly, bypassing the proxy.
-  - **Risk:** CORS failure in browser if testnet RPC disallows it.
-  - **Fix:** reuse `rpcCall` with a testnet-aware proxy endpoint or add testnet RPC to proxy whitelist.
+- ~~**BTC vault analyser uses direct RPC in browser**~~ **Fixed**
+  - `BTCVaultAnalyser` now uses `rpcCall('eth_blockNumber', [], CONFIG.RSK_TESTNET_RPC)`. Testnet RPC added to api/rpc whitelist; requests go through proxy in production.
 
 ### Test Fix Applied
 - **Vitest mock updated for `ethers.id`**

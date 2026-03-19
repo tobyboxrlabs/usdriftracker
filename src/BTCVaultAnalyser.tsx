@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
 import { fetchLogsV2, type BlockscoutV2Log } from './api/blockscout'
+import { rpcCall } from './utils/rpc'
 import { AnalyserShell } from './components/AnalyserShell'
 import { formatAmount, formatAmountDisplay } from './utils/amount'
 import { generateTimestampFilename, writeExcelWorkbook } from './utils/exportExcel'
@@ -161,13 +162,8 @@ export default function BTCVaultAnalyser({ initialExpanded, initialDays }: BTCVa
     setLoading(true)
     setError(null)
     try {
-      const blockNumRes = await fetch(CONFIG.RSK_TESTNET_RPC, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] }),
-      })
-      const blockNumData = await blockNumRes.json()
-      const currentBlock = parseInt(blockNumData.result ?? '0x0', 16)
+      const blockNumberHex = await rpcCall<string>('eth_blockNumber', [], CONFIG.RSK_TESTNET_RPC)
+      const currentBlock = parseInt(blockNumberHex ?? '0x0', 16)
 
       const blockRange = BLOCKS_PER_DAY * days
       const fromBlock = Math.max(0, currentBlock - blockRange)

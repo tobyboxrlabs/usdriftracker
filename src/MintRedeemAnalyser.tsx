@@ -214,15 +214,13 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
       const BATCH_SIZE = 5 // Smaller batches to avoid rate limiting
       const BATCH_DELAY = 200 // 200ms delay between batches
       
-      // Query transaction logs in batches with delays
-      const mocQueryLimit = Math.min(uniqueTxHashes.length, 50)
-      for (let i = 0; i < mocQueryLimit; i += BATCH_SIZE) {
+      for (let i = 0; i < uniqueTxHashes.length; i += BATCH_SIZE) {
         const batch = uniqueTxHashes.slice(i, i + BATCH_SIZE)
         
         // Update progress (MoC events phase: ~25% of total work)
         if (totalTxs > 0) {
-          const progress = Math.floor(((i + BATCH_SIZE) / mocQueryLimit) * 25)
-          setLoadingProgress({ current: Math.min(progress, 25), total: 100, phase: `Fetch RoC events... ${ROC_CONTRACTS_LABEL} (${Math.min(i + BATCH_SIZE, mocQueryLimit)}/${mocQueryLimit})` })
+          const progress = Math.floor(((i + BATCH_SIZE) / uniqueTxHashes.length) * 25)
+          setLoadingProgress({ current: Math.min(progress, 25), total: 100, phase: `Fetch RoC events... ${ROC_CONTRACTS_LABEL} (${Math.min(i + BATCH_SIZE, uniqueTxHashes.length)}/${uniqueTxHashes.length})` })
         }
         
         // Process batch in parallel

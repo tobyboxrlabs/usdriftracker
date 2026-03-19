@@ -8,13 +8,23 @@ import { CONFIG } from '../config'
 /**
  * Make a JSON-RPC call to Rootstock. Tries proxy first in production, then direct endpoints.
  * Falls back through endpoints on failure (CORS, 404, 410, etc.).
+ * @param method - JSON-RPC method (e.g. 'eth_blockNumber')
+ * @param params - JSON-RPC params array
+ * @param rpcEndpoint - Optional override (e.g. CONFIG.RSK_TESTNET_RPC for testnet). Must be in api/rpc whitelist for proxy.
  */
-export async function rpcCall<T = unknown>(method: string, params: unknown[]): Promise<T> {
-  const primaryRpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
-  const fallbackEndpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [
-    'https://public-node.rsk.co',
-    'https://rsk.publicnode.com',
-  ]
+export async function rpcCall<T = unknown>(
+  method: string,
+  params: unknown[],
+  rpcEndpoint?: string
+): Promise<T> {
+  const primaryRpcEndpoint = rpcEndpoint ?? CONFIG.ROOTSTOCK_RPC ?? 'https://public-node.rsk.co'
+  const fallbackEndpoints =
+    rpcEndpoint != null
+      ? []
+      : CONFIG.ROOTSTOCK_RPC_ALTERNATIVES ?? [
+          'https://public-node.rsk.co',
+          'https://rsk.publicnode.com',
+        ]
 
   const isDev = import.meta.env.DEV
   const endpointsToTry = isDev

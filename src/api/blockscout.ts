@@ -251,6 +251,11 @@ export async function fetchLogsV2(
       const params = new URLSearchParams()
       if (nextPageParams?.index !== undefined) params.append('index', String(nextPageParams.index))
       if (nextPageParams?.items_count !== undefined) params.append('items_count', String(nextPageParams.items_count))
+      if (nextPageParams?.block_number !== undefined) params.append('block_number', String(nextPageParams.block_number))
+      if (pageCount === 0) {
+        params.append('filter[from_block]', String(fromBlock))
+        params.append('filter[to_block]', String(toBlock))
+      }
       if (params.toString()) url += '?' + params.toString()
 
       const controller = new AbortController()
@@ -307,6 +312,11 @@ export async function fetchLogsV2(
       nextPageParams = data.next_page_params
       if (!nextPageParams) break
       pageCount++
+      if (pageCount >= MAX_PAGES) {
+        console.warn(
+          `[Blockscout] Reached MAX_PAGES (${MAX_PAGES}). Results may be truncated for address ${address}. Consider reducing the block range.`
+        )
+      }
       await new Promise((r) => setTimeout(r, 100))
     } catch (err) {
       rateLimiter.recordFailure()
