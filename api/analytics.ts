@@ -1,22 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setCorsHeaders, setSecurityHeaders, checkRateLimit, getClientIp } from './security.js'
-
-// Expected client version (git commit hash from build)
-// This should match VITE_GIT_COMMIT_HASH from the frontend build
-// Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
-// Take first 7 characters to match the short hash format used by vite.config.ts
-const EXPECTED_CLIENT_VERSION = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
+import { getExpectedClientVersion, isClientOutdated } from './shared.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Top-level error handler to catch any initialization errors
   try {
-    // Check client version
     const clientVersion = req.headers['x-client-version'] as string | undefined
-    const isOldClient = !clientVersion || clientVersion !== EXPECTED_CLIENT_VERSION
+    const isOldClient = isClientOutdated(req)
     if (isOldClient) {
       console.warn('[analytics] ⚠️ OLD CLIENT DETECTED ⚠️')
       console.warn('[analytics] Client version:', clientVersion || '(missing)')
-      console.warn('[analytics] Expected version:', EXPECTED_CLIENT_VERSION)
+      console.warn('[analytics] Expected version:', getExpectedClientVersion())
       console.warn('[analytics] This client may be using outdated code from before ESM refactor')
       console.warn('[analytics] User should refresh their browser to get the latest version')
     }

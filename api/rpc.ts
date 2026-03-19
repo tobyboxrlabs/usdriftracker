@@ -1,11 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setCorsHeaders, setSecurityHeaders, checkRateLimit, getClientIp } from './security.js'
-
-// Expected client version (git commit hash from build)
-// This should match VITE_GIT_COMMIT_HASH from the frontend build
-// Vercel provides VERCEL_GIT_COMMIT_SHA at runtime (same value used in vite.config.ts during build)
-// Take first 7 characters to match the short hash format used by vite.config.ts
-const EXPECTED_CLIENT_VERSION = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || process.env.VITE_GIT_COMMIT_HASH || process.env.GIT_COMMIT_HASH || 'unknown'
+import { getExpectedClientVersion, isClientOutdated } from './shared.js'
 
 // Allowed RPC endpoints (whitelist for security)
 const ALLOWED_RPC_ENDPOINTS = [
@@ -119,23 +114,21 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // Check client version
   const clientVersion = req.headers['x-client-version'] as string | undefined
-  const isOldClient = !clientVersion || clientVersion !== EXPECTED_CLIENT_VERSION
-  
-  // Log handler invocation immediately
+  const isOldClient = isClientOutdated(req)
+
   console.log('[rpc] === Handler Invoked ===')
   console.log('[rpc] Method:', req.method)
   console.log('[rpc] URL:', req.url)
   console.log('[rpc] Query:', req.query)
   console.log('[rpc] Client Version:', clientVersion || '(missing)')
-  console.log('[rpc] Expected Version:', EXPECTED_CLIENT_VERSION)
+  console.log('[rpc] Expected Version:', getExpectedClientVersion())
   console.log('[rpc] Is Old Client:', isOldClient)
-  
+
   if (isOldClient) {
     console.warn('[rpc] ⚠️ OLD CLIENT DETECTED ⚠️')
     console.warn('[rpc] Client version:', clientVersion || 'MISSING')
-    console.warn('[rpc] Expected version:', EXPECTED_CLIENT_VERSION)
+    console.warn('[rpc] Expected version:', getExpectedClientVersion())
     console.warn('[rpc] This client may be using outdated code from before ESM refactor')
     console.warn('[rpc] User should refresh their browser to get the latest version')
   }

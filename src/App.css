@@ -13,6 +13,16 @@
   box-sizing: border-box;
 }
 
+/* Match Analytics disclaimer spacing (between header/buttons and content card) */
+.app-disclaimer--main {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.container:has(.header + .app-disclaimer--main) .header {
+  margin-bottom: 6px;
+}
+
 .metrics .app-disclaimer {
   grid-column: 1 / -1;
 }

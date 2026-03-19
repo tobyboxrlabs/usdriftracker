@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
-import { RootstockLogo } from './RootstockLogo'
+import { fetchLogsV2, type BlockscoutV2Log } from './api/blockscout'
+import { AnalyserShell } from './components/AnalyserShell'
+import { formatAmount, formatAmountDisplay } from './utils/amount'
+import { generateTimestampFilename, writeExcelWorkbook } from './utils/exportExcel'
 import './MintRedeemAnalyser.css'
 
 interface BTCVaultTransaction {
@@ -18,29 +21,6 @@ interface BTCVaultTransaction {
   assetToken: string
   epochId?: number
   blockNumber: number
-}
-
-interface BlockscoutV2Log {
-  address: { hash: string }
-  block_number: number
-  block_timestamp: string
-  data: string
-  decoded: {
-    method_call: string
-    parameters: Array<{ name: string; type: string; value: string }>
-  } | null
-  topics: (string | null)[]
-  transaction_hash: string
-  index: number
-}
-
-interface BlockscoutV2Response {
-  items: BlockscoutV2Log[]
-  next_page_params: {
-    block_number?: number
-    index?: number
-    items_count?: number
-  } | null
 }
 
 const BLOCKSCOUT_API_V2 = CONFIG.RSK_TESTNET_BLOCKSCOUT_V2
@@ -61,142 +41,6 @@ const TOPICS = {
   RedeemClaimed: ethers.id('RedeemClaimed(address,address,address,uint256,address,uint256,uint256)').toLowerCase(),
   RedeemRequestCancelled: ethers.id('RedeemRequestCancelled(address,address,uint256,uint256)').toLowerCase(),
   SyntheticYieldApplied: ethers.id('SyntheticYieldApplied(uint256,address,uint256)').toLowerCase(),
-}
-
-class BlockscoutV2RateLimiter {
-  private lastCallTime = 0
-  private callQueue: Array<() => void> = []
-  private isProcessing = false
-  private consecutiveFailures = 0
-  private readonly MIN_DELAY = 200
-  private readonly MAX_DELAY = 5000
-
-  async throttle(): Promise<void> {
-    return new Promise((resolve) => {
-      this.callQueue.push(resolve)
-      this.processQueue()
-    })
-  }
-
-  private async processQueue(): Promise<void> {
-    if (this.isProcessing || this.callQueue.length === 0) return
-    this.isProcessing = true
-    while (this.callQueue.length > 0) {
-      const resolve = this.callQueue.shift()!
-      const adaptiveDelay = Math.min(
-        this.MIN_DELAY * Math.pow(2, Math.min(this.consecutiveFailures, 4)),
-        this.MAX_DELAY
-      )
-      const timeSinceLastCall = Date.now() - this.lastCallTime
-      const delayNeeded = Math.max(adaptiveDelay - timeSinceLastCall, 0)
-      if (delayNeeded > 0) await new Promise((r) => setTimeout(r, delayNeeded))
-      this.lastCallTime = Date.now()
-      resolve()
-    }
-    this.isProcessing = false
-  }
-
-  recordSuccess(): void {
-    this.consecutiveFailures = 0
-  }
-  recordFailure(): void {
-    this.consecutiveFailures++
-  }
-}
-
-const rateLimiter = new BlockscoutV2RateLimiter()
-
-async function fetchLogsFromBlockscoutV2(
-  address: string,
-  fromBlock: number,
-  toBlock: number,
-  retryCount = 0
-): Promise<BlockscoutV2Log[]> {
-  await rateLimiter.throttle()
-  const allLogs: BlockscoutV2Log[] = []
-  let nextPageParams: BlockscoutV2Response['next_page_params'] = null
-  let pageCount = 0
-  let hasMorePages = true
-  const FETCH_TIMEOUT = 30000
-
-  while (hasMorePages && pageCount < 100) {
-    try {
-      let url = `${BLOCKSCOUT_API_V2}/addresses/${address}/logs`
-      const params = new URLSearchParams()
-      if (nextPageParams) {
-        if (nextPageParams.index !== undefined) params.append('index', String(nextPageParams.index))
-        if (nextPageParams.items_count !== undefined) params.append('items_count', String(nextPageParams.items_count))
-      }
-      if (params.toString()) url += '?' + params.toString()
-
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
-      let response: Response
-      try {
-        response = await fetch(url, { signal: controller.signal })
-        clearTimeout(timeoutId)
-      } catch (fetchError) {
-        clearTimeout(timeoutId)
-        if (fetchError instanceof Error) {
-          const isRetryable =
-            (fetchError.name === 'AbortError' || /timeout|Failed to fetch|network|ERR_/i.test(fetchError.message)) &&
-            retryCount < 3
-          if (isRetryable) {
-            rateLimiter.recordFailure()
-            await new Promise((r) => setTimeout(r, Math.min(2000 * Math.pow(2, retryCount), 10000)))
-            return fetchLogsFromBlockscoutV2(address, fromBlock, toBlock, retryCount + 1)
-          }
-        }
-        throw fetchError
-      }
-
-      if (response.status === 429 && retryCount < 3) {
-        rateLimiter.recordFailure()
-        await new Promise((r) => setTimeout(r, Math.min(1000 * Math.pow(2, retryCount), 5000)))
-        return fetchLogsFromBlockscoutV2(address, fromBlock, toBlock, retryCount + 1)
-      }
-      if (!response.ok) {
-        rateLimiter.recordFailure()
-        throw new Error(`Blockscout API v2 error: ${response.status}`)
-      }
-      rateLimiter.recordSuccess()
-
-      const text = await response.text()
-      if (!text?.trim()) break
-      if (!response.headers.get('content-type')?.includes('application/json')) {
-        rateLimiter.recordFailure()
-        throw new Error('Blockscout returned non-JSON')
-      }
-      const data = JSON.parse(text) as BlockscoutV2Response
-
-      if (data.items?.length) {
-        const filtered = data.items.filter((log) => {
-          const b = log.block_number
-          return b >= fromBlock && b <= toBlock
-        })
-        allLogs.push(...filtered)
-        if (Math.max(...data.items.map((l) => l.block_number)) < fromBlock) {
-          hasMorePages = false
-          break
-        }
-      } else {
-        hasMorePages = false
-        break
-      }
-      nextPageParams = data.next_page_params
-      if (!nextPageParams) hasMorePages = false
-      else pageCount++
-      await new Promise((r) => setTimeout(r, 100))
-    } catch (err) {
-      rateLimiter.recordFailure()
-      if (retryCount < 3 && err instanceof Error && /Failed to fetch|network|ERR_|timeout/.test(err.message)) {
-        await new Promise((r) => setTimeout(r, Math.min(2000 * Math.pow(2, retryCount), 10000)))
-        return fetchLogsFromBlockscoutV2(address, fromBlock, toBlock, retryCount + 1)
-      }
-      throw err
-    }
-  }
-  return allLogs
 }
 
 function parseBigInt(value: string): string {
@@ -268,22 +112,6 @@ function decodeEvent(log: BlockscoutV2Log): BTCVaultTransaction | null {
   return null
 }
 
-function formatAmount(amount: bigint, decimals: number = 18): string {
-  if (amount === 0n) return '0'
-  const factor = 10n ** BigInt(decimals)
-  const whole = amount / factor
-  const frac = amount % factor
-  if (frac === 0n) return whole.toString()
-  const fracStr = frac.toString().padStart(decimals, '0').replace(/0+$/, '')
-  return fracStr ? `${whole}.${fracStr}` : whole.toString()
-}
-
-function formatAmountDisplay(amount: string, decimals: number = 0): string {
-  const n = parseFloat(amount)
-  if (isNaN(n)) return amount
-  return n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
-}
-
 function formatUsd(value: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -344,7 +172,7 @@ export default function BTCVaultAnalyser({ initialExpanded, initialDays }: BTCVa
       const blockRange = BLOCKS_PER_DAY * days
       const fromBlock = Math.max(0, currentBlock - blockRange)
 
-      const logs = await fetchLogsFromBlockscoutV2(VAULT_ADDRESS, fromBlock, currentBlock)
+      const logs = await fetchLogsV2(BLOCKSCOUT_API_V2, VAULT_ADDRESS, fromBlock, currentBlock)
       const decoded = logs
         .map(decodeEvent)
         .filter((t): t is BTCVaultTransaction => t !== null)
@@ -393,63 +221,44 @@ export default function BTCVaultAnalyser({ initialExpanded, initialDays }: BTCVa
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'BTC Vault Transactions')
-    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
-    XLSX.writeFile(wb, `btc-vault-transactions-${ts}.xlsx`)
+    const filename = generateTimestampFilename('btc-vault-transactions')
+    writeExcelWorkbook(wb, filename)
   }, [transactions, rbtcUsd])
 
-  return (
-    <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="analyser-header">
-        <h2>BTC Vault</h2>
-        <span className="network-badge network-badge--testnet" title="Rootstock Testnet">
-          <RootstockLogo className="network-badge__logo" />
-          Testnet
-        </span>
-        <button
-          className="collapse-toggle"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
-        >
-          {isCollapsed ? '▶' : '▼'}
+  const controls = (
+    <>
+      <div className="filter-toggle" />
+      <div className="right-controls">
+        <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+          <option value={1}>1 day</option>
+          <option value={7}>7 days</option>
+          <option value={30}>30 days</option>
+          <option value={90}>90 days</option>
+        </select>
+        <button onClick={fetchTransactions} disabled={loading} aria-busy={loading}>
+          {loading && <span className="refresh-spinner" />}
+          {loading ? 'Loading...' : 'Refresh'}
         </button>
-        {!isCollapsed && (
-          <div className="analyser-controls">
-            <div className="filter-toggle" />
-            <div className="right-controls">
-              <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
-                <option value={1}>1 day</option>
-                <option value={7}>7 days</option>
-                <option value={30}>30 days</option>
-                <option value={90}>90 days</option>
-              </select>
-              <button onClick={fetchTransactions} disabled={loading} aria-busy={loading}>
-                {loading && <span className="refresh-spinner" />}
-                {loading ? 'Loading...' : 'Refresh'}
-              </button>
-              <button className="export-button" onClick={exportToExcel} disabled={loading}>
-                XLS
-              </button>
-            </div>
-          </div>
-        )}
+        <button className="export-button" onClick={exportToExcel} disabled={loading}>
+          XLS
+        </button>
       </div>
+    </>
+  )
 
-      {!isCollapsed && (
-        <>
-          {error && <div className="error-message">Error: {error}</div>}
-          {loading && (
-            <div className="loading-message" role="status" aria-live="polite">
-              Loading transactions...
-            </div>
-          )}
-          {!loading && transactions.length === 0 && !error && (
-            <div className="no-data" role="status" aria-live="polite">
-              No BTC Vault transactions found in the selected period.
-            </div>
-          )}
-          {transactions.length > 0 && !loading && (
-            <div className="transactions-table-container">
+  return (
+    <AnalyserShell
+      title="BTC Vault"
+      networkBadge="testnet"
+      isCollapsed={isCollapsed}
+      onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      controls={controls}
+      error={error}
+      loading={loading}
+      isEmpty={transactions.length === 0}
+      emptyMessage="No BTC Vault transactions found in the selected period."
+    >
+      <div className="transactions-table-container">
               <table className="transactions-table">
                 <thead>
                   <tr>
@@ -505,10 +314,7 @@ export default function BTCVaultAnalyser({ initialExpanded, initialDays }: BTCVa
                   </p>
                 </div>
               )}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+      </div>
+    </AnalyserShell>
   )
 }

@@ -1,8 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { ethers } from 'ethers'
 import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
-import { RootstockLogo } from './RootstockLogo'
+import { fetchLogsV1, type BlockscoutLog } from './api/blockscout'
+import { AnalyserShell } from './components/AnalyserShell'
+import { formatAmount, formatAmountDisplay } from './utils/amount'
+import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
+import { rpcCall } from './utils/rpc'
 import './MintRedeemAnalyser.css'
 
 interface MintRedeemTransaction {
@@ -17,23 +21,6 @@ interface MintRedeemTransaction {
   valueReturned: string
   tokenReturned: string
   blockNumber: number
-}
-
-interface BlockscoutLog {
-  address: string
-  topics: string[]
-  data: string
-  blockNumber: string
-  transactionHash: string
-  blockHash: string
-  logIndex: string
-  removed: boolean
-}
-
-interface BlockscoutResponse {
-  status: string
-  message: string
-  result: BlockscoutLog[]
 }
 
 const BLOCKSCOUT_API = 'https://rootstock.blockscout.com/api'
@@ -68,238 +55,6 @@ const MOC_ABI = [
   'event RedeemFreeStableTokenVendors(address indexed account, uint256 stableTokenAmount, uint256 reserveTokenAmount, address indexed vendorAccount)',
 ] as const
 
-function formatAmount(amount: bigint, decimals: number = 18): string {
-  if (amount === 0n) return '0'
-  const factor = 10n ** BigInt(decimals)
-  const whole = amount / factor
-  const frac = amount % factor
-  if (frac === 0n) return whole.toString()
-  const fracStr = frac.toString().padStart(decimals, '0').replace(/0+$/, '')
-  return fracStr ? `${whole}.${fracStr}` : whole.toString()
-}
-
-function formatAmountDisplay(amount: string, decimals: number = 0): string {
-  // Parse the amount string and format with specified decimal places
-  const numValue = parseFloat(amount)
-  if (isNaN(numValue)) return amount
-  return numValue.toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  })
-}
-
-// Global rate limiter for Blockscout API calls with adaptive throttling
-class BlockscoutRateLimiter {
-  private lastCallTime = 0
-  private callQueue: Array<() => void> = []
-  private isProcessing = false
-  private consecutiveFailures = 0
-  private readonly MIN_DELAY = 200 // Minimum delay between calls (ms) - increased for better rate limiting
-  private readonly MAX_DELAY = 5000 // Maximum delay (5 seconds)
-  
-  async throttle(): Promise<void> {
-    return new Promise((resolve) => {
-      this.callQueue.push(resolve)
-      this.processQueue()
-    })
-  }
-  
-  private async processQueue(): Promise<void> {
-    if (this.isProcessing || this.callQueue.length === 0) return
-    
-    this.isProcessing = true
-    
-    while (this.callQueue.length > 0) {
-      const resolve = this.callQueue.shift()!
-      
-      // Calculate adaptive delay based on failures
-      const adaptiveDelay = Math.min(
-        this.MIN_DELAY * Math.pow(2, Math.min(this.consecutiveFailures, 4)),
-        this.MAX_DELAY
-      )
-      
-      const timeSinceLastCall = Date.now() - this.lastCallTime
-      const delayNeeded = Math.max(adaptiveDelay - timeSinceLastCall, 0)
-      
-      if (delayNeeded > 0) {
-        await new Promise(r => setTimeout(r, delayNeeded))
-      }
-      
-      this.lastCallTime = Date.now()
-      resolve()
-    }
-    
-    this.isProcessing = false
-  }
-  
-  recordSuccess(): void {
-    this.consecutiveFailures = 0
-  }
-  
-  recordFailure(): void {
-    this.consecutiveFailures++
-  }
-  
-  getConsecutiveFailures(): number {
-    return this.consecutiveFailures
-  }
-}
-
-const blockscoutRateLimiter = new BlockscoutRateLimiter()
-
-async function fetchLogsFromBlockscout(
-  address: string,
-  fromBlock: number,
-  toBlock: number,
-  topic0: string,
-  retryCount = 0
-): Promise<BlockscoutLog[]> {
-  // Validate block numbers before making API call
-  if (!Number.isInteger(fromBlock) || fromBlock < 0) {
-    throw new Error(`Invalid fromBlock: ${fromBlock}. Must be a non-negative integer.`)
-  }
-  if (!Number.isInteger(toBlock) || toBlock < 0) {
-    throw new Error(`Invalid toBlock: ${toBlock}. Must be a non-negative integer.`)
-  }
-  if (toBlock < fromBlock) {
-    throw new Error(`Invalid block range: toBlock (${toBlock}) must be >= fromBlock (${fromBlock}).`)
-  }
-  
-  // Use global rate limiter to throttle all Blockscout API calls
-  await blockscoutRateLimiter.throttle()
-  
-  // Use URLSearchParams for proper URL encoding to prevent injection attacks
-  const params = new URLSearchParams({
-    module: 'logs',
-    action: 'getLogs',
-    address: address,
-    fromBlock: fromBlock.toString(),
-    toBlock: toBlock.toString(),
-    topic0: topic0,
-    page: '1',
-    offset: '10000'
-  })
-  const url = `${BLOCKSCOUT_API}?${params.toString()}`
-  const FETCH_TIMEOUT = 30000 // 30 seconds timeout
-  
-  try {
-    // Create AbortController for timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
-    
-    let response: Response
-    try {
-      response = await fetch(url, { signal: controller.signal })
-      clearTimeout(timeoutId)
-    } catch (fetchError) {
-      clearTimeout(timeoutId)
-      
-      // Handle network errors and timeouts
-      if (fetchError instanceof Error) {
-        const isTimeout = fetchError.name === 'AbortError' || fetchError.message.includes('timeout')
-        const isNetworkError = fetchError.message.includes('Failed to fetch') || 
-                               fetchError.message.includes('network') ||
-                               fetchError.message.includes('ERR_CONNECTION') ||
-                               fetchError.message.includes('ERR_TIMED_OUT')
-        
-        if ((isTimeout || isNetworkError) && retryCount < 3) {
-          blockscoutRateLimiter.recordFailure()
-          const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 10000)
-          console.warn(`[Blockscout] Network error/timeout, retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
-          return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
-        }
-        
-        if (isTimeout || isNetworkError) {
-          throw new Error(`Blockscout API request timed out or network error. The API may be temporarily unavailable. Please check your internet connection and try again later.`)
-        }
-      }
-      throw fetchError
-    }
-    
-    // Handle rate limiting (429 Too Many Requests) with exponential backoff
-    if (response.status === 429) {
-      blockscoutRateLimiter.recordFailure()
-      if (retryCount < 3) {
-        const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000)
-        console.warn(`[Blockscout] Rate limited (429), retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
-        await new Promise(resolve => setTimeout(resolve, retryDelay))
-        return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
-      }
-      throw new Error(`Blockscout API rate limited. Too many requests. Please try again later or reduce the lookback period.`)
-    }
-    
-    if (!response.ok) {
-      blockscoutRateLimiter.recordFailure()
-      // Provide user-friendly error messages
-      if (response.status === 503) {
-        throw new Error(`Blockscout API is temporarily unavailable (503). Please try again in a few moments.`)
-      }
-      throw new Error(`Blockscout API error (${response.status}): ${response.statusText}. Please try again later.`)
-    }
-    
-    // Record success for rate limiter
-    blockscoutRateLimiter.recordSuccess()
-    
-    // Read response body once
-    const text = await response.text()
-    
-    // Check if response body is empty
-    if (!text || text.trim().length === 0) {
-      return []
-    }
-    
-    // Check if response is JSON
-    const contentType = response.headers.get('content-type')
-    if (!contentType || !contentType.includes('application/json')) {
-      blockscoutRateLimiter.recordFailure()
-      throw new Error(`Blockscout API returned non-JSON response: ${text.substring(0, 200)}`)
-    }
-    
-    try {
-      const data = JSON.parse(text) as BlockscoutResponse
-      if (data.status !== '1') {
-        // Status "0" with "No logs found" is a valid empty result, not an error
-        if (data.status === '0' && (data.message?.toLowerCase().includes('no logs found') || data.message?.toLowerCase().includes('no logs'))) {
-          return []
-        }
-        
-        // For other non-success statuses, surface as error for UI feedback
-        const errorMessage = data.message || 'Unknown error'
-        blockscoutRateLimiter.recordFailure()
-        // Provide user-friendly error message
-        throw new Error(`Blockscout API returned an error (status: ${data.status}). ${errorMessage}. Please try again later or reduce the lookback period.`)
-      }
-      
-      return data.result || []
-    } catch (parseError) {
-      blockscoutRateLimiter.recordFailure()
-      throw new Error(`Failed to parse Blockscout API response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}. Response: ${text.substring(0, 200)}`)
-    }
-  } catch (fetchError) {
-    blockscoutRateLimiter.recordFailure()
-    
-    // Handle retries for network errors that weren't caught above
-    if (retryCount < 3 && fetchError instanceof Error) {
-      const isNetworkError = fetchError.message.includes('Failed to fetch') || 
-                             fetchError.message.includes('network') ||
-                             fetchError.message.includes('ERR_CONNECTION') ||
-                             fetchError.message.includes('ERR_TIMED_OUT') ||
-                             fetchError.message.includes('timeout')
-      
-      if (isNetworkError) {
-        const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 10000)
-        console.warn(`[Blockscout] Network error, retrying after ${retryDelay}ms... (attempt ${retryCount + 1}/3)`)
-        await new Promise(resolve => setTimeout(resolve, retryDelay))
-        return fetchLogsFromBlockscout(address, fromBlock, toBlock, topic0, retryCount + 1)
-      }
-    }
-    
-    throw fetchError
-  }
-}
-
-
 interface MintRedeemAnalyserProps {
   initialExpanded?: boolean
   initialDays?: number
@@ -314,122 +69,7 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
   const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
-
-  // Helper function to make RPC calls
-  // In dev: goes straight to RPC endpoint
-  // In production: uses proxy for CORS handling
-  const makeRpcCall = useCallback(async (method: string, params: any[]): Promise<any> => {
-    const primaryRpcEndpoint = CONFIG.ROOTSTOCK_RPC || 'https://public-node.rsk.co'
-    
-    // Fallback RPC endpoints
-    const fallbackEndpoints = CONFIG.ROOTSTOCK_RPC_ALTERNATIVES || [
-      'https://public-node.rsk.co',
-      'https://rsk.publicnode.com',
-    ]
-    
-    // In production: proxy first. In dev (vite only): skip proxy (404s), use direct
-    const isDev = import.meta.env.DEV
-    const endpointsToTry = isDev
-      ? [primaryRpcEndpoint, ...fallbackEndpoints]
-      : [
-          `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
-          ...fallbackEndpoints.map(ep => `/api/rpc?target=${encodeURIComponent(ep)}`),
-          primaryRpcEndpoint,
-          ...fallbackEndpoints
-        ]
-    
-    let lastError: Error | null = null
-    
-    for (const targetUrl of endpointsToTry) {
-      // Determine if this is a direct RPC call or proxy call (declare outside try block for catch block access)
-      const isDirectRpc = !targetUrl.startsWith('/api/')
-      
-      try {
-        const requestHeaders: HeadersInit = { 'Content-Type': 'application/json' }
-        
-        // Add client version header for proxy calls (required by proxy)
-        if (!isDirectRpc) {
-          const clientVersion = CONFIG.CLIENT_VERSION || 'unknown'
-          requestHeaders['x-client-version'] = clientVersion
-        }
-        
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: requestHeaders,
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method,
-            params,
-          }),
-        })
-        
-        // Handle 410 Gone and 404 Not Found - try next endpoint
-        // 404 is expected in dev mode when proxy doesn't exist, so log at debug level
-        if (response.status === 410 || response.status === 404) {
-          if (response.status === 404 && !isDirectRpc) {
-            lastError = new Error(`RPC proxy unavailable (run 'npm run dev' for vercel dev with API)`)
-            continue
-          }
-          console.warn(`[RPC] Endpoint ${targetUrl} returned ${response.status}, trying next endpoint...`)
-          lastError = new Error(`RPC endpoint unavailable: ${response.status} ${response.statusText}`)
-          continue
-        }
-        
-        if (!response.ok) {
-          // For other 4xx errors, try next endpoint
-          if (response.status >= 400 && response.status < 500) {
-            console.warn(`[RPC] Client error ${response.status} from ${targetUrl}, trying next endpoint...`)
-            lastError = new Error(`RPC error: ${response.status} ${response.statusText}`)
-            continue
-          }
-          // For 5xx errors, throw immediately (server issue, don't retry)
-          throw new Error(`RPC server error: ${response.status} ${response.statusText}`)
-        }
-        
-        const responseText = await response.text()
-        if (!responseText || responseText.trim().length === 0) {
-          lastError = new Error('RPC returned empty response')
-          continue
-        }
-        
-        const data = JSON.parse(responseText)
-        if (data.error) {
-          // If it's a JSON-RPC error, don't retry (it's a valid response)
-          throw new Error(data.error.message || 'RPC error')
-        }
-        
-        // Success - return result
-        return data.result
-      } catch (rpcError) {
-        // Check if it's a CORS error (common in browser when making direct RPC calls)
-        const isCorsError = rpcError instanceof TypeError && 
-          (rpcError.message.includes('CORS') || 
-           rpcError.message.includes('Failed to fetch') ||
-           rpcError.message.includes('network'))
-        
-        // If it's a CORS error from a direct RPC call, skip it and try next endpoint
-        if (isCorsError && isDirectRpc) {
-          console.warn(`[RPC] CORS error with direct RPC call to ${targetUrl}, skipping and trying next endpoint...`)
-          lastError = rpcError as Error
-          continue
-        }
-        
-        // If it's a network error or parse error, try next endpoint
-        if (rpcError instanceof SyntaxError || 
-            (rpcError instanceof Error && (rpcError.message.includes('fetch') || rpcError.message.includes('network')))) {
-          console.warn(`[RPC] Network/parse error with ${targetUrl}, trying next endpoint:`, rpcError.message)
-          lastError = rpcError as Error
-          continue
-        }
-        // If it's a JSON-RPC error or server error, don't retry
-        throw rpcError
-      }
-    }
-    
-    // All endpoints failed
-    throw new Error(`Failed to fetch RPC data from all endpoints: ${lastError?.message || 'Unknown error'}`)
-  }, [])
+  const progressTimeoutRef = useRef<number | null>(null)
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -438,7 +78,7 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
     
     try {
       // Get current block number via RPC (with proxy fallback)
-      const blockNumberHex = await makeRpcCall('eth_blockNumber', [])
+      const blockNumberHex = await rpcCall<string>('eth_blockNumber', [])
       const currentBlock = parseInt(blockNumberHex, 16)
       
       // Calculate block range
@@ -452,9 +92,9 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
       
       // Fetch Transfer events for both tokens and RIF collateral
       const [usdrifLogs, rifproLogs, rifLogs] = await Promise.all([
-        fetchLogsFromBlockscout(USDRIF_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
-        fetchLogsFromBlockscout(RIFPRO_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
-        fetchLogsFromBlockscout(RIF_TOKEN_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
+        fetchLogsV1(USDRIF_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
+        fetchLogsV1(RIFPRO_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
+        fetchLogsV1(RIF_TOKEN_ADDRESS.toLowerCase(), fromBlock, currentBlock, transferEventTopic),
       ])
       
       // Process events first to get transaction hashes
@@ -548,10 +188,10 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
         }
         console.log(`[DEBUG] Querying MoC events from ${mocAddress}...`)
         const [mintEvents, mintVendorsEvents, redeemEvents, redeemVendorsEvents] = await Promise.all([
-          fetchLogsFromBlockscout(mocAddress.toLowerCase(), fromBlock, currentBlock, mintEventTopic),
-          fetchLogsFromBlockscout(mocAddress.toLowerCase(), fromBlock, currentBlock, mintVendorsEventTopic),
-          fetchLogsFromBlockscout(mocAddress.toLowerCase(), fromBlock, currentBlock, redeemEventTopic),
-          fetchLogsFromBlockscout(mocAddress.toLowerCase(), fromBlock, currentBlock, redeemVendorsEventTopic),
+          fetchLogsV1(mocAddress.toLowerCase(), fromBlock, currentBlock, mintEventTopic),
+          fetchLogsV1(mocAddress.toLowerCase(), fromBlock, currentBlock, mintVendorsEventTopic),
+          fetchLogsV1(mocAddress.toLowerCase(), fromBlock, currentBlock, redeemEventTopic),
+          fetchLogsV1(mocAddress.toLowerCase(), fromBlock, currentBlock, redeemVendorsEventTopic),
         ])
         
         console.log(`[DEBUG] Found events from ${mocAddress}:`, {
@@ -798,9 +438,9 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
         const blockPromises = batch.map(async (blockNum) => {
           try {
             const blockHex = `0x${blockNum.toString(16)}`
-            const blockData = await makeRpcCall('eth_getBlockByNumber', [blockHex, false])
+            const blockData = await rpcCall<{ timestamp?: string }>('eth_getBlockByNumber', [blockHex, false])
             
-            if (blockData && blockData.timestamp) {
+            if (blockData?.timestamp) {
               return { blockNum, timestamp: parseInt(blockData.timestamp, 16) }
             }
             return null
@@ -864,10 +504,10 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
             }
             
             // Fallback to RPC call
-            const txData = await makeRpcCall('eth_getTransactionByHash', [txHash])
+            const txData = await rpcCall<{ from?: string; to?: string }>('eth_getTransactionByHash', [txHash])
             if (txData) {
-              return { 
-                txHash, 
+              return {
+                txHash,
                 from: txData.from ? txData.from.toLowerCase() : null,
                 to: txData.to ? txData.to.toLowerCase() : null,
               }
@@ -1117,17 +757,25 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
       console.error('Error fetching mint/redeem transactions:', err)
     } finally {
       setLoading(false)
-      // Clear progress after a short delay to show completion
-      setTimeout(() => setLoadingProgress(null), 500)
+      if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current)
+      progressTimeoutRef.current = window.setTimeout(() => setLoadingProgress(null), 500)
     }
-  }, [days, makeRpcCall])
+  }, [days])
 
   useEffect(() => {
-    // Only fetch transactions when expanded
     if (!isCollapsed) {
       fetchTransactions()
     }
   }, [fetchTransactions, isCollapsed])
+
+  useEffect(() => {
+    return () => {
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current)
+        progressTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   const exportToExcel = useCallback((txsToExport: MintRedeemTransaction[]) => {
     try {
@@ -1197,255 +845,202 @@ export default function MintRedeemAnalyser({ initialExpanded, initialDays }: Min
       const sheetName = 'USDRIF Mint Redeem Transactions'
       XLSX.utils.book_append_sheet(wb, ws, sheetName)
 
-      // Generate filename with current date in format: usdrif_txs_yyyymmdd.xlsx
-      const today = new Date()
-      const year = today.getFullYear()
-      const month = String(today.getMonth() + 1).padStart(2, '0')
-      const day = String(today.getDate()).padStart(2, '0')
-      const filename = `usdrif_txs_${year}${month}${day}.xlsx`
-
-      // Write file - downloads directly to Downloads folder
-      // Note: If save dialog appears, check browser settings:
-      // Chrome/Edge: Settings > Downloads > "Ask where to save each file" should be OFF
-      // Firefox: Settings > General > Downloads > "Always ask you where to save files" should be OFF
-      XLSX.writeFile(wb, filename)
+      const filename = generateDateFilename('usdrif_txs')
+      writeExcelWorkbook(wb, filename)
     } catch (error) {
       console.error('Error exporting to Excel:', error)
       alert('Failed to export to Excel. Please try again.')
     }
   }, [])
 
-  return (
-    <div className={`mint-redeem-analyser ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="analyser-header">
-        <h2>USDRIF</h2>
-        <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
-          <RootstockLogo className="network-badge__logo" />
-          Mainnet
-        </span>
-        <button 
-          className="collapse-toggle"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
+  const controls = (
+    <>
+      <div className="filter-toggle">
+        <button
+          className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
+          onClick={() => setTokenFilter('All')}
+          aria-pressed={tokenFilter === 'All'}
         >
-          {isCollapsed ? '▶' : '▼'}
+          All
         </button>
-        {!isCollapsed && (
-          <div className="analyser-controls">
-          <div className="filter-toggle">
-            <button
-              className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
-              onClick={() => setTokenFilter('All')}
-              aria-pressed={tokenFilter === 'All'}
-            >
-              All
-            </button>
-            <button
-              className={`filter-button ${tokenFilter === 'USDRIF' ? 'active' : ''}`}
-              onClick={() => setTokenFilter('USDRIF')}
-              aria-pressed={tokenFilter === 'USDRIF'}
-            >
-              USDRIF
-            </button>
-            <button
-              className={`filter-button ${tokenFilter === 'RifPro' ? 'active' : ''}`}
-              onClick={() => setTokenFilter('RifPro')}
-              aria-pressed={tokenFilter === 'RifPro'}
-            >
-              RifPro
-            </button>
-          </div>
-          <div className="right-controls">
-            <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
-              <option value={1}>1 day</option>
-              <option value={7}>7 days</option>
-              <option value={30}>30 days</option>
-              <option value={90}>90 days</option>
-            </select>
-            <button 
-              onClick={fetchTransactions} 
-              disabled={loading}
-              aria-busy={loading}
-            >
-              {loading && <span className="refresh-spinner"></span>}
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
-            <button 
-              className="export-button"
-              onClick={() => exportToExcel(transactions.filter(tx => 
-                tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)
-              ))}
-              disabled={loading}
-            >
-              XLS
-            </button>
-          </div>
-          </div>
-        )}
+        <button
+          className={`filter-button ${tokenFilter === 'USDRIF' ? 'active' : ''}`}
+          onClick={() => setTokenFilter('USDRIF')}
+          aria-pressed={tokenFilter === 'USDRIF'}
+        >
+          USDRIF
+        </button>
+        <button
+          className={`filter-button ${tokenFilter === 'RifPro' ? 'active' : ''}`}
+          onClick={() => setTokenFilter('RifPro')}
+          aria-pressed={tokenFilter === 'RifPro'}
+        >
+          RifPro
+        </button>
       </div>
-
-      {!isCollapsed && (
-        <>
-          {error && (
-        <div className="error-message">
-          Error: {error}
-        </div>
-      )}
-
-      {loading && (
-        <div className="loading-message" role="status" aria-live="polite">
-          {loadingProgress ? (
-            <>
-              <div>{loadingProgress.phase}</div>
-              <div className="loading-progress">
-                {loadingProgress.total > 0 ? (
-                  <div className="loading-progress-row">
-                    <div className="loading-progress-bar">
-                      <div 
-                        className={`loading-progress-fill ${loadingProgress.current === 100 ? 'complete' : ''}`}
-                        style={{ width: `${Math.min(100, (loadingProgress.current / loadingProgress.total) * 100)}%` }}
-                      />
-                    </div>
-                    <div className="loading-progress-text">
-                      {loadingProgress.current}%
-                    </div>
-                  </div>
-                ) : (
-                  <div>Initializing...</div>
-                )}
-              </div>
-            </>
-          ) : (
-            'Loading transactions...'
-          )}
-        </div>
-      )}
-
-      {!loading && transactions.length === 0 && !error && (
-        <div className="no-data" role="status" aria-live="polite">
-          No mint/redeem transactions found in the selected period.
-        </div>
-      )}
-
-      {transactions.length > 0 && !loading && (
-        <div className="transactions-table-container">
-          
-          {(() => {
-            // Filter transactions based on selected token filter
-            const filteredTransactions = tokenFilter === 'All'
-              ? transactions
-              : transactions.filter(tx => tx.type.includes(tokenFilter))
-            
-            return filteredTransactions.length === 0 ? (
-              <div className="no-data" role="status" aria-live="polite">
-                No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
-                <br />
-                <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
-                  Try selecting a different time period or filter option.
-                </span>
-              </div>
-            ) : (
-              <>
-                <table className="transactions-table">
-            <thead>
-              <tr>
-                <th>Time (UTC)</th>
-                <th>Status</th>
-                <th>Asset</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Receiver</th>
-                <th>Block</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTransactions.map((tx, idx) => (
-                <tr key={`${tx.hash}-${idx}`}>
-                  <td className="hash-cell">
-                    <a
-                      href={`https://rootstock.blockscout.com/tx/${tx.hash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={tx.hash}
-                    >
-                      {tx.time.toISOString().replace('T', ' ').substring(0, 19)}
-                    </a>
-                  </td>
-                  <td>{tx.status}</td>
-                  <td>{tx.type.includes('USDRIF') ? 'USDRIF' : 'RifPro'}</td>
-                  <td className={tx.type.includes('Mint') ? 'type-mint' : 'type-redeem'}>
-                    {tx.type.includes('Mint') ? 'Mint' : 'Redeem'}
-                  </td>
-                  <td title={tx.amountMintedRedeemed}>
-                    {formatAmountDisplay(tx.amountMintedRedeemed, 0)}
-                  </td>
-                  <td className="address-cell">
-                    <a
-                      href={`https://rootstock.blockscout.com/address/${tx.receiver}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={tx.receiver}
-                    >
-                      {tx.receiver}
-                    </a>
-                  </td>
-                  <td className="address-cell">
-                    <a
-                      href={`https://rootstock.blockscout.com/block/${tx.blockNumber}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={tx.blockNumber.toString()}
-                    >
-                      {tx.blockNumber}
-                    </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          <div className="transactions-summary">
-            <div className="summary-row">
-              <p>
-                Total Transactions: {filteredTransactions.length}{tokenFilter !== 'All' && ` (filtered from ${transactions.length})`}, 
-                Mints: {filteredTransactions.filter(tx => tx.type.includes('Mint')).length} | 
-                Redeems: {filteredTransactions.filter(tx => tx.type.includes('Redeem')).length}
-                {tokenFilter === 'All' && (
-                  <>, USDRIF: {filteredTransactions.filter(tx => tx.type.includes('USDRIF')).length} | 
-                  RifPro: {filteredTransactions.filter(tx => tx.type.includes('RifPro')).length}</>
-                )}
-                {(() => {
-                  // Calculate USDRIF total (sum of AMOUNT column for visible USDRIF rows)
-                  const usdrifTotal = filteredTransactions
-                    .filter(tx => tx.type.includes('USDRIF'))
-                    .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
-                  
-                  // Calculate RIFPRO total (sum of AMOUNT column for visible RIFPRO rows)
-                  const rifproTotal = filteredTransactions
-                    .filter(tx => tx.type.includes('RifPro'))
-                    .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
-                  
-                  return (
-                    <>, USDRIF total: {formatAmountDisplay(usdrifTotal.toString(), 0)} | 
-                    RIFPRO total: {formatAmountDisplay(rifproTotal.toString(), 0)}</>
-                  )
-                })()}
-              </p>
-              {lastUpdated && (
-                <p className="last-updated">
-                  Last updated: {lastUpdated.getFullYear()}{String(lastUpdated.getMonth() + 1).padStart(2, '0')}{String(lastUpdated.getDate()).padStart(2, '0')} {String(lastUpdated.getHours()).padStart(2, '0')}:{String(lastUpdated.getMinutes()).padStart(2, '0')}:{String(lastUpdated.getSeconds()).padStart(2, '0')}.{String(Math.floor(lastUpdated.getMilliseconds() / 10)).padStart(2, '0')}
-                </p>
-              )}
-            </div>
-          </div>
-                </>
+      <div className="right-controls">
+        <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+          <option value={1}>1 day</option>
+          <option value={7}>7 days</option>
+          <option value={30}>30 days</option>
+          <option value={90}>90 days</option>
+        </select>
+        <button
+          onClick={fetchTransactions}
+          disabled={loading}
+          aria-busy={loading}
+        >
+          {loading && <span className="refresh-spinner"></span>}
+          {loading ? 'Loading...' : 'Refresh'}
+        </button>
+        <button
+          className="export-button"
+          onClick={() =>
+            exportToExcel(
+              transactions.filter((tx) =>
+                tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)
               )
-            })()}
+            )
+          }
+          disabled={loading}
+        >
+          XLS
+        </button>
+      </div>
+    </>
+  )
+
+  const filteredTransactions =
+    tokenFilter === 'All'
+      ? transactions
+      : transactions.filter((tx) => tx.type.includes(tokenFilter))
+
+  const tableContent =
+    filteredTransactions.length === 0 ? (
+      <div className="no-data" role="status" aria-live="polite">
+        No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected
+        filter.
+        <br />
+        <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+          Try selecting a different time period or filter option.
+        </span>
+      </div>
+    ) : (
+      <>
+        <table className="transactions-table">
+          <thead>
+            <tr>
+              <th>Time (UTC)</th>
+              <th>Status</th>
+              <th>Asset</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Receiver</th>
+              <th>Block</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((tx, idx) => (
+              <tr key={`${tx.hash}-${idx}`}>
+                <td className="hash-cell">
+                  <a
+                    href={`https://rootstock.blockscout.com/tx/${tx.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={tx.hash}
+                  >
+                    {tx.time.toISOString().replace('T', ' ').substring(0, 19)}
+                  </a>
+                </td>
+                <td>{tx.status}</td>
+                <td>{tx.type.includes('USDRIF') ? 'USDRIF' : 'RifPro'}</td>
+                <td className={tx.type.includes('Mint') ? 'type-mint' : 'type-redeem'}>
+                  {tx.type.includes('Mint') ? 'Mint' : 'Redeem'}
+                </td>
+                <td title={tx.amountMintedRedeemed}>
+                  {formatAmountDisplay(tx.amountMintedRedeemed, 2)}
+                </td>
+                <td className="address-cell">
+                  <a
+                    href={`https://rootstock.blockscout.com/address/${tx.receiver}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={tx.receiver}
+                  >
+                    {tx.receiver}
+                  </a>
+                </td>
+                <td className="address-cell">
+                  <a
+                    href={`https://rootstock.blockscout.com/block/${tx.blockNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={tx.blockNumber.toString()}
+                  >
+                    {tx.blockNumber}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="transactions-summary">
+          <div className="summary-row">
+            <p>
+              Total Transactions: {filteredTransactions.length}
+              {tokenFilter !== 'All' && ` (filtered from ${transactions.length})`}, Mints:{' '}
+              {filteredTransactions.filter((tx) => tx.type.includes('Mint')).length} | Redeems:{' '}
+              {filteredTransactions.filter((tx) => tx.type.includes('Redeem')).length}
+              {tokenFilter === 'All' && (
+                <>
+                  , USDRIF: {filteredTransactions.filter((tx) => tx.type.includes('USDRIF')).length}{' '}
+                  | RifPro: {filteredTransactions.filter((tx) => tx.type.includes('RifPro')).length}
+                </>
+              )}
+              {(() => {
+                const usdrifTotal = filteredTransactions
+                  .filter((tx) => tx.type.includes('USDRIF'))
+                  .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
+                const rifproTotal = filteredTransactions
+                  .filter((tx) => tx.type.includes('RifPro'))
+                  .reduce((sum, tx) => sum + parseFloat(tx.amountMintedRedeemed || '0'), 0)
+                return (
+                  <>
+                    , USDRIF total: {formatAmountDisplay(usdrifTotal.toString(), 0)} | RIFPRO total:{' '}
+                    {formatAmountDisplay(rifproTotal.toString(), 0)}
+                  </>
+                )
+              })()}
+            </p>
+            {lastUpdated && (
+              <p className="last-updated">
+                Last updated: {lastUpdated.getFullYear()}
+                {String(lastUpdated.getMonth() + 1).padStart(2, '0')}
+                {String(lastUpdated.getDate()).padStart(2, '0')} {String(lastUpdated.getHours()).padStart(2, '0')}:
+                {String(lastUpdated.getMinutes()).padStart(2, '0')}:
+                {String(lastUpdated.getSeconds()).padStart(2, '0')}.
+                {String(Math.floor(lastUpdated.getMilliseconds() / 10)).padStart(2, '0')}
+              </p>
+            )}
+          </div>
         </div>
-      )}
-        </>
-      )}
-    </div>
+      </>
+    )
+
+  return (
+    <AnalyserShell
+      title="USDRIF"
+      networkBadge="mainnet"
+      isCollapsed={isCollapsed}
+      onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      controls={controls}
+      error={error}
+      loading={loading}
+      loadingProgress={loadingProgress}
+      isEmpty={transactions.length === 0}
+      emptyMessage="No mint/redeem transactions found in the selected period."
+    >
+      <div className="transactions-table-container">{tableContent}</div>
+    </AnalyserShell>
   )
 }

@@ -6,6 +6,144 @@
 
 ---
 
+## Refactor Progress Summary (2026-01-24)
+
+**Completed:** Items 1–5 from `docs/REFACTOR_PLAN.md`
+
+| Item | Deliverables | Status |
+|------|--------------|--------|
+| **Item 1** | amount.ts, exportExcel.ts, api/shared.ts | ✅ |
+| **Item 2** | blockscout.ts, rpc.ts; analysers updated | ✅ |
+| **Item 3** | MetricDisplay, ContractAddressTable components | ✅ |
+| **Item 4** | useTokenData, MetricsPage, slim App.tsx | ✅ |
+| **Item 5** | AnalyserShell component | ✅ |
+
+**Lines removed:** ~700+ from analysers; ~820 from App.tsx (Items 3–4). **New modules:** ~350 from analysers, ~400 useTokenData, ~200 MetricsPage. App.tsx: ~900 → ~80 lines.
+
+**Next:** Item 6 – API handler wrapper (optional).
+
+---
+
+## Refactor Plan Item 3 – Completed (2026-01-24)
+
+Extracted components from `App.tsx` into new files:
+
+### 1. `src/components/MetricDisplay.tsx`
+- **MetricDisplay** – Renders metric cards with label, value, unit; optional MiniLineGraph for history; optional help tooltip (? icon)
+- **Tooltip** – Portal-rendered tooltip (createPortal to document.body) with scroll/resize-aware positioning
+- **formatNumericValue** – Locale-aware numeric formatting; handles NaN by returning original string
+
+### 2. `src/components/ContractAddressTable.tsx`
+- Footer table with "Contract Addresses" heading
+- Six rows: RIF Token, stRIF, USDRIF, RIFPRO, MoC V2 Core (RoC), RIF Price Feed (RLabs)
+- Links to Blockscout internal_txns tab
+- Uses CONFIG for addresses; RIF Token address hardcoded (not in CONFIG)
+
+**App.tsx:** Removed ~200 lines (formatNumericValue, Tooltip, MetricDisplay, footer table). Imports MetricDisplay and ContractAddressTable. Removed createPortal and MiniLineGraph imports.
+
+**Verification:** Build passes. No feature or security changes.
+
+---
+
+## Refactor Plan Item 4 – Completed (2026-01-24)
+
+Extracted token data logic and home page UI:
+
+### 1. `src/hooks/useTokenData.ts`
+- **TokenData** interface – metric fields (stRIFSupply, vaultedUsdrif, rifproSupply, minted, rifPrice, rifCollateral, maxMintable), symbol, name, loading, error, lastUpdated
+- **ProxyJsonRpcProvider** – extends ethers.JsonRpcProvider, proxies RPC via `/api/rpc`, handles 410 OUTDATED_CLIENT
+- **getWorkingProvider** – tries proxy then direct endpoints, caches provider instance
+- **queryOptionalMetric** – safe contract reads returning `{ raw, formatted }` or null
+- **fetchTokenData** – fetches all metrics, saves history, handles OUTDATED_CLIENT (stops polling)
+- Returns: `tokenData`, `refreshingMetrics`, `history`, `isClientOutdated`, `fetchTokenData`
+- Sets up polling interval on mount; skips when `isClientOutdated`
+
+### 2. `src/pages/MetricsPage.tsx`
+- Header: "PUT RIF TO WORK", subtitle, git hash, deployment count, Analytics/Game links
+- Card: RIF Metrics, last-updated time
+- Outdated-client banner (red) with Refresh Page button
+- Error state with Retry button
+- Metrics grid: 7 MetricDisplay components + disclaimer
+- Card footer: Refresh Now button, auto-refresh info
+- ContractAddressTable
+- Accepts `deploymentCount` prop from App
+
+### 3. Slim `src/App.tsx`
+- Routes: `/` (MetricsPage), `/game` (LightCycleGame), `/tools`→`/analytics`, `/analytics` (Analytics)
+- `deploymentCount` state and `fetchDeploymentCount` on mount (skipped in dev)
+- ~80 lines (down from ~900)
+
+**Verification:** Build and tests pass. No feature or security changes.
+
+---
+
+## Refactor Plan Item 5 – Completed (2026-01-24)
+
+Shared analyser shell for collapsible layout:
+
+### 1. `src/components/AnalyserShell.tsx`
+- Props: `title`, `networkBadge` ('mainnet'|'testnet'), `isCollapsed`, `onToggleCollapse`, `controls`, `error`, `loading`, `loadingProgress?`, `isEmpty`, `emptyMessage`, `children`
+- Header: h2, RootstockLogo network badge, collapse toggle
+- When expanded: controls slot; then error div, loading (with optional progress bar), empty-message div, or children
+- Reuses `MintRedeemAnalyser.css` class names
+
+### 2. Refactored analysers
+- **MintRedeemAnalyser:** Uses AnalyserShell; controls include filter (All/USDRIF/RifPro), days select, Refresh, XLS; children = table container with filter-empty handling
+- **VaultDepositWithdrawAnalyser:** Uses AnalyserShell; controls = days, Refresh, XLS; passes `loadingProgress`
+- **BTCVaultAnalyser:** Uses AnalyserShell; controls = days, Refresh, XLS
+
+**Verification:** Build and tests pass. No feature or security changes.
+
+---
+
+## Refactor Plan Item 1 – Completed (2026-01-24)
+
+Implemented low-risk, high-reuse shared utilities from `docs/REFACTOR_PLAN.md`:
+
+### 1. `src/utils/amount.ts`
+- `formatAmount(amount, decimals?)` – BigInt to human-readable string
+- `formatAmountDisplay(amount, decimals?)` – locale-aware display formatting
+- Replaced 4 duplicated implementations in App.tsx, MintRedeemAnalyser, VaultDepositWithdrawAnalyser, BTCVaultAnalyser
+
+### 2. `src/utils/exportExcel.ts`
+- `generateDateFilename(prefix)` – `{prefix}_{YYYYMMDD}.xlsx`
+- `generateTimestampFilename(prefix)` – `{prefix}-{ISO-timestamp}.xlsx`
+- `writeExcelWorkbook(wb, filename)` – XLSX.writeFile with standard error handling
+- MintRedeemAnalyser and VaultDepositWithdrawAnalyser use date filenames; BTCVaultAnalyser uses timestamp
+
+### 3. `api/shared.ts`
+- `getExpectedClientVersion()` – centralised client version from env
+- `isClientOutdated(req)` – version check helper
+- Replaced duplication in `api/rpc.ts`, `api/analytics.ts`, `api/scores.ts`
+
+**Verification:** Build and tests pass. No feature or security changes.
+
+---
+
+## Refactor Plan Item 2 – Completed (2026-01-24)
+
+Implemented shared API layer from `docs/REFACTOR_PLAN.md`:
+
+### 1. `src/api/blockscout.ts`
+- Shared `BlockscoutRateLimiter` (single instance across all calls)
+- `fetchLogsV1(address, fromBlock, toBlock, topic0)` – Blockscout API v1 for MintRedeemAnalyser
+- `fetchLogsV2(baseUrl, address, fromBlock, toBlock)` – Blockscout API v2 for VaultDepositWithdrawAnalyser (mainnet) and BTCVaultAnalyser (testnet)
+- Exported types: `BlockscoutLog`, `BlockscoutV2Log`, `BlockscoutV2Response`
+
+### 2. `src/utils/rpc.ts`
+- `rpcCall<T>(method, params)` – generic JSON-RPC client with proxy/direct fallback
+- MintRedeemAnalyser and VaultDepositWithdrawAnalyser use it for `eth_blockNumber`, `eth_getBlockByNumber`, `eth_getTransactionByHash`
+- BTCVaultAnalyser continues using direct fetch to testnet RPC for `eth_blockNumber`
+
+### 3. Analyser updates
+- **MintRedeemAnalyser:** Removed ~200 lines (rate limiter, fetchLogs, makeRpcCall). Uses fetchLogsV1, rpcCall.
+- **VaultDepositWithdrawAnalyser:** Removed ~200 lines. Uses fetchLogsV2, rpcCall.
+- **BTCVaultAnalyser:** Removed ~110 lines (rate limiter, fetchLogsV2). Uses fetchLogsV2 with testnet baseUrl.
+
+**Verification:** Build and tests pass. No feature or security changes.
+
+---
+
 ## 🚀 Quick Start Summary
 
 **Task**: Create a new React/TypeScript analyser component for BTC Vault transactions on RSK Testnet.
