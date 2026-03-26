@@ -1,5 +1,9 @@
 # QA Log
 
+**Log refreshed:** 2026-03-28 — reconciled open items with current code (Blockscout/RPC resilience, obsolete findings).
+
+---
+
 ## Status Update (Latest)
 
 ### Resolved
@@ -8,22 +12,31 @@
 - `App.tsx`: history key constants (`METRIC_KEYS`), BigInt mintable math, 0n handling, removed `MOC_STATE_ABI` usage
 - `vite.config.ts`: vitest config typing issue resolved
 - `vercel.json`: SPA rewrite verified
-- **Refactor Set – Fixes verified (2026-01-24):** RIF collateral unit now `RIF` (MetricsPage); useTokenData uses `ROOTSTOCK_RPC` first; progress timeout cleanup in MintRedeemAnalyser/VaultDepositWithdrawAnalyser; Blockscout v2 block range params + MAX_PAGES warning; MintRedeem MoC 50‑tx cap removed; BTC vault uses rpcCall with testnet RPC (proxy whitelist updated)
+- **Refactor Set – Fixes verified (2026-01-24):** RIF collateral unit now `RIF` (MetricsPage); useTokenData uses `ROOTSTOCK_RPC` first; progress timeout cleanup in MintRedeemAnalyser/VaultDepositWithdrawAnalyser; Blockscout v2 uses **client-side** block range filtering only (see Refactor Set below); MintRedeem MoC 50‑tx cap removed; BTC vault uses rpcCall with testnet RPC (proxy whitelist updated)
+- **Vercel / `tsc` build (2026-03):** `@types/react` and `@types/react-dom` live in **`dependencies`** in `package.json` so production installs include JSX typings when Vercel runs `npm install` without devDependencies. Verified locally: `npm run build` (`tsc && vite build`) passes.
+- **Resilience / errors (2026-03, plan item 4):** `src/utils/asyncRetry.ts` (backoff, transient HTTP/network); `fetchLogsV1` retries 502/503/504/408/429; `fetchLogsV2` per-page backoff; `rpcCall` retries transient failures per endpoint; `getWorkingProvider` uses backoff; vault **gettxinfo** uses backoff; `userFacingError` / `withNetworkHint` for metrics + analysers + BTC vault error UI.
+- **Mint/Redeem modularization (2026-03):** `src/mintRedeem/` — `types.ts`, `constants.ts`, `fetchMintRedeemTransactions.ts` (pure pipeline + progress callback); `MintRedeemAnalyser.tsx` is UI + Excel + shell only. **Unit tests:** `src/mintRedeem/fetchMintRedeemTransactions.test.ts` (empty run + one USDRIF Mint); logged in `coder_log.md` (2026-03-26 recap).
+- **Full retest (2026-01-28):** `npm test` passed (13/13); `npm run build` succeeded (`tsc && vite build`). No new failures observed.
+- **MintRedeem / Blockscout QA follow-ups (2026-03-28):**
+  - ~~**Duplicate `isDev` in `makeRpcCall` loop**~~ **Obsoleted** — that pattern is not present in the current tree (no `makeRpcCall`; `isDev` only where needed in `useTokenData`, `rpc.ts`, `logger.ts`).
+  - ~~**Blockscout “no adaptive backoff”**~~ **Mitigated** — `src/api/blockscout.ts` uses a shared **`BlockscoutRateLimiter`** (throttle + adaptive delay on failures) plus **`withBackoff`** on v2 page fetches and expanded v1 retries for transient HTTP. **Remaining risk:** huge log volumes and **`MAX_PAGES` (100)** truncation on v2; reduce lookback or paginate further if needed.
+  - ~~**Silent Blockscout v1 failures**~~ **Mitigated** — `fetchLogsV1` **throws** with message when `status !== '1'`, except recognised “no logs” responses (empty array). Failures surface in analysers via existing error UI / `userFacingError`. **v2:** HTTP errors throw; empty `items` ends pagination normally.
 
 ### Open (Recommendations)
 - Accessibility improvements (ARIA labels, keyboard hints)
-- Retry/backoff for API failures
 - Skeleton loaders
-- Add error tracking
+- Add error tracking (e.g. Sentry) for production
 - E2E tests
-- Env var validation
-- Consider websocket updates
+- Env var validation (startup checks / documented required `VITE_*` and server env)
+- Consider websocket updates for live metrics (optional)
+- **Optional:** extend retry/backoff to **other** third-party calls not yet covered (e.g. ad-hoc `fetch` outside Blockscout/RPC helpers) if new features add them
 
 ### Refactor Set Review (Latest)
 - ~~**`useTokenData` ignores custom RPC env**~~ **Fixed**
   - ~~`getWorkingProvider` only uses `ROOTSTOCK_RPC_ALTERNATIVES`~~ Now uses `[CONFIG.ROOTSTOCK_RPC, ...(ROOTSTOCK_RPC_ALTERNATIVES || [])]` so `VITE_ROOTSTOCK_RPC` is tried first.
-- ~~**Blockscout v2 fetch ignores block range**~~ **Mitigated**
-  - Now sends `filter[from_block]` and `filter[to_block]` on first request; adds `block_number` to pagination params. Client-side filtering remains as fallback. Console warning when MAX_PAGES reached.
+- ~~**Blockscout v2 block range**~~ **Mitigated** (2026-03)
+  - **Rootstock** Blockscout returns **422** if `filter[from_block]` / `filter[to_block]` are sent on `/api/v2/addresses/{addr}/logs`. Those query params are **not** used.
+  - **`src/api/blockscout.ts` `fetchLogsV2`:** Paginates with `block_number` / `index` / `items_count` from `next_page_params`; enforces range by **client-side** `block_number` filter (`fromBlock`–`toBlock`). Console warning when `MAX_PAGES` (100) reached.
 - ~~**Mint/Redeem MoC enrichment capped to 50 tx hashes**~~ **Fixed**
   - Cap removed; all unique tx hashes are now queried for MoC event enrichment.
 - ~~**Potential setState after unmount**~~ **Fixed**
@@ -33,42 +46,22 @@
 - ~~**BTC vault analyser uses direct RPC in browser**~~ **Fixed**
   - `BTCVaultAnalyser` now uses `rpcCall('eth_blockNumber', [], CONFIG.RSK_TESTNET_RPC)`. Testnet RPC added to api/rpc whitelist; requests go through proxy in production.
 
-### Test Fix Applied
-- **Vitest mock updated for `ethers.id`**
-  - Added `ethers.id` to test mock in `src/App.test.tsx`.
-  - `npm test` now passes (13/13).
+### Tests — `ethers.id` mock (**resolved**)
+- **`App.test.tsx`** extends the `ethers` mock with `id` so lazy-loaded `Analytics` → `BTCVaultAnalyser` does not throw `TypeError: ethers.id is not a function`.
+- **`npm test`** target: 13/13 (re-run after major App/Analytics changes).
+- *Earlier QA note “Vitest failing due to missing `ethers.id`” — **closed**; same root cause, fixed via mock above.*
 
-### New Issue (Tests)
-- **Vitest failing due to missing `ethers.id` mock**
-  - **Error:** `TypeError: ethers.id is not a function` from `src/BTCVaultAnalyser.tsx`
-  - **Cause:** `src/App.test.tsx` mocks `ethers` but doesn’t include `id`, while `Analytics` (imported by `App`) imports `BTCVaultAnalyser` which uses `ethers.id`.
-  - **Fix:** Extend the test mock to include `id` (e.g. `id: vi.fn(() => '0x...')`) or switch to partial mocking that preserves `ethers.id`.
+### Ongoing — maintainers / ops
+- **RPC proxy whitelist (`api/rpc.ts` ↔ env)**  
+  - Production browser calls use `/api/rpc?target=...`; **`ALLOWED_RPC_ENDPOINTS`** must include every URL you pass from **`config.ts`** / **`VITE_ROOTSTOCK_RPC`** / **`ROOTSTOCK_RPC_ALTERNATIVES`**.  
+  - Current whitelist (verify in repo):  
+    `https://public-node.rsk.co`, `https://rsk.publicnode.com`, `https://public-node.testnet.rsk.co`  
+  - **Symptom if misaligned:** non-whitelisted target → **400** from `/api/rpc` in production.  
+  - **Action:** When adding a new RPC host, update **`ALLOWED_RPC_ENDPOINTS`** and defaults/docs together.
 
-### New Findings (MintRedeemAnalyser Review)
-- **RPC proxy whitelist mismatch**
-  - Production uses `/api/rpc?target=...` with `ROOTSTOCK_RPC_ALTERNATIVES`.
-  - `api/rpc.ts` only allows `public-node.rsk.co` and `rsk.publicnode.com`.
-  - Any other endpoint will 400 in production.
-  - **Fix:** keep `ROOTSTOCK_RPC_ALTERNATIVES` aligned with proxy whitelist.
-- **Duplicate `isDev` declaration inside loop**
-  - Redundant `isDev` inside `makeRpcCall` loop.
-  - **Fix:** remove inner `isDev`.
-- **Blockscout rate limiting risk**
-  - Large volume of requests without adaptive backoff.
-  - **Fix:** add exponential backoff / centralized rate limiter.
-- **Silent Blockscout failures**
-  - `status !== '1'` returns empty array without surfacing error.
-  - **Fix:** bubble warning or UI error for non‑success responses.
-
-### New Issue (Vercel Build)
-- **TypeScript JSX typings missing on Vercel build**
-  - **Error:** `JSX element implicitly has type 'any'` and `Could not find a declaration file for module 'react/jsx-runtime'`
-  - **Cause:** Vercel installs only `dependencies` by default; `@types/react` and `@types/react-dom` are in `devDependencies`, so `tsc` runs without JSX typings.
-  - **Fix Options:**
-    1. Move `@types/react` and `@types/react-dom` to `dependencies` (preferred for Vercel builds).
-    2. Set Vercel env `VERCEL_USE_NODE_ENV=development` to install devDependencies during build.
-    3. If using custom build script, run `npm install --include=dev`.
-  - **Recommendation:** Move `@types/react` and `@types/react-dom` to `dependencies` to keep builds deterministic on Vercel.
+### ~~New Issue (Vercel Build)~~ — **Resolved**
+- **Was:** `tsc` on Vercel could miss JSX types if `@types/react*` sat only in `devDependencies`.
+- **Now:** **`package.json`** → `dependencies` includes `@types/react` and `@types/react-dom` (keep them there; do not move back to `devDependencies` unless you also change install policy). Alternatives if policy changes: `VERCEL_USE_NODE_ENV=development` or `npm install --include=dev`.
 
 ---
 
@@ -100,4 +93,3 @@
 - git commit hash uses Vercel env when available
 - history data validation improvements
 - `vercel.json` SPA rewrites verified
-

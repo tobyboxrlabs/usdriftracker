@@ -5,6 +5,8 @@ import { saveMetricHistory, getMetricHistory, HistoryPoint, METRIC_KEYS } from '
 import { normalizeAddress } from '../utils/address'
 import { formatAmount as formatAmountUtil } from '../utils/amount'
 import { logger } from '../utils/logger'
+import { withBackoff } from '../utils/asyncRetry'
+import { userFacingError } from '../utils/userFacingError'
 
 export interface TokenData {
   stRIFSupply: string
@@ -144,8 +146,14 @@ export function useTokenData() {
     if (!isDev) {
       for (const endpoint of endpoints) {
         try {
-          const provider = new ProxyJsonRpcProvider(endpoint)
-          await provider.getBlockNumber()
+          const provider = await withBackoff(
+            async () => {
+              const p = new ProxyJsonRpcProvider(endpoint)
+              await p.getBlockNumber()
+              return p
+            },
+            { maxAttempts: 3, baseDelayMs: 400 }
+          )
           logger.rpc.info(`Using RPC proxy: ${endpoint}`)
           providerCacheRef.current = provider
           return provider
@@ -157,8 +165,14 @@ export function useTokenData() {
 
     for (const endpoint of endpoints) {
       try {
-        const provider = new ethers.JsonRpcProvider(endpoint)
-        await provider.getBlockNumber()
+        const provider = await withBackoff(
+          async () => {
+            const p = new ethers.JsonRpcProvider(endpoint)
+            await p.getBlockNumber()
+            return p
+          },
+          { maxAttempts: 3, baseDelayMs: 400 }
+        )
         logger.rpc.info(`Using direct RPC: ${endpoint}`)
         providerCacheRef.current = provider
         return provider
@@ -342,6 +356,12 @@ export function useTokenData() {
         Object.keys(metricKeys).map((key) => [key, getMetricHistory(key).length])
       )
       logger.tokenData.debug('History data points:', historyCounts)
+      logger.tokenData.info('Token data refreshed:', {
+        stRIF: formattedStRIFSupply,
+        vaulted: formattedVaultedUsdrif,
+        rifpro: formattedRifproSupply,
+        minted: formattedMinted,
+      })
 
       setTokenData((prev) => ({
         stRIFSupply: stRIFSupply != null ? stRIFSupply.toString() : prev.stRIFSupply,
@@ -398,7 +418,7 @@ export function useTokenData() {
           setTokenData((prev) => ({
             ...prev,
             loading: false,
-            error: error instanceof Error ? error.message : 'Failed to fetch token data',
+            error: userFacingError(error),
           }))
         }
         setRefreshingMetrics(new Set())

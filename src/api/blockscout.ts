@@ -4,6 +4,9 @@
  * and BTCVaultAnalyser (API v2 testnet).
  */
 
+import { logger } from '../utils/logger'
+import { isTransientHttpStatus, withBackoff } from '../utils/asyncRetry'
+
 // ============================================================================
 // API v1 types (MintRedeemAnalyser)
 // ============================================================================
@@ -168,23 +171,27 @@ export async function fetchLogsV1(
       throw fetchError
     }
 
-    if (response.status === 429) {
+    const v1Transient = response.status === 429 || isTransientHttpStatus(response.status)
+    if (v1Transient) {
       rateLimiter.recordFailure()
       if (retryCount < 3) {
         await new Promise((r) => setTimeout(r, Math.min(1000 * Math.pow(2, retryCount), 5000)))
         return fetchLogsV1(address, fromBlock, toBlock, topic0, retryCount + 1)
       }
+      const detail =
+        response.status === 429
+          ? 'Too many requests.'
+          : 'The explorer may be busy (temporary error).'
       throw new Error(
-        'Blockscout API rate limited. Too many requests. Please try again later or reduce the lookback period.'
+        `Blockscout API: ${detail} Please try again later or reduce the lookback period.`
       )
     }
 
     if (!response.ok) {
       rateLimiter.recordFailure()
-      if (response.status === 503) {
-        throw new Error('Blockscout API is temporarily unavailable (503). Please try again in a few moments.')
-      }
-      throw new Error(`Blockscout API error (${response.status}): ${response.statusText}. Please try again later.`)
+      throw new Error(
+        `Blockscout API error (${response.status}): ${response.statusText}. Please try again later.`
+      )
     }
 
     rateLimiter.recordSuccess()
@@ -256,14 +263,32 @@ export async function fetchLogsV2(
       // Rely on client-side filtering by block_number instead.
       if (params.toString()) url += '?' + params.toString()
 
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
       let response: Response
       try {
-        response = await fetch(url, { signal: controller.signal })
-        clearTimeout(timeoutId)
+        response = await withBackoff(
+          async () => {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+            try {
+              const res = await fetch(url, { signal: controller.signal })
+              clearTimeout(timeoutId)
+              if (res.status === 429 || isTransientHttpStatus(res.status)) {
+                rateLimiter.recordFailure()
+                throw new Error(`blockscout_v2_transient_${res.status}`)
+              }
+              return res
+            } catch (e) {
+              clearTimeout(timeoutId)
+              if (isNetworkError(e)) {
+                rateLimiter.recordFailure()
+                throw e
+              }
+              throw e
+            }
+          },
+          { maxAttempts: 4, baseDelayMs: 500, maxDelayMs: 8000 }
+        )
       } catch (fetchError) {
-        clearTimeout(timeoutId)
         if (isNetworkError(fetchError) && retryCount < 3) {
           rateLimiter.recordFailure()
           await new Promise((r) => setTimeout(r, Math.min(2000 * Math.pow(2, retryCount), 10000)))
@@ -272,17 +297,11 @@ export async function fetchLogsV2(
         throw fetchError
       }
 
-      if (response.status === 429 && retryCount < 3) {
-        rateLimiter.recordFailure()
-        await new Promise((r) => setTimeout(r, Math.min(1000 * Math.pow(2, retryCount), 5000)))
-        return fetchLogsV2(baseUrl, address, fromBlock, toBlock, retryCount + 1)
-      }
       if (!response.ok) {
         rateLimiter.recordFailure()
-        if (response.status === 503) {
-          throw new Error('Blockscout API v2 is temporarily unavailable (503). Please try again in a few moments.')
-        }
-        throw new Error(`Blockscout API v2 error (${response.status}): ${response.statusText}. Please try again later.`)
+        throw new Error(
+          `Blockscout API v2 error (${response.status}): ${response.statusText}. Please try again later.`
+        )
       }
       rateLimiter.recordSuccess()
 
@@ -311,8 +330,8 @@ export async function fetchLogsV2(
       if (!nextPageParams) break
       pageCount++
       if (pageCount >= MAX_PAGES) {
-        console.warn(
-          `[Blockscout] Reached MAX_PAGES (${MAX_PAGES}). Results may be truncated for address ${address}. Consider reducing the block range.`
+        logger.blockscout.warn(
+          `Reached MAX_PAGES (${MAX_PAGES}). Results may be truncated for address ${address}. Consider reducing the block range.`
         )
       }
       await new Promise((r) => setTimeout(r, 100))

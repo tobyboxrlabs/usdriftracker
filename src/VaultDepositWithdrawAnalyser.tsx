@@ -8,7 +8,35 @@ import { formatAmount, formatAmountDisplay } from './utils/amount'
 import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
 import { logger } from './utils/logger'
 import { rpcCall } from './utils/rpc'
+import { isTransientHttpStatus, withBackoff } from './utils/asyncRetry'
+import { userFacingError } from './utils/userFacingError'
 import './MintRedeemAnalyser.css'
+
+/** Blockscout gettxinfo: retry transient HTTP; null → treat as Success (optimistic). */
+async function fetchVaultTxSuccessFromExplorer(txHash: string): Promise<boolean | null> {
+  try {
+    return await withBackoff(
+      async () => {
+        const url = `https://rootstock.blockscout.com/api?module=transaction&action=gettxinfo&txhash=${txHash}`
+        const res = await fetch(url)
+        if (!res.ok) {
+          if (isTransientHttpStatus(res.status)) {
+            throw new Error(`Blockscout gettxinfo ${res.status}`)
+          }
+          return null
+        }
+        const data = await res.json()
+        if (data.status === '1' && data.result) {
+          return data.result.success !== false
+        }
+        return null
+      },
+      { maxAttempts: 4, baseDelayMs: 400 }
+    )
+  } catch {
+    return null
+  }
+}
 
 interface VaultTransaction {
   time: Date
@@ -154,27 +182,10 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
         }
         
         const txPromises = batch.map(async (txHash) => {
-          try {
-            const txInfoUrl = `https://rootstock.blockscout.com/api?module=transaction&action=gettxinfo&txhash=${txHash}`
-            const txInfoResponse = await fetch(txInfoUrl)
-            
-            if (txInfoResponse.ok) {
-              const txInfoData = await txInfoResponse.json()
-              if (txInfoData.status === '1' && txInfoData.result) {
-                // gettxinfo returns result.success (boolean); if missing, assume Success
-                const success = txInfoData.result.success !== false
-                return {
-                  txHash,
-                  status: success ? 'Success' as const : 'Failed' as const
-                }
-              }
-            }
-            
-            // Fallback: assume success if event was emitted
-            return { txHash, status: 'Success' as const }
-          } catch {
-            return { txHash, status: 'Success' as const }
-          }
+          const successFlag = await fetchVaultTxSuccessFromExplorer(txHash)
+          const status: 'Success' | 'Failed' =
+            successFlag === false ? 'Failed' : 'Success'
+          return { txHash, status }
         })
         
         const results = await Promise.all(txPromises)
@@ -293,7 +304,7 @@ export default function VaultDepositWithdrawAnalyser({ initialExpanded, initialD
       setLoadingProgress({ current: 100, total: 100, phase: 'Complete' })
       logger.vault.info(`Fetched ${recentTxs.length} vault txs (${days}d) | blocks ${fromBlock}–${currentBlock}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
+      setError(userFacingError(err))
       logger.vault.error('Error fetching vault transactions:', err)
     } finally {
       setLoading(false)

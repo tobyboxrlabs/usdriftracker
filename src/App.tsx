@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { CONFIG } from './config'
 import { MetricsPage } from './pages/MetricsPage'
+import { logger } from './utils/logger'
 import './App.css'
 
 const LightCycleGame = lazy(() => import('./LightCycleGame'))
@@ -12,55 +13,53 @@ function App() {
 
   const fetchDeploymentCount = useCallback(async () => {
     if (import.meta.env.DEV) {
-      console.log('Skipping deployment count fetch in local development')
+      logger.app.debug('Skipping deployment count fetch in local development')
       return
     }
 
     try {
-      console.log('Fetching deployment count from /api/analytics...')
+      logger.app.debug('Fetching deployment count from /api/analytics...')
       const response = await fetch('/api/analytics', {
         headers: {
           'X-Client-Version': CONFIG.CLIENT_VERSION,
         },
       })
-      console.log('Response status:', response.status, response.statusText)
+      logger.app.debug('Response status:', response.status, response.statusText)
 
       if (response.ok) {
         const contentType = response.headers.get('content-type')
-        console.log('Content-Type:', contentType)
+        logger.app.debug('Content-Type:', contentType)
 
         if (contentType?.includes('application/json')) {
           const data = await response.json()
-          console.log('Deployment count response:', data)
+          logger.app.debug('Deployment count response:', data)
 
           if (data.message === 'Analytics not configured') {
-            console.warn(
-              'Analytics not configured - VERCEL_API_TOKEN missing in Vercel environment variables'
-            )
+            logger.app.warn('Analytics not configured - VERCEL_API_TOKEN missing')
             setDeploymentCount(null)
             return
           }
 
           if (data.totalDeployments !== undefined) {
             setDeploymentCount(data.totalDeployments)
-            console.log('Set deployment count to:', data.totalDeployments)
+            logger.app.debug('Set deployment count to:', data.totalDeployments)
           } else {
-            console.warn('Response missing totalDeployments field:', data)
+            logger.app.warn('Response missing totalDeployments field:', data)
           }
         } else {
           const text = await response.text()
-          console.error('Unexpected content type. Response:', text.substring(0, 200))
+          logger.app.error('Unexpected content type. Response:', text.substring(0, 200))
         }
       } else {
-        console.error('Failed to fetch deployment count:', response.status, response.statusText)
+        logger.app.error('Failed to fetch deployment count:', response.status, response.statusText)
         const errorText = await response.text()
-        console.error('Error details:', errorText)
+        logger.app.error('Error details:', errorText)
       }
     } catch (error) {
-      console.error('Failed to fetch deployment count:', error)
+      logger.app.error('Failed to fetch deployment count:', error)
       if (error instanceof Error) {
-        console.error('Error message:', error.message)
-        console.error('Error stack:', error.stack)
+        logger.app.error('Error message:', error.message)
+        logger.app.debug('Stack:', error.stack)
       }
     }
   }, [])

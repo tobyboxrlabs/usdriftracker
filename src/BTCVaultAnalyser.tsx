@@ -4,6 +4,7 @@ import { CONFIG } from './config'
 import * as XLSX from 'xlsx'
 import { fetchLogsV2, type BlockscoutV2Log } from './api/blockscout'
 import { rpcCall } from './utils/rpc'
+import { userFacingError } from './utils/userFacingError'
 import { AnalyserShell } from './components/AnalyserShell'
 import { formatAmount, formatAmountDisplay } from './utils/amount'
 import { generateTimestampFilename, writeExcelWorkbook } from './utils/exportExcel'
@@ -178,7 +179,7 @@ export default function BTCVaultAnalyser({ initialExpanded, initialDays }: BTCVa
       const price = await fetchRbtcUsdPrice()
       setRbtcUsd(price)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setError(userFacingError(err))
     } finally {
       setLoading(false)
     }

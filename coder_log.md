@@ -1,5 +1,7 @@
 # Coder Log - BTC Vault Analysers Implementation
 
+**Last updated:** March 26, 2026  
+
 **Date**: January 24, 2026  
 **Status**: Planning Complete, Ready for Implementation  
 **Network**: RSK Testnet
@@ -21,6 +23,75 @@
 **Lines removed:** ~700+ from analysers; ~820 from App.tsx (Items 3–4). **New modules:** ~350 from analysers, ~400 useTokenData, ~200 MetricsPage. App.tsx: ~900 → ~80 lines.
 
 **Next:** Item 6 – API handler wrapper (optional).
+
+---
+
+## Mint/Redeem modularisation — findings & recap (2026-03-26)
+
+### What shipped
+- **`src/mintRedeem/`** packages the mint/redeem data pipeline separately from React:
+  - **`types.ts`** — `MintRedeemTransaction` and related shapes used by the analyser and export.
+  - **`constants.ts`** — USDRIF/RIFPRO addresses, ERC20 `Transfer` topic, MoC proxy addresses, block window helpers; single place for topic/address literals that were scattered in the component.
+  - **`fetchMintRedeemTransactions.ts`** — async pipeline: Blockscout v1 logs via `fetchLogsV1`, RPC via `rpcCall`, MoC log enrichment, classification (mint/redeem flavours), time window filter. Exposes optional **`onProgress`** for UI progress only when there is work (`totalTxs > 0`).
+- **`MintRedeemAnalyser.tsx`** — shell (`AnalyserShell`), filters, days/refresh, table, Excel export; calls `fetchMintRedeemTransactions(days, setLoadingProgress)` and maps errors through **`logger.mintRedeem`** (same pattern as other feature loggers in `src/utils/logger.ts`).
+
+### Why it helps
+- **Testability:** Core logic is importable without mounting React; mocks target `rpcCall`, `fetchLogsV1`, `fetch`, and logger.
+- **Boundaries:** UI concerns (XLSX columns, filter state, collapse) stay out of the fetch module; networking/ABI/decoding stay out of trivial UI code.
+- **Consistency:** Aligns with earlier refactors (shared `blockscout.ts`, `rpc.ts`, `AnalyserShell`).
+
+### Tests
+- **`src/mintRedeem/fetchMintRedeemTransactions.test.ts`** (Vitest): empty-log run (no `onProgress`, correct `currentBlock`/`fromBlock`); single **USDRIF Mint** path with stubbed Blockscout tx info + RPC. Run: `npm test -- --run src/mintRedeem/fetchMintRedeemTransactions.test.ts`.
+
+### Follow-ups (optional, from broader modularisation backlog)
+- **`docs/REFACTOR_PLAN.md` §5.2 / Item 6:** `withApiHandler` (or similar) for API route boilerplate — still pending.
+- **§6 Config:** Move analyser-heavy ABIs to `src/abis/` or co-locate with `mintRedeem` if you want `config.ts` slimmer.
+- **`track-mint-redeem.ts` (repo root):** Still a separate CLI-style script with overlapping semantics to the app pipeline; consider reusing `fetchMintRedeemTransactions` or documenting “script vs UI” duplication if both must stay.
+
+---
+
+## Modularisation — findings & forward plan (2026-03-26)
+
+### Findings (current state)
+
+| Area | Status | Notes |
+|------|--------|--------|
+| Shared utils / API | ✅ | `amount.ts`, `exportExcel.ts`, `api/shared.ts`, `blockscout.ts`, `rpc.ts` |
+| App shell | ✅ | `useTokenData`, `MetricsPage`, slim `App.tsx` |
+| Analyser UI shell | ✅ | `AnalyserShell` — header, collapse, loading/progress slots |
+| Mint/redeem **data** pipeline | ✅ | `src/mintRedeem/` + `fetchMintRedeemTransactions.test.ts` |
+| Vault vUSD **data** pipeline | ⏳ | `VaultDepositWithdrawAnalyser.tsx` ~531 lines — fetch v2, decode, enrich still in component |
+| BTC vault **data** pipeline | ⏳ | `BTCVaultAnalyser.tsx` ~317 lines — same pattern, testnet v2 |
+| API route boilerplate | ⏳ | REFACTOR **Item 6** — `withApiHandler`-style wrapper not started |
+| Config / ABIs | ⏳ | REFACTOR **§6** — heavy ABIs still in `config.ts` / co-located in analysers |
+| Root script vs app | ⏳ | `track-mint-redeem.ts` duplicates mint/redeem semantics alongside UI pipeline |
+
+**Split quality check:** `MintRedeemAnalyser.tsx` ~323 lines (mostly UI/table/export); `fetchMintRedeemTransactions.ts` ~717 lines (network + decode — acceptable “fat module” if tested). Vault/BTC have not yet had that split.
+
+### Principles (apply to the next extractions)
+
+1. **Pure pipeline module** — `fetch…(…, onProgress?) → { rows, metadata }` with no React imports; UI-only code stays in `*Analyser.tsx`.
+2. **Co-locate** — `types.ts`, `constants.ts`, `fetch….ts`, `*.test.ts` under `src/<feature>/` (mirror `mintRedeem/`).
+3. **No security drift** — same RPC proxy whitelist, Blockscout helpers, rate limiting; refactors are file layout, not new attack surface.
+4. **Test at the boundary** — after each extraction, add Vitest with at least an **empty** run and **one happy path** (stub `fetchLogsV2`, `rpcCall`, `fetch` as needed).
+
+### Phased plan
+
+| Phase | Goal | Primary deliverables | Risk |
+|-------|------|----------------------|------|
+| **A** | API handler deduplication | Introduce `withApiHandler` (or equivalent); migrate **one** route, then roll forward | Low if each route keeps identical headers, rate limits, and version checks |
+| **B** | Vault pipeline module | `src/vaultDepositWithdraw/` (name TBD): types, constants, `fetchVault…Transactions`, tests; `VaultDepositWithdrawAnalyser` = shell + table + XLSX | Medium — v2 pagination and block filtering |
+| **C** | BTC vault pipeline module | Same for `BTCVaultAnalyser` (testnet base URL, event decode); optional: isolate `fetchRbtcUsdPrice` | Medium |
+| **D** | Config / ABIs | Move analyser-specific fragments to `src/abis/` or next to each feature module; slim `config.ts` | Low per step; many import touchpoints |
+| **E** | Scripts alignment | Either import `fetchMintRedeemTransactions` from a small Node entry, or document why the CLI must stay standalone | Low (docs) to medium (shared TS build for script) |
+
+**Suggested order:** **B** or **A** first (team preference: ship **B** if analyser maintainability is the pain point; **A** if API files are noisy). Then **C** (reuse patterns from **B**). **D** opportunistically when editing ABIs. **E** when touching mint/redeem logic again.
+
+### Per-phase checklist (before merge)
+
+- [ ] No intentional behaviour or user-visible contract change.
+- [ ] `npm run build` and `npm test` green.
+- [ ] Update **`Last updated`** at the top of this log; update **`docs/REFACTOR_PLAN.md`** Progress table when a numbered item completes.
 
 ---
 
@@ -1294,6 +1365,6 @@ interface BTCVaultTransaction {
 
 ---
 
-**Last Updated**: January 24, 2026  
+**Last Updated**: March 26, 2026  
 **Status**: Ready for Implementation  
 **Model**: composer-1
