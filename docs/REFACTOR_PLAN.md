@@ -15,6 +15,7 @@
 | **Item 3** (MetricDisplay, ContractAddressTable) | ✅ Done | 2026-01-24 |
 | **Item 4** (useTokenData, MetricsPage, slim App) | ✅ Done | 2026-01-24 |
 | **Item 5** (AnalyserShell) | ✅ Done | 2026-01-24 |
+| **vUSD Vault pipeline** (`src/vaultDepositWithdraw/`) | ✅ Done | 2026-03-26 |
 | Item 6+ | Pending | |
 
 ---

@@ -60,13 +60,13 @@
 | App shell | ✅ | `useTokenData`, `MetricsPage`, slim `App.tsx` |
 | Analyser UI shell | ✅ | `AnalyserShell` — header, collapse, loading/progress slots |
 | Mint/redeem **data** pipeline | ✅ | `src/mintRedeem/` + `fetchMintRedeemTransactions.test.ts` |
-| Vault vUSD **data** pipeline | ⏳ | `VaultDepositWithdrawAnalyser.tsx` ~531 lines — fetch v2, decode, enrich still in component |
+| Vault vUSD **data** pipeline | ✅ | `src/vaultDepositWithdraw/` + `VaultDepositWithdrawAnalyser.tsx` ~252 lines (UI/export/shell) |
 | BTC vault **data** pipeline | ⏳ | `BTCVaultAnalyser.tsx` ~317 lines — same pattern, testnet v2 |
 | API route boilerplate | ⏳ | REFACTOR **Item 6** — `withApiHandler`-style wrapper not started |
 | Config / ABIs | ⏳ | REFACTOR **§6** — heavy ABIs still in `config.ts` / co-located in analysers |
 | Root script vs app | ⏳ | `track-mint-redeem.ts` duplicates mint/redeem semantics alongside UI pipeline |
 
-**Split quality check:** `MintRedeemAnalyser.tsx` ~323 lines (mostly UI/table/export); `fetchMintRedeemTransactions.ts` ~717 lines (network + decode — acceptable “fat module” if tested). Vault/BTC have not yet had that split.
+**Split quality check:** `MintRedeemAnalyser.tsx` ~323 lines (mostly UI/table/export); `fetchMintRedeemTransactions.ts` ~717 lines (network + decode — acceptable “fat module” if tested). **Vault:** `fetchVaultDepositWithdrawTransactions.ts` ~279 lines + thin analyser ~252 lines; **BTC** vault analyser not yet split.
 
 ### Principles (apply to the next extractions)
 
@@ -80,18 +80,193 @@
 | Phase | Goal | Primary deliverables | Risk |
 |-------|------|----------------------|------|
 | **A** | API handler deduplication | Introduce `withApiHandler` (or equivalent); migrate **one** route, then roll forward | Low if each route keeps identical headers, rate limits, and version checks |
-| **B** | Vault pipeline module | `src/vaultDepositWithdraw/` (name TBD): types, constants, `fetchVault…Transactions`, tests; `VaultDepositWithdrawAnalyser` = shell + table + XLSX | Medium — v2 pagination and block filtering |
+| **B** | Vault pipeline module | ✅ **Done (2026-03-26)** — `src/vaultDepositWithdraw/`; see summary below | — |
 | **C** | BTC vault pipeline module | Same for `BTCVaultAnalyser` (testnet base URL, event decode); optional: isolate `fetchRbtcUsdPrice` | Medium |
 | **D** | Config / ABIs | Move analyser-specific fragments to `src/abis/` or next to each feature module; slim `config.ts` | Low per step; many import touchpoints |
 | **E** | Scripts alignment | Either import `fetchMintRedeemTransactions` from a small Node entry, or document why the CLI must stay standalone | Low (docs) to medium (shared TS build for script) |
 
-**Suggested order:** **B** or **A** first (team preference: ship **B** if analyser maintainability is the pain point; **A** if API files are noisy). Then **C** (reuse patterns from **B**). **D** opportunistically when editing ABIs. **E** when touching mint/redeem logic again.
+**Suggested order:** **Phase B (vault)** complete. Next: **C** (BTC vault pipeline) or **A** (API wrapper). **D** opportunistically when editing ABIs. **E** when touching mint/redeem logic again.
 
 ### Per-phase checklist (before merge)
 
 - [ ] No intentional behaviour or user-visible contract change.
 - [ ] `npm run build` and `npm test` green.
 - [ ] Update **`Last updated`** at the top of this log; update **`docs/REFACTOR_PLAN.md`** Progress table when a numbered item completes.
+
+### Module inventory — LOC and complexity (2026-03-26)
+
+**LOC** = physical lines (`wc -l`). Small boilerplate files (e.g. `main.tsx`, `vite-env.d.ts`, Vitest `setup`) omitted.
+
+**Complexity (1–5)**
+
+| Score | Meaning |
+|------:|--------|
+| **1** | Small, single concern, little branching |
+| **2** | Small–medium helper or thin UI |
+| **3** | Medium — async, several callers, or moderate UI/logic |
+| **4** | Large — multi-step integration (RPC + explorer + state) or substantial API handler |
+| **5** | Very large / heavy domain — long pipelines, many branches, decode + pagination |
+
+#### `src/mintRedeem/`
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `types.ts` | 13 | 1 |
+| `constants.ts` | 44 | 1 |
+| `fetchMintRedeemTransactions.ts` | 717 | **5** |
+| `fetchMintRedeemTransactions.test.ts` | 131 | 2 |
+| **Prod subtotal** (3 files) | **774** | **5** |
+
+#### `src/vaultDepositWithdraw/`
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `types.ts` | 11 | 1 |
+| `constants.ts` | 27 | 1 |
+| `fetchVaultDepositWithdrawTransactions.ts` | 279 | **4** |
+| `fetchVaultDepositWithdrawTransactions.test.ts` | 119 | 2 |
+| **Prod subtotal** (3 files) | **317** | **4** |
+
+#### `src/api/` & `src/utils/`
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `src/api/blockscout.ts` | 349 | 4 |
+| `src/utils/rpc.ts` | 143 | 3 |
+| `src/utils/asyncRetry.ts` | 71 | 2 |
+| `src/utils/logger.ts` | 66 | 2 |
+| `src/utils/exportExcel.ts` | 41 | 2 |
+| `src/utils/amount.ts` | 39 | 1 |
+| `src/utils/address.ts` | 32 | 1 |
+| `src/utils/userFacingError.ts` | 22 | 1 |
+
+#### `src/components/`
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `MetricDisplay.tsx` | 181 | 3 |
+| `AnalyserShell.tsx` | 111 | 2 |
+| `ContractAddressTable.tsx` | 46 | 2 |
+
+#### `src/hooks/` & `src/pages/`
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `hooks/useTokenData.ts` | 460 | 4 |
+| `pages/MetricsPage.tsx` | 195 | 3 |
+
+#### Analysers & related `src/` routes
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `VaultDepositWithdrawAnalyser.tsx` | 252 | 3 |
+| `LightCycleGame.tsx` | 569 | 4 |
+| `MintRedeemAnalyser.tsx` | 323 | 3 |
+| `BTCVaultAnalyser.tsx` | 317 | 3 |
+| `MiniLineGraph.tsx` | 102 | 3 |
+| `config.ts` | 102 | 3 |
+| `history.ts` | 136 | 3 |
+| `App.tsx` | 83 | 2 |
+| `ErrorBoundary.tsx` | 58 | 2 |
+| `Analytics.tsx` | 57 | 1 |
+| `RootstockLogo.tsx` | 11 | 1 |
+
+#### `api/` (server)
+
+| Module | LOC | Cx |
+|--------|-----|:--:|
+| `scores.ts` | 443 | 4 |
+| `rpc.ts` | 342 | 4 |
+| `security.ts` | 270 | 3 |
+| `errorLogger.ts` | 215 | 3 |
+| `analytics.ts` | 164 | 3 |
+| `middleware.ts` | 134 | 3 |
+| `export-excel.ts` | 103 | 3 |
+| `shared.ts` | 25 | 1 |
+
+#### Takeaways
+
+- **Largest single modules:** `fetchMintRedeemTransactions.ts` (717), `LightCycleGame.tsx` (569), `useTokenData.ts` (460), `api/scores.ts` (443), `fetchVaultDepositWithdrawTransactions.ts` (279).
+- **Cx 5:** mint/redeem fetch only. **Cx 4 pipelines:** Blockscout, `useTokenData`, vault fetch, scores/rpc handlers. **Next pipeline extraction:** `BTCVaultAnalyser` — see Phase **C** above.
+
+### vUSD Vault pipeline extraction plan (2026-03-26)
+
+Mirror **`src/mintRedeem/`**: move everything that is not React, XLSX column layout, or `AnalyserShell` wiring out of **`VaultDepositWithdrawAnalyser.tsx`**. ✅ **Implemented** — see **vUSD Vault extraction — implemented** below.
+
+#### Goal
+
+- **`fetchVaultDepositWithdrawTransactions(days, onProgress?)`** (name TBD) returns **`{ recentTxs, fromBlock, currentBlock }`** (and any other metadata the UI already needs).
+- **`VaultDepositWithdrawAnalyser.tsx`** holds: state, `AnalyserShell`, controls, table, `exportToExcel`, `useEffect` / unmount cleanup — comparable to **`MintRedeemAnalyser`** after modularisation.
+
+#### Non-goals (first PR)
+
+- Changing Blockscout v2 pagination, **`MAX_PAGES`**, or the **100-tx** gettxinfo cap unless explicitly scoped (document current behaviour in module JSDoc).
+- Replacing `formatAmount` in the pipeline vs UI — either keep formatting in the pipeline as today (parity) or document a follow-up to return bigint + decimals.
+
+#### Proposed layout
+
+```
+src/vaultDepositWithdraw/
+  types.ts          # VaultTransaction (move from analyser)
+  constants.ts      # BLOCKSCOUT_API_V2, VAULT_ADDRESS, VAULT_ABI, blocksPerDay, batch sizes/delays, explorer base URL for gettxinfo
+  fetchVaultDepositWithdrawTransactions.ts
+  fetchVaultDepositWithdrawTransactions.test.ts
+```
+
+Optional: **`explorer.ts`** or **`fetchVaultTxSuccessFromExplorer`** colocated in the same folder if kept private to the pipeline.
+
+#### What moves into the fetch module (inventory)
+
+| Current location (analyser) | Destination |
+|----------------------------|-------------|
+| `fetchVaultTxSuccessFromExplorer` | Same file as fetch or `gettxinfo.ts` helper |
+| `VaultTransaction` interface | `types.ts` |
+| `VAULT_ABI`, topics via `ethers.Interface` | `constants.ts` or inside fetch next to ABI |
+| `BLOCKSCOUT_API_V2`, `VAULT_ADDRESS` | `constants.ts` |
+| RPC block range, `fetchLogsV2`, filter Deposit/Withdraw | `fetchVault…ts` |
+| Block timestamp batching (`BLOCK_BATCH_SIZE` / delay) | `fetchVault…ts` |
+| Tx status batching + gettxinfo loop (cap 100) | `fetchVault…ts` |
+| Event → row decode (owner/receiver, assets BigInt, sort, time cutoff) | `fetchVault…ts` |
+| `logger.vault.*` | Keep calls from fetch module (same as mint) |
+
+#### `onProgress` contract
+
+- Align phases with existing UX: **fetch events** → **block timestamps** → **tx details** → **processing** → **complete**.
+- Use the same shape the UI already uses: `{ current, total, phase }` with **`total: 100`**-style progress, OR normalize to **`{ current, total, phase }`** where `total` is real step counts — pick one and match **MintRedeem** for consistency across analysers (follow-up in log if changed).
+- When there are **zero** vault events, decide whether to skip progress updates (mint skips when `totalTxs === 0` for initial callback — align for vault if applicable).
+
+#### Tests (Vitest)
+
+1. **Empty:** `fetchLogsV2` returns `[]` → `recentTxs` empty, correct `fromBlock` / `currentBlock`, RPC `eth_blockNumber` mocked.
+2. **One Deposit or one Withdraw:** stub **`BlockscoutV2Log`**-shaped object with `topics`, `decoded.parameters`, `block_number`, `transaction_hash`; stub `rpcCall` for `eth_getBlockByNumber`; stub `fetch` for gettxinfo if that path runs.
+3. **Optional:** assert **`txDetailsLimit`** (100) does not break test when only one hash.
+
+Mock **`../api/blockscout`**, **`../utils/rpc`**, **`globalThis.fetch`**, **`../utils/logger`**.
+
+#### Implementation steps (suggested PR sequence)
+
+1. **Scaffold** `src/vaultDepositWithdraw/` with `types.ts` + `constants.ts` (no behaviour change — re-export and import from analyser temporarily, or move + fix imports in one commit).
+2. **Extract** `fetchVaultTxSuccessFromExplorer` + core `fetchVault…` body; wire analyser to call it inside existing `fetchTransactions` try/catch; **run build + manual smoke** on Analytics.
+3. **Thin** analyser: delete inlined logic; keep `userFacingError`, progress timeout ref, collapse behaviour unchanged.
+4. **Add** `fetchVaultDepositWithdrawTransactions.test.ts`; run `npm test`.
+5. **Docs:** update this log + optional one line in **`docs/REFACTOR_PLAN.md`** Progress / Phase **B** when done.
+
+#### Risks / watch list
+
+- **`fetchLogsV2`** mainnet v2 + client-side block filter — behaviour must stay identical (paginate until out of range or `MAX_PAGES`).
+- **React `setState` in loops** today becomes **sync `onProgress` from async pipeline** — ensure no stale closure issues (mint pattern already solves this by passing setter as callback).
+- **100-transaction** status cap: document in module; changing it is a product decision.
+
+#### Done when
+
+- Analyser file is roughly **UI + export + shell** only (~150–250 LOC target; exact number secondary).
+- **`npm run build`** and **`npm test`** pass; vault panel still shows deposits/withdrawals for 1/7/30/90 day toggles.
+
+#### vUSD Vault extraction — implemented (2026-03-26)
+
+- **New package:** `src/vaultDepositWithdraw/` — `types.ts` (`VaultTransaction`), `constants.ts` (v2 API, vUSD address from `CONFIG`, `VAULT_ABI`, block/batch/`VAULT_TX_STATUS_LOOKUP_MAX` = 100), `fetchVaultDepositWithdrawTransactions.ts` (gettxinfo helper inlined, same progress phases as pre-extraction), `fetchVaultDepositWithdrawTransactions.test.ts` (empty v2 run + one **Deposit** with mocked `fetchLogsV2` / `rpcCall` / `fetch`).
+- **`VaultDepositWithdrawAnalyser.tsx`** (~252 lines): state, `AnalyserShell`, controls, table, Excel export, `userFacingError` + progress timeout — calls `fetchVaultDepositWithdrawTransactions(days, setLoadingProgress)`.
+- **Parity:** No intentional change to v2 pagination, **100-tx** gettxinfo cap, or time/block math; `npm test` **17/17**, `npm run build` passes.
 
 ---
 

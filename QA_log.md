@@ -16,7 +16,8 @@
 - **Vercel / `tsc` build (2026-03):** `@types/react` and `@types/react-dom` live in **`dependencies`** in `package.json` so production installs include JSX typings when Vercel runs `npm install` without devDependencies. Verified locally: `npm run build` (`tsc && vite build`) passes.
 - **Resilience / errors (2026-03, plan item 4):** `src/utils/asyncRetry.ts` (backoff, transient HTTP/network); `fetchLogsV1` retries 502/503/504/408/429; `fetchLogsV2` per-page backoff; `rpcCall` retries transient failures per endpoint; `getWorkingProvider` uses backoff; vault **gettxinfo** uses backoff; `userFacingError` / `withNetworkHint` for metrics + analysers + BTC vault error UI.
 - **Mint/Redeem modularization (2026-03):** `src/mintRedeem/` — `types.ts`, `constants.ts`, `fetchMintRedeemTransactions.ts` (pure pipeline + progress callback); `MintRedeemAnalyser.tsx` is UI + Excel + shell only. **Unit tests:** `src/mintRedeem/fetchMintRedeemTransactions.test.ts` (empty run + one USDRIF Mint); logged in `coder_log.md` (2026-03-26 recap).
-- **Full retest (2026-01-28):** `npm test` passed (13/13); `npm run build` succeeded (`tsc && vite build`). No new failures observed.
+- **vUSD Vault modularization (2026-03-26):** `src/vaultDepositWithdraw/` — same pattern (pure `fetchVaultDepositWithdrawTransactions` + thin `VaultDepositWithdrawAnalyser`). **Tests:** `src/vaultDepositWithdraw/fetchVaultDepositWithdrawTransactions.test.ts`. Summary: `coder_log.md` (**vUSD Vault extraction — implemented**).
+- **Full retest (2026-03-26):** `npm test` passed (17/17); `npm run build` succeeded (`tsc && vite build`).
 - **MintRedeem / Blockscout QA follow-ups (2026-03-28):**
   - ~~**Duplicate `isDev` in `makeRpcCall` loop**~~ **Obsoleted** — that pattern is not present in the current tree (no `makeRpcCall`; `isDev` only where needed in `useTokenData`, `rpc.ts`, `logger.ts`).
   - ~~**Blockscout “no adaptive backoff”**~~ **Mitigated** — `src/api/blockscout.ts` uses a shared **`BlockscoutRateLimiter`** (throttle + adaptive delay on failures) plus **`withBackoff`** on v2 page fetches and expanded v1 retries for transient HTTP. **Remaining risk:** huge log volumes and **`MAX_PAGES` (100)** truncation on v2; reduce lookback or paginate further if needed.
@@ -48,6 +49,20 @@
 
 ### Tests — `ethers.id` mock (**resolved**)
 - **`App.test.tsx`** extends the `ethers` mock with `id` so lazy-loaded `Analytics` → `BTCVaultAnalyser` does not throw `TypeError: ethers.id is not a function`.
+
+### Code Review (2026-01-28)
+- **High:** `api/rpc.ts` forwards any JSON-RPC method to whitelisted endpoints without a method allowlist; combined with 100 req/min/IP this still permits heavy abuse on public nodes.
+- **High (conditional):** `api/security.ts` + CORS headers: if `ALLOWED_ORIGINS` is unset, cross-origin API calls fail; `Access-Control-Allow-Headers` does not include `X-Client-Version`, which can break cross-origin preflights for `/api/rpc` and `/api/analytics`.
+- **Medium:** `middleware.ts` hard-fails `/api/rpc` when `x-client-version` is missing/mismatched; non-browser scripts/monitors without the header receive 410.
+- **Medium:** `src/vaultDepositWithdraw/fetchVaultDepositWithdrawTransactions.ts` caps tx-status lookups at 100; remaining txs default to `Success`, skewing accuracy.
+- **Medium:** `src/api/blockscout.ts` v2 pagination hard-caps at `MAX_PAGES = 100` with warning only; busy contracts can be truncated.
+- **Medium:** `api/export-excel.ts` accepts arbitrary transaction payload size; large requests can cause high memory/CPU and slow responses (and route appears unused in `src/`).
+- **Medium:** `api/analytics.ts` falls back to `projects[0]` if `VERCEL_PROJECT_ID` missing; may return metrics for wrong project.
+- **Medium:** `src/vaultDepositWithdraw/fetchVaultDepositWithdrawTransactions.ts` (explorer fetch) has no timeout; slow Blockscout can stall the pipeline.
+- **Medium:** `api/scores.ts` logs player-submitted names and metadata; consider privacy/log hygiene in production.
+- **Low:** `tsconfig.json` excludes `src/**/*.test.ts(x)` from `tsc` so CI builds won’t typecheck tests unless vitest runs.
+- **Low:** Hard-coded external Giphy URL in `src/pages/MetricsPage.tsx` adds a third-party dependency/privacy risk.
+- **Note:** No new tests were run for this review (static analysis only).
 - **`npm test`** target: 13/13 (re-run after major App/Analytics changes).
 - *Earlier QA note “Vitest failing due to missing `ethers.id`” — **closed**; same root cause, fixed via mock above.*
 
