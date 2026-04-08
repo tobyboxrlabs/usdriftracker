@@ -1,4 +1,5 @@
 import type { RnsLabelMap } from '../hooks/useRnsReverseLookup'
+import { sanitizeRnsDisplayName } from '../utils/rnsDisplayName'
 
 export interface AddressLinkWithRnsProps {
   href: string
@@ -18,7 +19,8 @@ export function AddressLinkWithRns({
   shortenIfNoRns = false,
 }: AddressLinkWithRnsProps) {
   const lower = address.trim().toLowerCase()
-  const rns = rnsByAddressLower[lower]
+  const rnsRaw = rnsByAddressLower[lower]
+  const rns = rnsRaw ? sanitizeRnsDisplayName(rnsRaw) : undefined
   const display =
     rns ??
     (shortenIfNoRns ? `${address.slice(0, 6)}…${address.slice(-4)}` : address)

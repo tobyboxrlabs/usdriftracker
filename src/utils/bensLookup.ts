@@ -4,13 +4,14 @@
  *
  * Rootstock mainnet = 30, testnet = 31 in BENS URLs (`/api/v1/{chainId}/...`).
  */
-import { ethers } from 'ethers'
 import { CONFIG } from '../config'
+import { parseEvmAddressOrNull } from './address'
 import {
   bensLookupCacheKey,
   getBensCached,
   setBensCached,
 } from './addressNameResolutionCache'
+import { sanitizeRnsDisplayName } from './rnsDisplayName'
 
 export interface BensAddressItem {
   name: string
@@ -27,9 +28,10 @@ const BATCH = 5
 function pickBensDisplayName(items: BensAddressItem[] | undefined): string | null {
   if (!items?.length) return null
   const rsk = items.find((i) => i.name.toLowerCase().endsWith('.rsk'))
-  if (rsk) return rsk.name
-  const byProtocol = items.find((i) => i.protocol?.short_name?.toLowerCase() === 'rns')
-  return (byProtocol ?? items[0]).name
+  const raw = rsk
+    ? rsk.name
+    : (items.find((i) => i.protocol?.short_name?.toLowerCase() === 'rns') ?? items[0]).name
+  return sanitizeRnsDisplayName(raw)
 }
 
 /**
@@ -41,13 +43,21 @@ export async function bensLookupNamesForAddress(
   baseUrl: string = CONFIG.BENS_API_V1_BASE
 ): Promise<string | null> {
   try {
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address.trim())) return null
-    const addr = ethers.getAddress(address)
+    const addr = parseEvmAddressOrNull(address)
+    if (!addr) return null
     const lower = addr.toLowerCase()
     const b = baseUrl.replace(/\/$/, '')
     const ck = bensLookupCacheKey(chainId, b, lower)
     const hit = getBensCached(ck)
-    if (hit !== undefined) return hit
+    if (hit !== undefined) {
+      if (hit === null) return null
+      const safe = sanitizeRnsDisplayName(hit)
+      if (safe === null) {
+        setBensCached(ck, null)
+        return null
+      }
+      return safe
+    }
 
     const params = new URLSearchParams({
       resolved_to: 'true',

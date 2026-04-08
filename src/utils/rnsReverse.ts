@@ -3,8 +3,10 @@
  * @see https://dev.rootstock.io/developers/integrate/rns/smart-contract/
  */
 import { ethers } from 'ethers'
+import { parseEvmAddressOrNull } from './address'
 import { getRnsCached, rnsReverseCacheKey, setRnsCached } from './addressNameResolutionCache'
 import { rpcCall } from './rpc'
+import { sanitizeRnsDisplayName } from './rnsDisplayName'
 
 const REGISTRY_IFACE = new ethers.Interface(['function resolver(bytes32 node) view returns (address)'])
 const RESOLVER_IFACE = new ethers.Interface(['function name(bytes32 node) view returns (string)'])
@@ -23,13 +25,22 @@ export async function reverseResolveRns(
   address: string
 ): Promise<string | null> {
   try {
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address.trim())) return null
-    const lower = address.trim().toLowerCase()
+    const normalized = parseEvmAddressOrNull(address)
+    if (!normalized) return null
+    const lower = normalized.toLowerCase()
     const ck = rnsReverseCacheKey(rpcUrl, registryAddress, lower)
     const hit = getRnsCached(ck)
-    if (hit !== undefined) return hit
+    if (hit !== undefined) {
+      if (hit === null) return null
+      const safe = sanitizeRnsDisplayName(hit)
+      if (safe === null) {
+        setRnsCached(ck, null)
+        return null
+      }
+      return safe
+    }
 
-    const node = reverseNode(address)
+    const node = reverseNode(normalized)
     const resolverCalldata = REGISTRY_IFACE.encodeFunctionData('resolver', [node])
     const resolverHex = await rpcCall<string>(
       'eth_call',
@@ -50,8 +61,13 @@ export async function reverseResolveRns(
       return null
     }
     const trimmed = name.trim()
-    setRnsCached(ck, trimmed)
-    return trimmed
+    const safe = sanitizeRnsDisplayName(trimmed)
+    if (safe === null) {
+      setRnsCached(ck, null)
+      return null
+    }
+    setRnsCached(ck, safe)
+    return safe
   } catch {
     return null
   }

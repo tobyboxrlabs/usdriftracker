@@ -30,3 +30,17 @@ export function normalizeAddress(address: string): string {
 export function normalizeAddressToLower(address: string): string {
   return address.toLowerCase()
 }
+
+/**
+ * Return EIP-55 checksummed address, or null if not valid 20-byte hex
+ * (invalid length, bad checksum, or non-hex).
+ */
+export function parseEvmAddressOrNull(input: string): string | null {
+  const t = input?.trim()
+  if (!t || !/^0x[a-fA-F0-9]{40}$/.test(t)) return null
+  try {
+    return ethers.getAddress(t)
+  } catch {
+    return null
+  }
+}
