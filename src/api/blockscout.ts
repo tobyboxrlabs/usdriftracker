@@ -1,7 +1,7 @@
 /**
  * Shared Blockscout API utilities: rate limiter and fetch functions.
  * Used by MintRedeemAnalyser (API v1), vaultDepositWithdraw fetch (API v2 mainnet),
- * and BTCVaultAnalyser (API v2 testnet).
+ * and BTCVaultAnalyser (API v2 testnet + mainnet).
  */
 
 import { logger } from '../utils/logger'

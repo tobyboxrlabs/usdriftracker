@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import * as XLSX from 'xlsx'
 import { AnalyserShell } from './components/AnalyserShell'
+import { AddressLinkWithRns } from './components/AddressLinkWithRns'
+import { CONFIG } from './config'
+import { useRnsReverseLookup } from './hooks/useRnsReverseLookup'
 import { formatAmountDisplay } from './utils/amount'
 import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
 import { logger } from './utils/logger'
@@ -30,6 +33,15 @@ export default function MintRedeemAnalyser({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
   const progressTimeoutRef = useRef<number | null>(null)
+
+  const addressesForRns = useMemo(() => transactions.map((tx) => tx.receiver), [transactions])
+  const rnsLabels = useRnsReverseLookup(
+    addressesForRns,
+    CONFIG.ROOTSTOCK_MAINNET_CHAIN_ID,
+    CONFIG.ROOTSTOCK_RPC,
+    CONFIG.RNS_REGISTRY_MAINNET,
+    !isCollapsed
+  )
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -238,14 +250,11 @@ export default function MintRedeemAnalyser({
                   {formatAmountDisplay(tx.amountMintedRedeemed, 2)}
                 </td>
                 <td className="address-cell">
-                  <a
+                  <AddressLinkWithRns
                     href={`https://rootstock.blockscout.com/address/${tx.receiver}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={tx.receiver}
-                  >
-                    {tx.receiver}
-                  </a>
+                    address={tx.receiver}
+                    rnsByAddressLower={rnsLabels}
+                  />
                 </td>
                 <td className="address-cell">
                   <a

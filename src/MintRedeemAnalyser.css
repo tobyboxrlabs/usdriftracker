@@ -645,6 +645,38 @@
     margin-left: 0 !important;
     text-align: left;
   }
+
+  /* BTC Vault: col 6 is USD (not receiver); size address columns 7–8 */
+  .btc-vault-table .transactions-table th:nth-child(6),
+  .btc-vault-table .transactions-table td:nth-child(6) {
+    width: 88px;
+    max-width: 88px;
+    min-width: 88px;
+  }
+
+  .btc-vault-table .transactions-table th:nth-child(7),
+  .btc-vault-table .transactions-table td:nth-child(7),
+  .btc-vault-table .transactions-table th:nth-child(8),
+  .btc-vault-table .transactions-table td:nth-child(8) {
+    width: 240px;
+    max-width: 240px;
+    min-width: 240px;
+    word-break: break-all;
+  }
+
+  .btc-vault-table .transactions-table th:nth-child(9),
+  .btc-vault-table .transactions-table td:nth-child(9) {
+    width: 64px;
+    max-width: 64px;
+    min-width: 64px;
+  }
+
+  .btc-vault-table .transactions-table th:nth-child(10),
+  .btc-vault-table .transactions-table td:nth-child(10) {
+    width: 72px;
+    max-width: 72px;
+    min-width: 72px;
+  }
 }
 
 .transactions-table thead {
@@ -728,6 +760,100 @@
   width: 90px; /* Fixed width for block numbers */
   max-width: 90px; /* Prevent expansion */
   min-width: 90px; /* Prevent shrinking */
+}
+
+/* BTC Vault: hide Receiver when redundant (same as User); cells stay in DOM for nth-child CSS */
+.btc-vault-table .btc-vault-receiver-col-hidden {
+  display: none !important;
+}
+
+/* BTC Vault: 10-column table — overrides Mint/Redeem nth-child rules above */
+.btc-vault-table .transactions-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1320px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(3),
+.btc-vault-table .transactions-table td:nth-child(3) {
+  width: 120px;
+  max-width: 140px;
+  min-width: 100px;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.btc-vault-table .transactions-table th:nth-child(4),
+.btc-vault-table .transactions-table td:nth-child(4) {
+  text-align: right;
+  width: 128px;
+  max-width: 128px;
+  min-width: 128px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(5),
+.btc-vault-table .transactions-table td:nth-child(5) {
+  text-align: right;
+  width: 128px;
+  max-width: 128px;
+  min-width: 128px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(6),
+.btc-vault-table .transactions-table td:nth-child(6) {
+  text-align: right;
+  width: 120px;
+  max-width: 120px;
+  min-width: 120px;
+}
+
+/* Long numeric strings must stay on one line — table-layout: fixed + ellipsis */
+.btc-vault-table .transactions-table td:nth-child(4),
+.btc-vault-table .transactions-table td:nth-child(5),
+.btc-vault-table .transactions-table td:nth-child(6) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.btc-vault-table .transactions-table th:nth-child(7),
+.btc-vault-table .transactions-table td:nth-child(7) {
+  max-width: 340px;
+  width: auto;
+  min-width: 120px;
+  word-break: break-all;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(8),
+.btc-vault-table .transactions-table td:nth-child(8) {
+  max-width: 340px;
+  width: auto;
+  min-width: 120px;
+  word-break: break-all;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(9),
+.btc-vault-table .transactions-table td:nth-child(9) {
+  width: 70px;
+  max-width: 70px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.btc-vault-table .transactions-table th:nth-child(10),
+.btc-vault-table .transactions-table td:nth-child(10) {
+  padding-left: 8px;
+  width: 90px;
+  max-width: 90px;
+  min-width: 90px;
+  text-align: right;
 }
 
 .transactions-table td {

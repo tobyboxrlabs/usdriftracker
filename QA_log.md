@@ -17,7 +17,7 @@
 - **Resilience / errors (2026-03, plan item 4):** `src/utils/asyncRetry.ts` (backoff, transient HTTP/network); `fetchLogsV1` retries 502/503/504/408/429; `fetchLogsV2` per-page backoff; `rpcCall` retries transient failures per endpoint; `getWorkingProvider` uses backoff; vault **gettxinfo** uses backoff; `userFacingError` / `withNetworkHint` for metrics + analysers + BTC vault error UI.
 - **Mint/Redeem modularization (2026-03):** `src/mintRedeem/` — `types.ts`, `constants.ts`, `fetchMintRedeemTransactions.ts` (pure pipeline + progress callback); `MintRedeemAnalyser.tsx` is UI + Excel + shell only. **Unit tests:** `src/mintRedeem/fetchMintRedeemTransactions.test.ts` (empty run + one USDRIF Mint); logged in `coder_log.md` (2026-03-26 recap).
 - **vUSD Vault modularization (2026-03-26):** `src/vaultDepositWithdraw/` — same pattern (pure `fetchVaultDepositWithdrawTransactions` + thin `VaultDepositWithdrawAnalyser`). **Tests:** `src/vaultDepositWithdraw/fetchVaultDepositWithdrawTransactions.test.ts`. Summary: `coder_log.md` (**vUSD Vault extraction — implemented**).
-- **Full retest (2026-03-26):** `npm test` passed (17/17); `npm run build` succeeded (`tsc && vite build`).
+- **Full retest (2026-03-27):** `npm test` passed (28/28); `npm run build` succeeded (`tsc && vite build`). Added `src/hooks/useTokenData.test.ts`, `src/api/blockscout.test.ts`.
 - **MintRedeem / Blockscout QA follow-ups (2026-03-28):**
   - ~~**Duplicate `isDev` in `makeRpcCall` loop**~~ **Obsoleted** — that pattern is not present in the current tree (no `makeRpcCall`; `isDev` only where needed in `useTokenData`, `rpc.ts`, `logger.ts`).
   - ~~**Blockscout “no adaptive backoff”**~~ **Mitigated** — `src/api/blockscout.ts` uses a shared **`BlockscoutRateLimiter`** (throttle + adaptive delay on failures) plus **`withBackoff`** on v2 page fetches and expanded v1 retries for transient HTTP. **Remaining risk:** huge log volumes and **`MAX_PAGES` (100)** truncation on v2; reduce lookback or paginate further if needed.
@@ -63,8 +63,12 @@
 - **Low:** `tsconfig.json` excludes `src/**/*.test.ts(x)` from `tsc` so CI builds won’t typecheck tests unless vitest runs.
 - **Low:** Hard-coded external Giphy URL in `src/pages/MetricsPage.tsx` adds a third-party dependency/privacy risk.
 - **Note:** No new tests were run for this review (static analysis only).
-- **`npm test`** target: 13/13 (re-run after major App/Analytics changes).
-- *Earlier QA note “Vitest failing due to missing `ethers.id`” — **closed**; same root cause, fixed via mock above.*
+
+### ~~BTC Vault UI Findings (2026-01-28)~~ — **Addressed (2026-03-27)**
+- ~~**Amount (RBTC) always `0`**~~ **`BTCVaultAnalyser`:** `buildParamMap` merges Blockscout `decoded.parameters` with **`ethers.Interface.parseLog`** (`BTC_VAULT_ABI`); **`pickUint`** tries **`amount` → `assets` → `value`**.
+- ~~**User column empty/incorrect**~~ **`pickAddr`** chain **`user` → `owner` → `account` → `caller` → `sender`**, then **`receiver`** as last resort; empty user shows **`—`** (no broken explorer link).
+- ~~**Missing shares column**~~ Table **Shares** column (18 decimals, same display style as amount); Excel column order aligned (**Amount**, **Shares**, **USD Equiv.**, User, Receiver, …).
+- *Earlier QA note “Vitest failing due to missing `ethers.id`” — **closed**; `App.test.tsx` mock.*
 
 ### Ongoing — maintainers / ops
 - **RPC proxy whitelist (`api/rpc.ts` ↔ env)**  

@@ -21,6 +21,7 @@ export default function Analytics() {
   const usdrifExpanded = analyser === 'usdrif'
   const vusdExpanded = analyser === 'vusd'
   const vbtcExpanded = analyser === 'vbtc'
+  const vbtcMainnetExpanded = analyser === 'vbtc-mainnet'
 
   return (
     <div className="analytics-page">
@@ -48,8 +49,14 @@ export default function Analytics() {
           initialDays={vusdExpanded ? days : undefined}
         />
         <BTCVaultAnalyser
+          chain="testnet"
           initialExpanded={vbtcExpanded}
           initialDays={vbtcExpanded ? days : undefined}
+        />
+        <BTCVaultAnalyser
+          chain="mainnet"
+          initialExpanded={vbtcMainnetExpanded}
+          initialDays={vbtcMainnetExpanded ? days : undefined}
         />
       </div>
     </div>

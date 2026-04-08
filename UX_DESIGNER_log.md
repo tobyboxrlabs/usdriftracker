@@ -14,6 +14,7 @@
 **Previous Grade: D+ → Current Grade: A-**
 
 Exceptional progress! The development team has addressed all critical and high-priority UX issues. The application now demonstrates:
+
 - ✅ **Consistent design system** across all three screens (Metrics, Game, Tools)
 - ✅ **WCAG 2.1 Level AA accessibility** for interactive elements
 - ✅ **Motion sensitivity support** via prefers-reduced-motion
@@ -27,6 +28,7 @@ Only minor polish opportunities remain (metric ordering, game over flow optimiza
 ## 🎊 Major Achievements
 
 ### Critical Improvements Implemented:
+
 1. ✅ **Tools screen completely redesigned** - Purple Material Design → TRON cyberpunk
 2. ✅ **Keyboard accessibility added** - Tooltips now fully navigable
 3. ✅ **Touch target compliance** - All interactive elements meet 44px WCAG minimum
@@ -35,6 +37,7 @@ Only minor polish opportunities remain (metric ordering, game over flow optimiza
 6. ✅ **Visual consistency restored** - Label capitalization unified
 
 ### Grade Improvement:
+
 - **Overall UX:** D+ → **A-** (↑ 5 letter grades)
 - **Accessibility:** D → **A-** (WCAG 2.1 Level AA achieved)
 - **Design Consistency:** F → **A+** (Complete alignment)
@@ -44,6 +47,7 @@ Only minor polish opportunities remain (metric ordering, game over flow optimiza
 ## 📊 Issues Resolution Summary
 
 ### Critical Issues (6 total)
+
 - ✅ **RESOLVED:** Tools screen design consistency
 - ✅ **RESOLVED:** Tooltip keyboard accessibility
 - ✅ **RESOLVED:** Touch target sizing (44px minimum)
@@ -52,6 +56,7 @@ Only minor polish opportunities remain (metric ordering, game over flow optimiza
 - ✅ **RESOLVED:** Label capitalization consistency
 
 ### Medium Priority (4 total)
+
 - ✅ **RESOLVED:** Heading ellipsis removed
 - ⚠️ **REMAINING:** Metric ordering (low impact)
 - ⚠️ **REMAINING:** Game over flow simplification (low impact)
@@ -72,15 +77,17 @@ The Tools screen design consistency issue has been completely resolved. All visu
 
 ### Visual Identity Comparison
 
-| Design Element | Main Metrics Screen | Game Screen | **Tools Screen** | Status |
-|---------------|---------------------|-------------|------------------|--------|
-| **Background** | Dark (#0a0a0a) + cyan grid | Dark (#0a0a0a) + cyan grid | **Purple gradient** | ❌ FAIL |
-| **Primary Color** | Cyan (#00ffff) | Cyan (#00ffff) | **Purple (#667eea)** | ❌ FAIL |
-| **Card Style** | Dark semi-transparent + cyan border + glow | Dark + cyan border | **White + light shadow** | ❌ FAIL |
-| **Text Color** | Cyan (#00ffff) | Cyan (#00ffff) | **Gray (#333, #555)** | ❌ FAIL |
-| **Button Style** | Transparent + cyan border + glow | Transparent + cyan border + glow | **Solid purple (#667eea)** | ❌ FAIL |
-| **Typography** | Orbitron/Rajdhani + glowing shadows | Orbitron/Rajdhani + glowing shadows | **Default + subtle shadow** | ❌ FAIL |
-| **Aesthetic** | TRON cyberpunk | TRON cyberpunk | **Material Design** | ❌ FAIL |
+
+| Design Element    | Main Metrics Screen                        | Game Screen                         | **Tools Screen**            | Status |
+| ----------------- | ------------------------------------------ | ----------------------------------- | --------------------------- | ------ |
+| **Background**    | Dark (#0a0a0a) + cyan grid                 | Dark (#0a0a0a) + cyan grid          | **Purple gradient**         | ❌ FAIL |
+| **Primary Color** | Cyan (#00ffff)                             | Cyan (#00ffff)                      | **Purple (#667eea)**        | ❌ FAIL |
+| **Card Style**    | Dark semi-transparent + cyan border + glow | Dark + cyan border                  | **White + light shadow**    | ❌ FAIL |
+| **Text Color**    | Cyan (#00ffff)                             | Cyan (#00ffff)                      | **Gray (#333, #555)**       | ❌ FAIL |
+| **Button Style**  | Transparent + cyan border + glow           | Transparent + cyan border + glow    | **Solid purple (#667eea)**  | ❌ FAIL |
+| **Typography**    | Orbitron/Rajdhani + glowing shadows        | Orbitron/Rajdhani + glowing shadows | **Default + subtle shadow** | ❌ FAIL |
+| **Aesthetic**     | TRON cyberpunk                             | TRON cyberpunk                      | **Material Design**         | ❌ FAIL |
+
 
 ### User Impact
 
@@ -104,11 +111,13 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ### File: `Tools.css` - FULL REWRITE REQUIRED
 
 **Current Issues:**
+
 - Line 3: Purple gradient background instead of dark + cyan grid
 - Lines 21-25: Missing TRON typography (Orbitron, text-shadow, letter-spacing)
 - Lines 40-59: Buttons use solid purple fill instead of transparent cyan outline
 
 **Required Changes:**
+
 ```css
 .tools-page {
   min-height: 100vh;
@@ -188,6 +197,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ### File: `MintRedeemAnalyser.css` - FULL REWRITE REQUIRED
 
 **Current Issues:**
+
 - Lines 1-7: White card background instead of dark with cyan borders
 - Lines 18-22: Gray text without TRON typography
 - Lines 59-69: Solid purple button instead of transparent cyan outline
@@ -196,6 +206,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 **Required Changes:**
 
 #### Card Container
+
 ```css
 .mint-redeem-analyser {
   background: rgba(10, 10, 20, 0.95);
@@ -210,6 +221,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ```
 
 #### Header
+
 ```css
 .analyser-header {
   display: flex;
@@ -234,6 +246,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ```
 
 #### Form Controls
+
 ```css
 .analyser-controls label {
   display: flex;
@@ -272,6 +285,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ```
 
 #### Data Table
+
 ```css
 .transactions-table {
   width: 100%;
@@ -379,10 +393,12 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## ✅ RESOLVED: Critical Accessibility Issues
 
 ### ✅ Issue 1: Tooltip Accessibility - FULLY FIXED
+
 **Location:** `App.tsx` lines 213-220, 248-255  
 **Status:** ✅ RESOLVED
 
 **What Was Fixed:**
+
 - ✅ Added `role="button"` for semantic meaning
 - ✅ Added `tabIndex={0}` for keyboard navigation
 - ✅ Added `aria-expanded` for screen reader state
@@ -393,6 +409,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 - ✅ Added visible focus outline (index.css lines 401-404)
 
 **WCAG Compliance:**
+
 - ✅ 1.4.13 Content on Hover or Focus - PASS
 - ✅ 2.1.1 Keyboard - PASS
 - ✅ 2.5.5 Target Size (Level AAA) - PASS
@@ -402,10 +419,12 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### ✅ Issue 2: Animated GIF Motion Control - FULLY FIXED
+
 **Location:** `index.css` lines 535-537  
 **Status:** ✅ RESOLVED
 
 **What Was Fixed:**
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .header-gif {
@@ -415,6 +434,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ```
 
 **WCAG Compliance:**
+
 - ✅ 2.2.2 Pause, Stop, Hide - PASS
 
 **Impact:** Respects user motion preferences! ♿
@@ -422,10 +442,12 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### ✅ Issue 3: Refresh Button Loading Feedback - FULLY FIXED
+
 **Location:** `App.tsx` lines 1022-1026, `index.css` lines 517-527  
 **Status:** ✅ RESOLVED
 
 **What Was Fixed:**
+
 - ✅ Added visual loading spinner icon (`.refresh-spinner`)
 - ✅ Added `aria-busy={refreshingMetrics.size > 0}`
 - ✅ Added `aria-live="polite"` region
@@ -433,6 +455,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 - ✅ Added `prefers-reduced-motion` support for spinner
 
 **WCAG Compliance:**
+
 - ✅ 4.1.3 Status Messages - PASS
 
 **Impact:** Loading states now universally clear! 🔄
@@ -442,10 +465,12 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## ✅ RESOLVED: Medium Priority Issues
 
 ### ✅ Issue 4: Label Consistency - FULLY FIXED
+
 **Location:** `App.tsx` line 966  
 **Status:** ✅ RESOLVED
 
 **What Was Fixed:**
+
 ```typescript
 // Before: label="STAKED USDRIF IN USD VAULT"  ❌
 // After:  label="Staked USDRIF in USD Vault"  ✅
@@ -456,10 +481,12 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### ✅ Issue 5: Heading Ellipsis - FULLY FIXED
+
 **Location:** `App.tsx` line 879  
 **Status:** ✅ RESOLVED
 
 **What Was Fixed:**
+
 ```typescript
 // Before: <h1>PUT RIF TO WORK...</h1>  ❌
 // After:  <h1>PUT RIF TO WORK</h1>      ✅
@@ -472,11 +499,13 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 🟡 Remaining Minor Issues
 
 ### Issue 6: Metric Ordering - Information Architecture
+
 **Location:** `App.tsx` lines 959-1013  
 **Severity:** LOW (Minor optimization)  
 **Status:** ⚠️ NOT ADDRESSED
 
 **Current Order:**
+
 1. Staked RIF in Collective
 2. **Staked USDRIF in USD Vault** ← Position 2
 3. RIFPRO Total Supply
@@ -488,6 +517,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 **Minor Issue:** Metric #2 could be grouped more logically with other vault metrics
 
 **Optional Improvement:**
+
 1. Staked RIF in Collective
 2. RIFPRO Total Supply
 3. USDRIF Minted
@@ -503,11 +533,13 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### Issue 7: Game Over Flow - Cognitive Load
+
 **Location:** `LightCycleGame.tsx` lines 434-479  
 **Severity:** LOW (Minor optimization)  
 **Status:** ⚠️ NOT ADDRESSED
 
 **Current State:** Game over screen shows all actions simultaneously:
+
 - Name input field (always visible)
 - Submit Score button
 - Play Again button
@@ -515,6 +547,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 **Minor Issue:** Slight Hick's Law consideration - multiple choices presented at once
 
 **Optional Improvement:**
+
 - Use progressive disclosure: Show "Play Again" prominently
 - Add secondary "Submit to Leaderboard" button that reveals name input
 - Only show input field after user indicates intent to submit
@@ -524,11 +557,13 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### Issue 8: Color Contrast - Verification Needed
+
 **Location:** `index.css` line 544  
 **Severity:** LOW (Needs testing)  
 **Status:** ⚠️ NOT VERIFIED
 
 **Current:**
+
 ```css
 .info {
   color: #00ffff;
@@ -537,6 +572,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ```
 
 **Action Needed:**
+
 - Test with WebAIM Contrast Checker
 - Target: minimum 4.5:1 for WCAG AA compliance
 
@@ -545,6 +581,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### Issue 9: Metric Graph Positioning
+
 **Location:** Current implementation in `index.css` lines 427-444  
 **Severity:** VERY LOW  
 **Status:** ⚠️ ACCEPTABLE AS-IS
@@ -573,6 +610,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 🎯 Updated Action Plan
 
 ### ✅ Phase 1: Tools Screen Emergency Fix - COMPLETED
+
 **Status:** ✅ FULLY RESOLVED
 
 1. ✅ Rewritten `Tools.css` - Matches dark + cyan grid background
@@ -583,36 +621,39 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ---
 
 ### ✅ Phase 2: Critical Accessibility - COMPLETED
+
 **Status:** ✅ FULLY RESOLVED
 
-3. ✅ Added keyboard/touch support to tooltips
-4. ✅ Increased help icon touch targets to 44x44px
-5. ✅ Added ARIA attributes (role, aria-expanded, aria-label)
-6. ✅ Implemented click/tap toggle for mobile
+1. ✅ Added keyboard/touch support to tooltips
+2. ✅ Increased help icon touch targets to 44x44px
+3. ✅ Added ARIA attributes (role, aria-expanded, aria-label)
+4. ✅ Implemented click/tap toggle for mobile
 
 **Result:** Application now WCAG 2.1 Level AA compliant! ♿
 
 ---
 
 ### ✅ Phase 3: UX Polish - MOSTLY COMPLETED
+
 **Status:** ✅ 5/5 RESOLVED
 
-7. ✅ Fixed label consistency (line 966: Title Case)
-8. ✅ Removed heading ellipsis (line 879: "PUT RIF TO WORK")
-9. ✅ Added `prefers-reduced-motion` support for GIF
-10. ✅ Added loading spinner to refresh button
-11. ⚠️ Color contrast - needs manual testing (likely passing)
+1. ✅ Fixed label consistency (line 966: Title Case)
+2. ✅ Removed heading ellipsis (line 879: "PUT RIF TO WORK")
+3. ✅ Added `prefers-reduced-motion` support for GIF
+4. ✅ Added loading spinner to refresh button
+5. ⚠️ Color contrast - needs manual testing (likely passing)
 
 **Result:** Professional polish achieved! ✨
 
 ---
 
 ### ⚠️ Phase 4: Optional Polish - REMAINING
+
 **Status:** ⚠️ OPTIONAL (Low Priority)
 
-12. ⚠️ Reorder metrics for optimal information grouping
-13. ⚠️ Consider progressive disclosure for game over flow
-14. ✅ Graph positioning acceptable as-is
+1. ⚠️ Reorder metrics for optimal information grouping
+2. ⚠️ Consider progressive disclosure for game over flow
+3. ✅ Graph positioning acceptable as-is
 
 **Priority:** LOW - These are minor optimizations, not blockers
 
@@ -620,14 +661,16 @@ The Tools screen design consistency issue has been completely resolved. All visu
 
 ## 📊 Accessibility Audit Summary
 
-| WCAG Criterion | Previous | Current | Status |
-|----------------|----------|---------|--------|
-| 1.4.13 Content on Hover or Focus | ❌ Fail | ✅ Pass | FIXED ✅ |
-| 2.1.1 Keyboard | ❌ Fail | ✅ Pass | FIXED ✅ |
-| 2.2.2 Pause, Stop, Hide | ❌ Fail | ✅ Pass | FIXED ✅ |
-| 2.5.5 Target Size (Level AAA) | ❌ Fail | ✅ Pass | FIXED ✅ |
-| 4.1.3 Status Messages | ❌ Fail | ✅ Pass | FIXED ✅ |
-| 1.4.3 Contrast | ⚠️ Needs testing | ⚠️ Needs testing | To verify |
+
+| WCAG Criterion                   | Previous         | Current          | Status    |
+| -------------------------------- | ---------------- | ---------------- | --------- |
+| 1.4.13 Content on Hover or Focus | ❌ Fail           | ✅ Pass           | FIXED ✅   |
+| 2.1.1 Keyboard                   | ❌ Fail           | ✅ Pass           | FIXED ✅   |
+| 2.2.2 Pause, Stop, Hide          | ❌ Fail           | ✅ Pass           | FIXED ✅   |
+| 2.5.5 Target Size (Level AAA)    | ❌ Fail           | ✅ Pass           | FIXED ✅   |
+| 4.1.3 Status Messages            | ❌ Fail           | ✅ Pass           | FIXED ✅   |
+| 1.4.3 Contrast                   | ⚠️ Needs testing | ⚠️ Needs testing | To verify |
+
 
 **Previous Accessibility Grade: D**  
 **Current Accessibility Grade: A- (Excellent)**
@@ -637,17 +680,20 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 🎨 Design System Reference
 
 ### Core Palette
+
 - **Background:** `#0a0a0a` (near black)
 - **Primary:** `#00ffff` (cyan)
 - **Accent:** `#ff0080` (pink, for errors)
 - **Surface:** `rgba(10, 10, 20, 0.95)` (dark semi-transparent)
 
 ### Typography
+
 - **Headers:** Orbitron, monospace, uppercase, letter-spacing: 2-3px
 - **Body:** Rajdhani, sans-serif, uppercase labels
 - **Code:** Rajdhani or Courier New, monospace
 
 ### Effects
+
 - **Glow:** `text-shadow: 0 0 10px rgba(0, 255, 255, 0.8)`
 - **Border:** `2px solid #00ffff`
 - **Box Shadow:** `0 0 20px rgba(0, 255, 255, 0.3)`
@@ -655,6 +701,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 - **Background:** Cyan grid pattern overlay
 
 ### Interactive Elements
+
 - **Buttons:** Transparent background, cyan border, glow on hover
 - **Links:** Cyan with glow effect on hover
 - **Form inputs:** Dark background, cyan border, glow on focus
@@ -675,6 +722,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ### Overall Progress: **Outstanding Achievement**
 
 **Improvement Summary:**
+
 - **Grade Improvement:** D+ → A-
 - **Issues Resolved:** 10 out of 10 critical/high priority
 - **Accessibility:** D → A- (WCAG 2.1 Level AA achieved)
@@ -685,12 +733,14 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ### What Was Accomplished:
 
 #### Design System ✅
+
 - Tools screen completely redesigned to match TRON aesthetic
 - Consistent cyan (#00ffff) color scheme across all screens
 - Unified typography (Orbitron/Rajdhani) with glowing effects
 - Cohesive dark theme with cyberpunk styling
 
 #### Accessibility ✅
+
 - Keyboard navigation for all interactive elements
 - Touch-friendly targets (44x44px minimum)
 - ARIA attributes for screen readers
@@ -698,6 +748,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 - Status announcements for loading states
 
 #### UX Polish ✅
+
 - Visual consistency in labels and headings
 - Clear loading feedback with spinner animation
 - Enhanced button states with proper feedback
@@ -708,6 +759,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ### Remaining Optional Improvements:
 
 #### Low Priority (Nice-to-Have):
+
 1. **Metric ordering optimization** - Minor information architecture improvement
 2. **Game over flow** - Could use progressive disclosure for cleaner hierarchy
 3. **Color contrast verification** - Manual testing recommended (likely passing)
@@ -719,14 +771,17 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 📈 Before & After Comparison
 
 ### Design Consistency
+
 - **Before:** 3 different design languages (TRON, TRON, Material Design)
 - **After:** Unified TRON cyberpunk aesthetic across all screens ✅
 
 ### Accessibility
+
 - **Before:** 5 WCAG failures, keyboard/touch excluded
 - **After:** WCAG 2.1 Level AA compliant ✅
 
 ### User Experience
+
 - **Before:** Confusing navigation, poor feedback, accessibility barriers
 - **After:** Intuitive, consistent, accessible to all users ✅
 
@@ -735,12 +790,14 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 🏆 Recommendations for Production
 
 ### Ready to Ship: ✅
+
 - All critical UX issues resolved
 - Accessibility standards met
 - Design consistency achieved
 - Loading states properly implemented
 
 ### Optional Pre-Launch Polish:
+
 1. Run contrast checker on secondary text (5 minutes)
 2. Consider metric reordering for optimal scannability (15 minutes)
 3. User test game over flow for friction points (optional)
@@ -750,6 +807,7 @@ The Tools screen design consistency issue has been completely resolved. All visu
 ## 📝 Next Review Triggers
 
 **Monitor for UX review when:**
+
 - New screens or components added
 - Major feature changes
 - User feedback indicates confusion
@@ -785,15 +843,18 @@ The progress bar implementation is **exemplary UX work** that demonstrates sophi
 ## ✅ **What Was Implemented**
 
 ### **Feature: Multi-Phase Progress Tracking**
+
 **Files:** `MintRedeemAnalyser.tsx` (lines 130, 313, 378, 450, 588, 621, 639, 696, 707, 905, 913)
 
 **Implementation Details:**
+
 - State tracking: `{ current: number; total: number; phase: string }`
 - 4-phase progress system (0-25%, 25-50%, 50-75%, 75-100%)
 - Real-time updates during batch operations
 - Graceful completion with 500ms delay before clearing
 
 **Visual Presentation:**
+
 - Two implementations: Inline (next to controls) + Full (center screen)
 - Animated progress fill with gradient and pulse effect
 - Percentage display + phase description
@@ -810,21 +871,26 @@ The progress bar implementation is **exemplary UX work** that demonstrates sophi
 **Strengths:**
 
 ✅ **Color Gradient** (line 201)
+
 ```css
 background: linear-gradient(90deg, #00ffff, #00ff88);
 ```
+
 - Cyan → green-cyan gradient creates sense of forward motion
 - Matches TRON aesthetic perfectly
 - Visually interesting without being distracting
 
 ✅ **Glowing Effect** (line 202)
+
 ```css
 box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 ```
+
 - Consistent with app's glowing aesthetic
 - Makes progress bar feel "alive" and active
 
 ✅ **Pulse Animation** (lines 207-214)
+
 ```css
 animation: pulse 2s ease-in-out infinite;
 @keyframes pulse {
@@ -832,14 +898,17 @@ animation: pulse 2s ease-in-out infinite;
   50% { opacity: 0.7; }
 }
 ```
+
 - Subtle breathing effect communicates activity
 - 2-second duration is ideal (not too fast/slow)
 - Reinforces "something is happening"
 
 ✅ **Smooth Transitions** (line 203)
+
 ```css
 transition: width 0.3s ease;
 ```
+
 - Progress advances smoothly, not jerkily
 - 300ms is perfect timing (not too slow/fast)
 
@@ -852,6 +921,7 @@ transition: width 0.3s ease;
 **Location:** `MintRedeemAnalyser.tsx` lines 313, 378, 450, 588, 621, 639, 696, 707
 
 **Four-Phase Breakdown:**
+
 1. **0-25%:** Fetching MoC events (lines 313, 378)
 2. **25-50%:** Fetching block timestamps (lines 450, 588)
 3. **50-75%:** Fetching transaction details (lines 621, 639)
@@ -860,6 +930,7 @@ transition: width 0.3s ease;
 **Why This Is Excellent:**
 
 ✅ **Clear Phase Labels**
+
 ```typescript
 phase: 'Fetching MoC events... (15/50)'
 phase: 'Fetching block timestamps... (100/250 blocks)'
@@ -868,21 +939,25 @@ phase: 'Processing transactions... (40/80)'
 ```
 
 **Strengths:**
+
 - User understands **what** is happening at each stage
 - User sees **progress within each phase** (current/total)
 - Builds trust (system isn't frozen, it's working)
 - Manages expectations (this takes time, but it's moving forward)
 
 ✅ **Equal Weight Distribution**
+
 - Each phase = 25% of progress bar
 - Prevents "stuck at 99%" syndrome
 - Matches actual operation complexity
 
 ✅ **Granular Updates**
+
 ```typescript
 // Update every 10 transactions
 if (processedCount % 10 === 0 || processedCount === allEvents.length)
 ```
+
 - Not every iteration (would cause performance issues)
 - Not too infrequent (would feel stuck)
 - 10-item batches are optimal for perceived progress
@@ -896,16 +971,19 @@ if (processedCount % 10 === 0 || processedCount === allEvents.length)
 **Location:** Lines 1031, 1054
 
 ✅ **ARIA Attributes Present**
+
 ```typescript
 <div className="inline-progress" role="status" aria-live="polite">
 ```
 
 **Why This Matters:**
+
 - `role="status"` - Identifies as status indicator
 - `aria-live="polite"` - Screen readers announce updates without interrupting
 - Screen reader users get progress updates verbally
 
 ✅ **Semantic HTML**
+
 - Progress percentage in text (not just visual bar)
 - Phase description always visible
 - Works without CSS/visual rendering
@@ -919,12 +997,14 @@ if (processedCount % 10 === 0 || processedCount === allEvents.length)
 **Two Implementations:**
 
 **A) Inline Progress (lines 1030-1042)**
+
 - Appears next to Refresh button when data already exists
 - Compact (6px height)
 - Shows percentage only
 - Minimal space consumption
 
 **B) Full Progress (lines 1053-1077)**
+
 - Appears in center when no data exists (first load)
 - Larger (8px height)
 - Shows percentage + phase description
@@ -933,10 +1013,12 @@ if (processedCount % 10 === 0 || processedCount === allEvents.length)
 **Why This Works:**
 
 ✅ **Context-Appropriate Display**
+
 - Initial load = full screen attention (no data to look at anyway)
 - Refresh = compact inline (user can still see existing data)
 
 ✅ **Follows Fitts's Law**
+
 - When user needs info (first load), it's large and central
 - When user has context (refresh), it's subtle and non-intrusive
 
@@ -951,6 +1033,7 @@ if (processedCount % 10 === 0 || processedCount === allEvents.length)
 **Location:** `MintRedeemAnalyser.css` lines 57, 191
 
 **Current State:**
+
 - Inline progress bar: `height: 6px` (line 57)
 - Full progress bar: `height: 8px` (line 191)
 
@@ -959,6 +1042,7 @@ This is actually **intentional and good** (inline = smaller, full = more promine
 
 **Minor Refinement Option:**
 Consider using consistent height (8px for both) with opacity/scale differences instead:
+
 ```css
 .inline-progress .loading-progress-bar {
   height: 8px;  /* Match full version */
@@ -982,6 +1066,7 @@ if (processedCount % 10 === 0 || processedCount === allEvents.length)
 **Observation:** Good for small datasets, may feel slow for 1000+ items
 
 **Adaptive Update Pattern (Optional):**
+
 ```typescript
 // Update more frequently for small datasets, less for large
 const updateInterval = allEvents.length > 100 ? 20 : 10
@@ -1001,6 +1086,7 @@ setTimeout(() => setLoadingProgress(null), 500)
 ```
 
 **Current Behavior:**
+
 - Progress reaches 100%
 - Waits 500ms
 - Clears progress bar
@@ -1012,6 +1098,7 @@ setTimeout(() => setLoadingProgress(null), 500)
 Add visual "success flash" at 100%:
 
 **File:** `MintRedeemAnalyser.css` (add new class)
+
 ```css
 .loading-progress-fill.complete {
   background: linear-gradient(90deg, #00ff88, #00ffff);
@@ -1027,6 +1114,7 @@ Add visual "success flash" at 100%:
 ```
 
 **File:** `MintRedeemAnalyser.tsx` line 1063
+
 ```typescript
 <div 
   className={`loading-progress-fill ${loadingProgress.current === 100 ? 'complete' : ''}`}
@@ -1047,6 +1135,7 @@ Add visual "success flash" at 100%:
 ```
 
 **Current Display:**
+
 ```
 75% - Fetching transaction details... (20/100)
 ```
@@ -1055,6 +1144,7 @@ Add visual "success flash" at 100%:
 
 **Minor Polish Option:**
 Move phase text above progress bar for consistent layout:
+
 ```typescript
 <div className="loading-progress">
   {loadingProgress.phase && (
@@ -1074,6 +1164,7 @@ Move phase text above progress bar for consistent layout:
 **Location:** `MintRedeemAnalyser.css` lines 55-63 (inline progress)
 
 **Current:**
+
 ```css
 .inline-progress .loading-progress-bar {
   min-width: 100px;  /* May be cramped on small mobile */
@@ -1084,6 +1175,7 @@ Move phase text above progress bar for consistent layout:
 On phones <375px width, 100px progress bar + percentage text may wrap awkwardly.
 
 **Responsive Enhancement:**
+
 ```css
 @media (max-width: 375px) {
   .inline-progress {
@@ -1110,12 +1202,14 @@ On phones <375px width, 100px progress bar + percentage text may wrap awkwardly.
 ## 🏆 **Standout UX Moments**
 
 ### **1. Phase Descriptions with Counts**
+
 ```typescript
 `Fetching MoC events... (15/50)`
 `Fetching block timestamps... (100/250 blocks)`
 ```
 
 **Why This is Brilliant:**
+
 - Users see **both** overall progress (bar) and granular progress (count)
 - Creates perception of transparency and control
 - Reduces anxiety about "how much longer?"
@@ -1125,6 +1219,7 @@ On phones <375px width, 100px progress bar + percentage text may wrap awkwardly.
 ---
 
 ### **2. Completion Delay Pattern**
+
 ```typescript
 setLoadingProgress({ current: 100, total: 100, phase: 'Complete' })
 // ... later ...
@@ -1132,6 +1227,7 @@ setTimeout(() => setLoadingProgress(null), 500)
 ```
 
 **Why This Works:**
+
 - Shows 100% for 500ms (gives user satisfaction moment)
 - Prevents jarring disappearance
 - Feels polished and deliberate
@@ -1143,18 +1239,21 @@ setTimeout(() => setLoadingProgress(null), 500)
 ### **3. Context-Aware Dual Display**
 
 **Inline (when data exists):**
+
 ```typescript
 {loading && loadingProgress && (
   <div className="inline-progress">  /* Compact */
 ```
 
 **Full (when no data):**
+
 ```typescript
 {loading && transactions.length === 0 && (
   <div className="loading-message">  /* Prominent */
 ```
 
 **Why This is Smart:**
+
 - Doesn't block existing data when refreshing
 - Provides full attention when screen is empty
 - Adapts to user's information needs
@@ -1165,15 +1264,17 @@ setTimeout(() => setLoadingProgress(null), 500)
 
 ## 📊 **Progress Bar UX Scorecard**
 
-| Criterion | Score | Notes |
-|-----------|-------|-------|
-| Visual Design | A+ | Perfect TRON aesthetic, gradient, glow, animation |
-| Information Clarity | A+ | Phase labels + counts + percentage |
-| Accessibility | A+ | ARIA attributes, semantic HTML, screen reader friendly |
-| Performance Perception | A+ | Updates feel frequent enough without lag |
-| Context Awareness | A | Dual display pattern adapts to screen state |
-| Completion Feedback | A- | 500ms delay good, could add success flash |
-| Mobile Responsiveness | A- | Works well, minor edge case on very small screens |
+
+| Criterion              | Score | Notes                                                  |
+| ---------------------- | ----- | ------------------------------------------------------ |
+| Visual Design          | A+    | Perfect TRON aesthetic, gradient, glow, animation      |
+| Information Clarity    | A+    | Phase labels + counts + percentage                     |
+| Accessibility          | A+    | ARIA attributes, semantic HTML, screen reader friendly |
+| Performance Perception | A+    | Updates feel frequent enough without lag               |
+| Context Awareness      | A     | Dual display pattern adapts to screen state            |
+| Completion Feedback    | A-    | 500ms delay good, could add success flash              |
+| Mobile Responsiveness  | A-    | Works well, minor edge case on very small screens      |
+
 
 **Average Score: A+** (Exceptional implementation)
 
@@ -1182,6 +1283,7 @@ setTimeout(() => setLoadingProgress(null), 500)
 ## 📋 **Optional Enhancements (Not Required)**
 
 ### **Enhancement 1: Success Flash Animation**
+
 **Priority:** VERY LOW  
 **Effort:** 5 minutes  
 **Impact:** Satisfying completion moment
@@ -1193,6 +1295,7 @@ Add visual "success" effect when reaching 100%.
 ---
 
 ### **Enhancement 2: Mobile Progress Bar Stacking**
+
 **Priority:** VERY LOW  
 **Effort:** 5 minutes  
 **Impact:** Better display on phones <375px
@@ -1204,6 +1307,7 @@ Add responsive breakpoint to stack progress bar vertically.
 ---
 
 ### **Enhancement 3: Phase Label Positioning**
+
 **Priority:** VERY LOW  
 **Effort:** 3 minutes  
 **Impact:** More consistent text layout
@@ -1246,6 +1350,7 @@ The optional enhancements would move it from A+ to A++, but the current implemen
 **With Progress Bar:** **A+ (Exceptional)**
 
 **Why Grade Increased:**
+
 - Progress indicators are often overlooked in web apps
 - This implementation shows attention to detail
 - Significantly improves user confidence during long operations
@@ -1256,16 +1361,13 @@ The optional enhancements would move it from A+ to A++, but the current implemen
 ## 🎯 **UX Principles Successfully Applied**
 
 1. ✅ **Visibility of System Status** (Nielsen Norman #1)
-   - Users always know what's happening
-   
+  - Users always know what's happening
 2. ✅ **Aesthetic and Minimalist Design** (Nielsen Norman #8)
-   - Progress info is relevant, not cluttered
-   
+  - Progress info is relevant, not cluttered
 3. ✅ **Help Users Recognize, Diagnose, Recover** (Nielsen Norman #9)
-   - If something takes long, users know why (phase descriptions)
-   
+  - If something takes long, users know why (phase descriptions)
 4. ✅ **Flexibility and Efficiency** (Nielsen Norman #7)
-   - Adapts display based on context
+  - Adapts display based on context
 
 ---
 
@@ -1274,17 +1376,20 @@ The optional enhancements would move it from A+ to A++, but the current implemen
 ### **Performance Optimization: Excellent**
 
 **Batch Update Strategy:**
+
 ```typescript
 // Update every 10 items during processing
 if (processedCount % 10 === 0 || processedCount === allEvents.length)
 ```
 
 **Why This Matters:**
+
 - Prevents excessive re-renders (React performance)
 - Still feels responsive to users
 - Balance between accuracy and performance
 
 ### **State Management: Clean**
+
 ```typescript
 const [loadingProgress, setLoadingProgress] = useState<{ 
   current: number; 
@@ -1294,6 +1399,7 @@ const [loadingProgress, setLoadingProgress] = useState<{
 ```
 
 **Good Practices:**
+
 - Nullable type (null when not loading)
 - Structured object (not just percentage)
 - Includes phase description for richer feedback
@@ -1321,9 +1427,11 @@ The recent commits have successfully addressed **100% of critical UX issues** id
 ## 🎨 **Design Consistency: Perfect Alignment Achieved**
 
 ### ✅ **Tools Page - Complete TRON Aesthetic**
+
 **Files:** `Tools.css`, `MintRedeemAnalyser.css`
 
 **What Was Implemented:**
+
 1. ✅ Dark background (#0a0a0a) with cyan grid pattern
 2. ✅ Orbitron/Rajdhani typography with glowing text shadows
 3. ✅ Cyan color scheme (#00ffff) throughout
@@ -1339,11 +1447,13 @@ The recent commits have successfully addressed **100% of critical UX issues** id
 ## 🎯 **New Features - UX Review**
 
 ### 1. **Filter Toggle Buttons - Excellent Implementation**
+
 **Location:** `MintRedeemAnalyser.css` lines 194-219
 
 **Design Quality: A+**
 
 **Strengths:**
+
 - ✅ Clear active state with increased background opacity (0.2 vs 0.1)
 - ✅ Visual hierarchy: active buttons stand out with brighter glow
 - ✅ Consistent with button design language (transparent → filled on interaction)
@@ -1351,6 +1461,7 @@ The recent commits have successfully addressed **100% of critical UX issues** id
 - ✅ Touch-friendly spacing (10px gap between buttons)
 
 **Interaction Pattern:**
+
 ```css
 .filter-button.active {
   background: rgba(0, 255, 255, 0.2);  /* Subtle fill */
@@ -1362,6 +1473,7 @@ The recent commits have successfully addressed **100% of critical UX issues** id
 **User Feedback:** Immediate visual confirmation of selection
 
 **Accessibility:**
+
 - ✅ Clear visual distinction between active/inactive
 - ⚠️ Missing `aria-pressed` attribute (minor)
 - ✅ Sufficient contrast ratio
@@ -1369,6 +1481,7 @@ The recent commits have successfully addressed **100% of critical UX issues** id
 
 **Minor Recommendation:**
 Add `aria-pressed="true"` to active filter buttons for screen reader users:
+
 ```typescript
 aria-pressed={tokenFilter === 'USDRIF'}
 ```
@@ -1376,11 +1489,13 @@ aria-pressed={tokenFilter === 'USDRIF'}
 ---
 
 ### 2. **Export to Excel Button - Well Positioned**
+
 **Location:** `MintRedeemAnalyser.css` lines 165-198
 
 **Design Quality: A**
 
 **Strengths:**
+
 - ✅ Positioned at top-right (follows Fitts's Law for utility actions)
 - ✅ `margin-left: auto` ensures consistent positioning
 - ✅ Disabled state properly styled
@@ -1396,11 +1511,13 @@ Consider adding icon before text: "⬇ Export to Excel" for improved scannabilit
 ---
 
 ### 3. **Table Layout Optimization**
+
 **Location:** `MintRedeemAnalyser.tsx` lines 1030-1085
 
 **Design Quality: A-**
 
 **Strengths:**
+
 - ✅ Simplified from 11 columns → 7 columns (reduced cognitive load!)
 - ✅ Most important data visible at once
 - ✅ Timestamp as clickable link (great discovery - users can click time to see full transaction)
@@ -1409,10 +1526,14 @@ Consider adding icon before text: "⬇ Export to Excel" for improved scannabilit
 - ✅ Sticky header for long lists (position: sticky)
 
 **Table Structure:**
+
+
 | Time (UTC) | Status | Asset | Type | Amount | Receiver | Block # |
-|------------|--------|-------|------|--------|----------|---------|
+| ---------- | ------ | ----- | ---- | ------ | -------- | ------- |
+
 
 **UX Improvements Over Previous Version:**
+
 - Removed redundant columns (amountSentReceived, returned, valueReturned, tokenReturned)
 - Focused on user-critical data only
 - Easier to scan and understand
@@ -1422,17 +1543,20 @@ Table requires 1200px minimum width - may feel cramped on tablets (768-1024px)
 
 **Optional Recommendation:**
 Consider responsive breakpoint at 1024px to show fewer columns on tablets:
+
 - Hide "Status" column (always Success anyway)
 - Hide "Asset" column if filtered by token type
 
 ---
 
 ### 4. **Navigation Enhancement - Multi-Link Header**
+
 **Location:** `App.tsx` lines 890-893, `index.css` lines 138-168
 
 **Design Quality: A**
 
 **Change:**
+
 ```typescript
 // Before: Single game link
 <Link to="/game">Play Light Cycle →</Link>
@@ -1445,6 +1569,7 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 ```
 
 **Strengths:**
+
 - ✅ Grouped navigation actions in flex container
 - ✅ Consistent styling for both links
 - ✅ Clear hierarchy (both buttons equal prominence)
@@ -1452,6 +1577,7 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 
 **Minor Observation:**
 "Tools" label is generic. Consider more descriptive text like:
+
 - "Analytics Tools"
 - "Mint/Redeem Tracker"
 - "Transaction Tools"
@@ -1461,16 +1587,19 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 ---
 
 ### 5. **Summary Statistics - Clear Data Visualization**
+
 **Location:** `MintRedeemAnalyser.tsx` lines 1087-1095
 
 **Design Quality: A**
 
 **Implementation:**
+
 ```typescript
 <p>Total Transactions: {filteredTransactions.length} {tokenFilter !== 'All' && `(filtered from ${transactions.length})`}</p>
 ```
 
 **Strengths:**
+
 - ✅ Shows filtered vs total count when filter active
 - ✅ Breaks down by Mint/Redeem
 - ✅ Shows Asset breakdown when "All" selected
@@ -1483,17 +1612,21 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 ## 🟢 **Outstanding Improvements Noted**
 
 ### 1. **Table Column Simplification**
+
 **Before:** 11 columns with redundant data  
 **After:** 7 focused columns  
 **Impact:** Reduced visual noise by ~36%, improved scannability
 
 ### 2. **Timestamp as Primary Link**
+
 **Before:** Separate Hash column with truncated value  
 **After:** Timestamp becomes clickable link to transaction  
 **Impact:** More intuitive (users scan by time first), saves horizontal space
 
 ### 3. **Active State Design**
+
 **Implementation:** Filter buttons use progressive opacity levels
+
 - Inactive: `rgba(0, 255, 255, 0.0)` (transparent)
 - Hover: `rgba(0, 255, 255, 0.1)` (subtle)
 - Active: `rgba(0, 255, 255, 0.2)` (prominent)
@@ -1505,10 +1638,12 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 ## 🟡 **Minor Observations (Low Priority)**
 
 ### Issue 1: Filter Button Active State - ARIA Missing
+
 **Location:** `MintRedeemAnalyser.tsx` lines 989-1007  
 **Severity:** LOW (Accessibility enhancement)
 
 **Current Implementation:**
+
 ```typescript
 <button
   className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
@@ -1520,6 +1655,7 @@ Consider responsive breakpoint at 1024px to show fewer columns on tablets:
 
 **Enhancement:**
 Add `aria-pressed` attribute for screen readers:
+
 ```typescript
 <button
   className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
@@ -1535,6 +1671,7 @@ Add `aria-pressed` attribute for screen readers:
 ---
 
 ### Issue 2: Export Button - Missing Icon
+
 **Location:** `MintRedeemAnalyser.tsx` line 1016  
 **Severity:** VERY LOW (Visual enhancement)
 
@@ -1542,6 +1679,7 @@ Add `aria-pressed` attribute for screen readers:
 **Optional:** Add download icon for improved scannability
 
 **Suggestion:**
+
 ```typescript
 Export to Excel ⬇
 // or
@@ -1553,12 +1691,14 @@ Export to Excel ⬇
 ---
 
 ### Issue 3: Table Header Tooltip - Missing Explanations
+
 **Location:** `MintRedeemAnalyser.tsx` lines 1033-1040  
 **Severity:** LOW (Usability enhancement)
 
 **Observation:** Column headers lack tooltips explaining what data means
 
 **Potential Confusion:**
+
 - "Asset" - Is this the collateral or the minted token?
 - "Amount" - Amount of what? (Answer: Minted/Redeemed token)
 - "Receiver" - Who is this? (Actual end user, not contract)
@@ -1571,10 +1711,12 @@ Add help icons with tooltips for ambiguous columns (similar to metric cards)
 ---
 
 ### Issue 4: Loading State During Refresh
+
 **Location:** `MintRedeemAnalyser.tsx` lines 963-967  
 **Severity:** VERY LOW
 
 **Current Behavior:**
+
 ```typescript
 <button onClick={fetchTransactions} disabled={loading}>
   {loading ? 'Loading...' : 'Refresh'}
@@ -1585,6 +1727,7 @@ Add help icons with tooltips for ambiguous columns (similar to metric cards)
 
 **Optional Enhancement:**
 Add spinner icon like the main refresh button:
+
 ```typescript
 {loading && <span className="refresh-spinner"></span>}
 {loading ? 'Loading...' : 'Refresh'}
@@ -1595,6 +1738,7 @@ Add spinner icon like the main refresh button:
 ---
 
 ### Issue 5: Tools Link Label - Generic
+
 **Location:** `App.tsx` line 891  
 **Severity:** VERY LOW (Information scent)
 
@@ -1602,6 +1746,7 @@ Add spinner icon like the main refresh button:
 **Consideration:** Generic label doesn't communicate purpose
 
 **Optional Alternatives:**
+
 - "Analytics" (shorter, clearer)
 - "Transactions" (specific to content)
 - "Mint/Redeem Tracker" (descriptive but long)
@@ -1611,10 +1756,12 @@ Add spinner icon like the main refresh button:
 ---
 
 ### Issue 6: Empty State for Filtered Results
+
 **Location:** `MintRedeemAnalyser.tsx` line 1027  
 **Severity:** VERY LOW
 
 **Current:**
+
 ```typescript
 <div className="no-data">
   No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
@@ -1625,6 +1772,7 @@ Add spinner icon like the main refresh button:
 **Enhancement Opportunity:** Suggest action to user
 
 **Optional Improvement:**
+
 ```typescript
 No {tokenFilter} transactions found. Try selecting a different time period or filter.
 ```
@@ -1637,19 +1785,22 @@ No {tokenFilter} transactions found. Try selecting a different time period or fi
 
 ### Column Design Analysis:
 
-| Column | Width Need | Truncation | Link | Status |
-|--------|-----------|------------|------|--------|
-| Time (UTC) | 20 chars | No | Yes (to TX) | ✅ Excellent |
-| Status | 7 chars | No | No | ✅ Good |
-| Asset | 7 chars | No | No | ✅ Good |
-| Type | 6 chars | No | No | ✅ Good (color coded) |
-| Amount | Variable | Yes (title attr) | No | ✅ Good |
-| Receiver | 20 chars | Yes | Yes (to address) | ✅ Good |
-| Block # | 8 digits | No | Yes (to block) | ✅ Good |
+
+| Column     | Width Need | Truncation       | Link             | Status               |
+| ---------- | ---------- | ---------------- | ---------------- | -------------------- |
+| Time (UTC) | 20 chars   | No               | Yes (to TX)      | ✅ Excellent          |
+| Status     | 7 chars    | No               | No               | ✅ Good               |
+| Asset      | 7 chars    | No               | No               | ✅ Good               |
+| Type       | 6 chars    | No               | No               | ✅ Good (color coded) |
+| Amount     | Variable   | Yes (title attr) | No               | ✅ Good               |
+| Receiver   | 20 chars   | Yes              | Yes (to address) | ✅ Good               |
+| Block #    | 8 digits   | No               | Yes (to block)   | ✅ Good               |
+
 
 **Overall Table UX: A**
 
 **Strengths:**
+
 - Clear visual hierarchy
 - Important data prioritized
 - All links functional and accessible
@@ -1661,15 +1812,19 @@ No {tokenFilter} transactions found. Try selecting a different time period or fi
 ## 🎯 **Commit-by-Commit UX Impact**
 
 ### Commit: "Enhance RPC call logic..." (0358002, e85ca15)
+
 **UX Impact:** Neutral (backend improvements, no user-facing changes)
 
 ### Commit: "Refactor MintRedeemAnalyser..." (8909a9b)
+
 **UX Impact:** Positive - Improved data accuracy benefits user trust
 
 ### Commit: "Refactor middleware..." (c72ef7c)
+
 **UX Impact:** Positive - Simplified architecture improves reliability
 
 ### Commit: "Add client version outdated handling" (6053b50)
+
 **UX Impact:** Positive - Users get clear messaging when client is stale
 
 **Note:** Outdated client warning is a good pattern (preventing bad data display)
@@ -1690,6 +1845,7 @@ All UX concerns from initial review have been resolved. The recent commits demon
 6. ✅ **Information architecture** - Simplified table, progressive disclosure
 
 ### **Remaining Items (All Optional):**
+
 - ⚠️ Add `aria-pressed` to filter toggle buttons (minor accessibility)
 - ⚠️ Consider more descriptive "Tools" link label (information scent)
 - ⚠️ Verify color contrast on `.info` class (likely passing)
@@ -1711,25 +1867,32 @@ All UX concerns from initial review have been resolved. The recent commits demon
 ## 🎊 **Standout Quality Moments**
 
 ### 1. **Filter Implementation**
+
 The token filter toggle is textbook UX:
+
 - Clear visual states
 - Immediate feedback
 - Affects both table and export
 - Shows filtered count with context
 
 ### 2. **Table Simplification**
+
 Reducing from 11 → 7 columns shows UX maturity:
+
 - Removed noise (redundant fields)
 - Kept essential data
 - Improved scannability
 
 ### 3. **Timestamp as Link**
+
 Making the timestamp clickable to view transaction details is clever:
+
 - Users naturally scan by time
 - Reduces horizontal space
 - One-click access to details
 
 ### 4. **Export Respects Filters**
+
 Export button exports exactly what user sees (filtered data) - this follows **principle of least surprise**
 
 ---
@@ -1741,6 +1904,7 @@ Export button exports exactly what user sees (filtered data) - this follows **pr
 All critical and high-priority items have been resolved.
 
 ### Optional Enhancements (Nice-to-Have):
+
 1. Add `aria-pressed` to filter buttons (5 minutes)
 2. Add loading spinner to "Refresh" button in MintRedeemAnalyser (10 minutes)
 3. Test `.info` class contrast ratio (5 minutes)
@@ -1753,18 +1917,20 @@ All critical and high-priority items have been resolved.
 
 ## ✅ **Production Readiness Checklist**
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| Design Consistency | ✅ Pass | Perfect alignment across all screens |
-| Accessibility (WCAG 2.1 AA) | ✅ Pass | All critical criteria met |
-| Keyboard Navigation | ✅ Pass | All interactive elements accessible |
-| Touch Device Support | ✅ Pass | 44px touch targets, responsive design |
-| Loading States | ✅ Pass | Clear feedback throughout |
-| Error Handling | ✅ Pass | User-friendly messages with recovery |
-| Mobile Responsive | ✅ Pass | Breakpoints implemented |
-| Motion Sensitivity | ✅ Pass | prefers-reduced-motion supported |
-| Brand Consistency | ✅ Pass | TRON aesthetic maintained |
-| Information Architecture | ✅ Pass | Logical grouping and hierarchy |
+
+| Criterion                   | Status | Notes                                 |
+| --------------------------- | ------ | ------------------------------------- |
+| Design Consistency          | ✅ Pass | Perfect alignment across all screens  |
+| Accessibility (WCAG 2.1 AA) | ✅ Pass | All critical criteria met             |
+| Keyboard Navigation         | ✅ Pass | All interactive elements accessible   |
+| Touch Device Support        | ✅ Pass | 44px touch targets, responsive design |
+| Loading States              | ✅ Pass | Clear feedback throughout             |
+| Error Handling              | ✅ Pass | User-friendly messages with recovery  |
+| Mobile Responsive           | ✅ Pass | Breakpoints implemented               |
+| Motion Sensitivity          | ✅ Pass | prefers-reduced-motion supported      |
+| Brand Consistency           | ✅ Pass | TRON aesthetic maintained             |
+| Information Architecture    | ✅ Pass | Logical grouping and hierarchy        |
+
 
 **Overall: 10/10 - APPROVED FOR PRODUCTION** 🚀
 
@@ -1793,6 +1959,7 @@ All critical and high-priority items have been resolved.
 **Impact:** Screen reader users get proper toggle state feedback
 
 ### Current State:
+
 **File:** `src/MintRedeemAnalyser.tsx` lines 989-1007
 
 ```typescript
@@ -1805,6 +1972,7 @@ All critical and high-priority items have been resolved.
 ```
 
 ### Required Change:
+
 Add `aria-pressed` attribute to communicate toggle state to assistive technologies.
 
 ### Implementation:
@@ -1812,6 +1980,7 @@ Add `aria-pressed` attribute to communicate toggle state to assistive technologi
 **File:** `src/MintRedeemAnalyser.tsx` lines 989-1007
 
 **Change all three filter buttons from:**
+
 ```typescript
 <button
   className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
@@ -1822,6 +1991,7 @@ Add `aria-pressed` attribute to communicate toggle state to assistive technologi
 ```
 
 **To:**
+
 ```typescript
 <button
   className={`filter-button ${tokenFilter === 'All' ? 'active' : ''}`}
@@ -1833,16 +2003,19 @@ Add `aria-pressed` attribute to communicate toggle state to assistive technologi
 ```
 
 **Apply to all three buttons:**
+
 1. Line 989-994: "All" button → `aria-pressed={tokenFilter === 'All'}`
 2. Line 995-1000: "USDRIF" button → `aria-pressed={tokenFilter === 'USDRIF'}`
 3. Line 1001-1006: "RifPro" button → `aria-pressed={tokenFilter === 'RifPro'}`
 
 ### Rationale:
+
 - WCAG 4.1.2 (Name, Role, Value) - toggle buttons should communicate their state
 - Screen readers will announce "All, toggle button, pressed" or "not pressed"
 - Zero visual change, pure accessibility enhancement
 
 ### Testing:
+
 - Tab to filter buttons using keyboard
 - Activate with Enter/Space
 - Use screen reader (VoiceOver on Mac, NVDA on Windows) to verify "pressed" state is announced
@@ -1856,6 +2029,7 @@ Add `aria-pressed` attribute to communicate toggle state to assistive technologi
 **Impact:** Consistent loading feedback across all refresh actions
 
 ### Current State:
+
 **File:** `src/MintRedeemAnalyser.tsx` lines 963-966
 
 ```typescript
@@ -1865,9 +2039,11 @@ Add `aria-pressed` attribute to communicate toggle state to assistive technologi
 ```
 
 ### Issue:
+
 Main app refresh button has a spinner (App.tsx line 1025), but MintRedeemAnalyser refresh button only changes text.
 
 ### Required Change:
+
 Add same spinner pattern used in main refresh button.
 
 ### Implementation:
@@ -1875,6 +2051,7 @@ Add same spinner pattern used in main refresh button.
 **File:** `src/MintRedeemAnalyser.tsx` lines 963-966
 
 **Change from:**
+
 ```typescript
 <button onClick={fetchTransactions} disabled={loading}>
   {loading ? 'Loading...' : 'Refresh'}
@@ -1882,6 +2059,7 @@ Add same spinner pattern used in main refresh button.
 ```
 
 **To:**
+
 ```typescript
 <button 
   onClick={fetchTransactions} 
@@ -1894,15 +2072,18 @@ Add same spinner pattern used in main refresh button.
 ```
 
 ### Additional Changes Needed:
+
 **None!** The CSS for `.refresh-spinner` is already defined in `src/index.css` lines 517-527 and will work automatically.
 
 ### Rationale:
+
 - Visual consistency with main refresh button
 - Reinforces loading state with animation
 - `aria-busy` attribute helps screen readers
 - Uses existing CSS (no new styles needed)
 
 ### Testing:
+
 - Click Refresh button in Tools screen
 - Verify spinner appears to left of "Loading..." text
 - Verify spinner matches main app refresh spinner style
@@ -1918,17 +2099,22 @@ Add same spinner pattern used in main refresh button.
 ### Elements to Test:
 
 #### 1. `.info` class (Auto-refresh text)
+
 **File:** `src/index.css` lines 540-546
+
 ```css
 .info {
   color: #00ffff;  /* Cyan */
   opacity: 0.6;    /* TEST THIS */
 }
 ```
+
 **Background:** `#0a0a0a` (near black)
 
 #### 2. `.subtitle` class (Page subtitle)
+
 **File:** `src/index.css` lines 97-103
+
 ```css
 .subtitle {
   color: #00ffff;
@@ -1937,7 +2123,9 @@ Add same spinner pattern used in main refresh button.
 ```
 
 #### 3. `.last-updated` class (Timestamp)
+
 **File:** `src/index.css` lines 211-216
+
 ```css
 .last-updated {
   color: #00ffff;
@@ -1946,7 +2134,9 @@ Add same spinner pattern used in main refresh button.
 ```
 
 #### 4. `.metric-graph-placeholder` (Collecting data text)
+
 **File:** `src/index.css` lines 456-466
+
 ```css
 .metric-graph-placeholder {
   color: rgba(0, 255, 255, 0.5);  /* TEST THIS - even lower opacity */
@@ -1957,6 +2147,7 @@ Add same spinner pattern used in main refresh button.
 ### Testing Method:
 
 **Option 1: Browser DevTools (Recommended)**
+
 1. Open app in Chrome/Edge
 2. Right-click element → Inspect
 3. Open DevTools → Lighthouse tab
@@ -1964,10 +2155,11 @@ Add same spinner pattern used in main refresh button.
 5. Check "Contrast" section for failures
 
 **Option 2: WebAIM Contrast Checker (Manual)**
-1. Go to https://webaim.org/resources/contrastchecker/
+
+1. Go to [https://webaim.org/resources/contrastchecker/](https://webaim.org/resources/contrastchecker/)
 2. Test:
-   - Foreground: `#00ffff` with 60% opacity = `rgba(0, 255, 255, 0.6)` = approx `#009999`
-   - Background: `#0a0a0a`
+  - Foreground: `#00ffff` with 60% opacity = `rgba(0, 255, 255, 0.6)` = approx `#009999`
+  - Background: `#0a0a0a`
 3. Check if ratio meets 4.5:1 for normal text (WCAG AA)
 
 **Expected Result:** Likely PASSES (cyan on near-black has high contrast)
@@ -1977,6 +2169,7 @@ Add same spinner pattern used in main refresh button.
 **Fix:** Increase opacity in `src/index.css`
 
 **Example for `.info` class:**
+
 ```css
 .info {
   font-family: 'Rajdhani', sans-serif;
@@ -1991,6 +2184,7 @@ Add same spinner pattern used in main refresh button.
 This has DOUBLE opacity reduction (color opacity 0.5 + element opacity 0.6 = effective 0.3)
 
 **Recommendation if it fails:**
+
 ```css
 .metric-graph-placeholder {
   /* Remove redundant opacity - color already has transparency */
@@ -2001,6 +2195,7 @@ This has DOUBLE opacity reduction (color opacity 0.5 + element opacity 0.6 = eff
 ```
 
 ### Rationale:
+
 - Ensures WCAG 2.1 Level AA compliance (4.5:1 for body text)
 - Prevents legal/compliance issues
 - Improves readability for users with low vision
@@ -2014,6 +2209,7 @@ This has DOUBLE opacity reduction (color opacity 0.5 + element opacity 0.6 = eff
 **Impact:** Slightly clearer navigation purpose
 
 ### Current State:
+
 **File:** `src/App.tsx` line 891
 
 ```typescript
@@ -2021,28 +2217,34 @@ This has DOUBLE opacity reduction (color opacity 0.5 + element opacity 0.6 = eff
 ```
 
 ### Issue:
+
 "Tools" is generic and doesn't communicate what tools are available.
 
 ### Option A: More Specific Label (Recommended)
+
 ```typescript
 <Link to="/tools" className="tools-link">Analytics</Link>
 ```
 
 **Rationale:**
+
 - Describes content more accurately (transaction analytics)
 - Shorter than "Tools" (same character count)
 - Better information scent (Jakob Nielsen)
 
 ### Option B: Descriptive Label
+
 ```typescript
 <Link to="/tools" className="tools-link">Transactions</Link>
 ```
 
 **Rationale:**
+
 - Very specific about content
 - Clear user expectation
 
 ### Option C: Keep "Tools" (Acceptable)
+
 If the Tools page will expand to include multiple tool types beyond the Mint/Redeem Analyser, keep "Tools" as a category label.
 
 ### Implementation:
@@ -2050,19 +2252,23 @@ If the Tools page will expand to include multiple tool types beyond the Mint/Red
 **File:** `src/App.tsx` line 891
 
 **Change from:**
+
 ```typescript
 <Link to="/tools" className="tools-link">Tools</Link>
 ```
 
 **To:**
+
 ```typescript
 <Link to="/tools" className="tools-link">Analytics</Link>
 ```
 
 ### Additional Change Needed:
+
 **File:** `src/Tools.tsx` line 13
 
 Update subtitle to match new label:
+
 ```typescript
 // Current:
 <p className="subtitle">Analytics and analysis tools for RIF on Chain</p>
@@ -2072,6 +2278,7 @@ Update subtitle to match new label:
 ```
 
 ### Rationale:
+
 - "Analytics" communicates purpose clearly
 - Aligns with subtitle text
 - Room for future tool additions under this category
@@ -2085,9 +2292,11 @@ Update subtitle to match new label:
 **Impact:** Reduces ambiguity for new users (only implement if user testing shows confusion)
 
 ### Current State:
+
 **File:** `src/MintRedeemAnalyser.tsx` lines 1031-1041
 
 Table headers have no explanatory tooltips:
+
 ```typescript
 <th>Time (UTC)</th>
 <th>Status</th>
@@ -2107,6 +2316,7 @@ Table headers have no explanatory tooltips:
 ### Implementation (Only if User Testing Shows Confusion):
 
 #### Step 1: Add Tooltip Component Import
+
 Already available in App.tsx - can be extracted to shared component or duplicated.
 
 #### Step 2: Create Reusable TableHeaderWithHelp Component
@@ -2162,6 +2372,7 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 **File:** `src/MintRedeemAnalyser.tsx` lines 1031-1041
 
 **Change from:**
+
 ```typescript
 <thead>
   <tr>
@@ -2177,6 +2388,7 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 ```
 
 **To:**
+
 ```typescript
 <thead>
   <tr>
@@ -2248,7 +2460,9 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 ```
 
 ### Decision Point:
+
 **Only implement this if:**
+
 - User testing shows confusion about column meanings
 - Analytics show users clicking wrong data
 - Support requests mention table confusion
@@ -2276,29 +2490,26 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 #### Step 2: Manual Testing (If Lighthouse Shows Issues)
 
 **Tool:** WebAIM Contrast Checker  
-**URL:** https://webaim.org/resources/contrastchecker/
+**URL:** [https://webaim.org/resources/contrastchecker/](https://webaim.org/resources/contrastchecker/)
 
 **Test these 4 elements:**
 
-1. **`.info` class (Auto-refresh text)**
-   - Foreground: `#00ffff` at 60% opacity = `#009999` (approx)
-   - Background: `#0a0a0a`
-   - Target: 4.5:1 minimum (WCAG AA)
-
-2. **`.subtitle` class (Page subtitle)**
-   - Foreground: `#00ffff` at 70% opacity = `#00b3b3` (approx)
-   - Background: `#0a0a0a`
-   - Target: 4.5:1 minimum
-
-3. **`.last-updated` class (Timestamp)**
-   - Foreground: `#00ffff` at 60% opacity = `#009999` (approx)
-   - Background: `#0a0a0a`
-   - Target: 4.5:1 minimum
-
-4. **`.metric-graph-placeholder` (Collecting data text)** ⚠️ **MOST LIKELY TO FAIL**
-   - Foreground: `rgba(0, 255, 255, 0.5)` at 60% opacity = effective 30% = `#004d4d` (approx)
-   - Background: `#0a0a0a`
-   - Target: 4.5:1 minimum
+1. `**.info` class (Auto-refresh text)**
+  - Foreground: `#00ffff` at 60% opacity = `#009999` (approx)
+  - Background: `#0a0a0a`
+  - Target: 4.5:1 minimum (WCAG AA)
+2. `**.subtitle` class (Page subtitle)**
+  - Foreground: `#00ffff` at 70% opacity = `#00b3b3` (approx)
+  - Background: `#0a0a0a`
+  - Target: 4.5:1 minimum
+3. `**.last-updated` class (Timestamp)**
+  - Foreground: `#00ffff` at 60% opacity = `#009999` (approx)
+  - Background: `#0a0a0a`
+  - Target: 4.5:1 minimum
+4. `**.metric-graph-placeholder` (Collecting data text)** ⚠️ **MOST LIKELY TO FAIL**
+  - Foreground: `rgba(0, 255, 255, 0.5)` at 60% opacity = effective 30% = `#004d4d` (approx)
+  - Background: `#0a0a0a`
+  - Target: 4.5:1 minimum
 
 ### Expected Results:
 
@@ -2310,6 +2521,7 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 **File:** `src/index.css` lines 456-466
 
 **Change from:**
+
 ```css
 .metric-graph-placeholder {
   position: absolute;
@@ -2326,6 +2538,7 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 ```
 
 **To:**
+
 ```css
 .metric-graph-placeholder {
   position: absolute;
@@ -2342,12 +2555,14 @@ const TableHeaderWithHelp = ({ label, helpText }: TableHeaderWithHelpProps) => {
 ```
 
 ### Alternative Fix (If More Contrast Needed):
+
 ```css
 color: #00ffff;  /* Full cyan */
 opacity: 0.7;     /* Single opacity level */
 ```
 
 ### Rationale:
+
 - WCAG 2.1 Level AA requires 4.5:1 for body text
 - Legal compliance for accessibility laws (ADA in US, similar worldwide)
 - Improves readability for users with low vision (~8% of population)
@@ -2361,6 +2576,7 @@ opacity: 0.7;     /* Single opacity level */
 **Impact:** Screen reader users get better state announcements
 
 ### Current State:
+
 MintRedeemAnalyser has loading message but no aria-live region for status updates.
 
 ### Implementation:
@@ -2368,6 +2584,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 **File:** `src/MintRedeemAnalyser.tsx` line 976
 
 **Change from:**
+
 ```typescript
 {loading && transactions.length === 0 && (
   <div className="loading-message">Loading transactions...</div>
@@ -2375,6 +2592,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 ```
 
 **To:**
+
 ```typescript
 {loading && transactions.length === 0 && (
   <div className="loading-message" role="status" aria-live="polite">
@@ -2386,6 +2604,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 **File:** `src/MintRedeemAnalyser.tsx` line 980
 
 **Change from:**
+
 ```typescript
 {!loading && transactions.length === 0 && !error && (
   <div className="no-data">No mint/redeem transactions found in the selected period.</div>
@@ -2393,6 +2612,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 ```
 
 **To:**
+
 ```typescript
 {!loading && transactions.length === 0 && !error && (
   <div className="no-data" role="status" aria-live="polite">
@@ -2402,6 +2622,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 ```
 
 ### Rationale:
+
 - Screen readers announce status changes automatically
 - Follows WCAG 4.1.3 (Status Messages)
 - Provides better feedback for visually impaired users
@@ -2419,6 +2640,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 **File:** `src/App.tsx` line 891
 
 **Option A: Rename to "Analytics" (Recommended)**
+
 ```typescript
 <Link to="/tools" className="tools-link">Analytics</Link>
 ```
@@ -2426,6 +2648,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 **File:** `src/Tools.tsx` line 13
 
 **Update subtitle to match:**
+
 ```typescript
 <p className="subtitle">Transaction analytics and insights for RIF on Chain</p>
 ```
@@ -2433,6 +2656,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 ### Alternative Options:
 
 **Option B: "Transactions"**
+
 ```typescript
 <Link to="/tools" className="tools-link">Transactions</Link>
 <p className="subtitle">Mint and redeem transaction history for RIF on Chain</p>
@@ -2442,6 +2666,7 @@ MintRedeemAnalyser has loading message but no aria-live region for status update
 No change needed if Tools page will grow to include multiple different tools.
 
 ### Rationale:
+
 - Better information scent (users know what to expect)
 - Reduces "what's this?" clicks
 - More professional/specific labeling
@@ -2455,6 +2680,7 @@ No change needed if Tools page will grow to include multiple different tools.
 **Impact:** Improved scannability, clearer action
 
 ### Current State:
+
 **File:** `src/MintRedeemAnalyser.tsx` line 1016
 
 ```typescript
@@ -2462,6 +2688,7 @@ Export to Excel
 ```
 
 ### Enhancement:
+
 Add download icon for visual clarity.
 
 ### Implementation:
@@ -2469,16 +2696,19 @@ Add download icon for visual clarity.
 **File:** `src/MintRedeemAnalyser.tsx` line 1016
 
 **Change from:**
+
 ```typescript
 Export to Excel
 ```
 
 **To:**
+
 ```typescript
 ⬇ Export to Excel
 ```
 
 **Or Unicode alternative:**
+
 ```typescript
 ↓ Export to Excel
 ```
@@ -2486,12 +2716,15 @@ Export to Excel
 **Or keep icon-less** (acceptable as-is)
 
 ### Rationale:
+
 - Visual cue reinforces download action
 - Follows common UI patterns (download icons)
 - Improves button scannability in busy interface
 
 ### Alternative: Use SVG Icon (If Available)
+
 If project uses icon library, use proper download icon:
+
 ```typescript
 <DownloadIcon /> Export to Excel
 ```
@@ -2505,6 +2738,7 @@ If project uses icon library, use proper download icon:
 **Impact:** Guides users when no results found
 
 ### Current State:
+
 **File:** `src/MintRedeemAnalyser.tsx` line 1027
 
 ```typescript
@@ -2514,6 +2748,7 @@ If project uses icon library, use proper download icon:
 ```
 
 ### Enhancement:
+
 Add actionable suggestion to help users.
 
 ### Implementation:
@@ -2521,6 +2756,7 @@ Add actionable suggestion to help users.
 **File:** `src/MintRedeemAnalyser.tsx` line 1027
 
 **Change from:**
+
 ```typescript
 <div className="no-data">
   No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
@@ -2528,6 +2764,7 @@ Add actionable suggestion to help users.
 ```
 
 **To:**
+
 ```typescript
 <div className="no-data">
   No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
@@ -2539,6 +2776,7 @@ Add actionable suggestion to help users.
 ```
 
 ### Rationale:
+
 - Guides users toward resolution
 - Reduces dead-end feeling
 - Follows error prevention heuristic (Nielsen Norman #5)
@@ -2550,6 +2788,7 @@ Add actionable suggestion to help users.
 # 🎯 Recommended Implementation Order
 
 ## Phase 1: Quick Wins (4 minutes total) - HIGH ROI
+
 1. ✅ Add `aria-pressed` to filter buttons (2 min)
 2. ✅ Rename "Tools" → "Analytics" (2 min)
 
@@ -2558,34 +2797,38 @@ Add actionable suggestion to help users.
 ---
 
 ## Phase 2: Visual Consistency (12 minutes total) - MEDIUM ROI
-3. ✅ Add loading spinner to MintRedeemAnalyser Refresh button (10 min)
-4. ✅ Add icon to Export button (2 min)
+
+1. ✅ Add loading spinner to MintRedeemAnalyser Refresh button (10 min)
+2. ✅ Add icon to Export button (2 min)
 
 **Rationale:** Aligns Tools screen with main app patterns
 
 ---
 
 ## Phase 3: Compliance Verification (10 minutes) - LOW ROI
-5. ✅ Test color contrast with browser DevTools (10 min)
-   - If fails: Increase opacity values
+
+1. ✅ Test color contrast with browser DevTools (10 min)
+  - If fails: Increase opacity values
 
 **Rationale:** Legal/compliance safety check
 
 ---
 
 ## Phase 4: Enhanced Feedback (14 minutes total) - VERY LOW ROI
-6. ✅ Add aria-live regions to loading/empty states (10 min)
-7. ✅ Enhance filter empty state message (2 min)
-8. ✅ Update Tools subtitle to match label (2 min)
+
+1. ✅ Add aria-live regions to loading/empty states (10 min)
+2. ✅ Enhance filter empty state message (2 min)
+3. ✅ Update Tools subtitle to match label (2 min)
 
 **Rationale:** Nice-to-haves for polish
 
 ---
 
 ## Phase 5: Advanced Features (25 minutes) - CONDITIONAL
-9. ⚠️ Add column header tooltips (25 min)
-   - **ONLY if user testing shows confusion**
-   - Skip unless necessary
+
+1. ⚠️ Add column header tooltips (25 min)
+  - **ONLY if user testing shows confusion**
+  - Skip unless necessary
 
 **Rationale:** Don't add complexity without user-validated need
 
@@ -2596,12 +2839,15 @@ Add actionable suggestion to help users.
 ## Ship Now, Polish Later Strategy:
 
 ### **Implement Immediately (16 minutes):**
+
 - Tasks 1-4 (Phase 1-2): Quick wins with visible impact
 
 ### **Implement Before Launch (10 minutes):**
+
 - Task 5 (Phase 3): Contrast verification (compliance)
 
 ### **Implement Post-Launch Based on Feedback:**
+
 - Tasks 6-8 (Phase 4): Enhanced feedback
 - Task 9 (Phase 5): Column tooltips (only if needed)
 
@@ -2626,11 +2872,13 @@ The addition of the progress bar feature has elevated the overall application UX
 ### **Why This Feature Matters:**
 
 **Before Progress Bar:**
+
 - Users clicked Refresh → saw "Loading..." → waited with no feedback
 - Long operations (90 days) felt frozen
 - User anxiety: "Is it working? Should I refresh again?"
 
 **After Progress Bar:**
+
 - Users see real-time progress through 4 phases
 - Understand exactly what's happening at each stage
 - See completion indicators
@@ -2639,15 +2887,18 @@ The addition of the progress bar feature has elevated the overall application UX
 ### **UX Impact:**
 
 **Perceived Performance:** ⬆️ +40%
+
 - Operations feel faster even though they take same time
 - Progress visibility = perception of speed (proven in UX research)
 
 **User Confidence:** ⬆️ +60%
+
 - Transparency builds trust
 - Phase descriptions explain complexity
 - Users less likely to abandon or retry
 
 **Accessibility:** ⬆️ +25%
+
 - Screen reader announcements keep visually impaired users informed
 - Semantic HTML ensures universal access
 
@@ -2658,6 +2909,7 @@ The addition of the progress bar feature has elevated the overall application UX
 **Current Overall Grade: A+ (Exceptional)**
 
 All major UX concerns have been addressed. The application demonstrates:
+
 - ✅ Consistent TRON design system across all screens
 - ✅ WCAG 2.1 Level AA accessibility compliance
 - ✅ Sophisticated loading feedback (progress bars)
@@ -2705,33 +2957,34 @@ Based on the provided screenshot of the USDRIF Mint/Redeem Analyser header:
 ### **Current Layout Problems:**
 
 1. ❌ **Inconsistent Button Widths**
-   - Dropdown: ~80px width
-   - Loading button: Dynamic width (changes between "Refresh" and "Loading...")
-   - Creates visual imbalance and jumping layout
-
+  - Dropdown: ~80px width
+  - Loading button: Dynamic width (changes between "Refresh" and "Loading...")
+  - Creates visual imbalance and jumping layout
 2. ❌ **Progress Bar Alignment**
-   - Progress bar positioned to right of button (horizontal flow)
-   - Not centered within available space
-   - Percentage text positioned to right of progress bar
-
+  - Progress bar positioned to right of button (horizontal flow)
+  - Not centered within available space
+  - Percentage text positioned to right of progress bar
 3. ❌ **Visual Hierarchy Issues**
-   - Controls and progress compete for attention
-   - Horizontal layout crowds the header
-   - Progress feedback feels secondary, not prominent
+  - Controls and progress compete for attention
+  - Horizontal layout crowds the header
+  - Progress feedback feels secondary, not prominent
 
 ---
 
 ## 📐 **UX Principles Violated**
 
 ### **1. Visual Balance (Gestalt - Symmetry)**
+
 - Unequal element widths create visual tension
 - Eye doesn't know where to focus
 
 ### **2. Layout Stability (WCAG 2.2.6 - Consistent Help)**
+
 - Button width changing between "Refresh" and "Loading..." causes layout shift
 - Cumulative Layout Shift (CLS) negatively impacts user experience
 
 ### **3. Fitts's Law**
+
 - Inconsistent button sizing makes clicking less predictable
 - Users may overshoot or undershoot click target
 
@@ -2740,6 +2993,7 @@ Based on the provided screenshot of the USDRIF Mint/Redeem Analyser header:
 ## 🎯 **Detailed Recommendations for Coder Agent**
 
 ### **CRITICAL USER REQUIREMENT:**
+
 **No Layout Shift** - The screen must NOT jump when progress bar appears/disappears. This is jarring and violates WCAG Success Criterion 2.2.6 (Consistent Help) and creates poor perceived performance (CLS).
 
 ---
@@ -2755,6 +3009,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 42-47
 
 **Current:**
+
 ```css
 .refresh-controls {
   display: flex;
@@ -2764,6 +3019,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Change To:**
+
 ```css
 .refresh-controls {
   display: flex;
@@ -2775,6 +3031,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - Fixed minimum width prevents layout shift
 - Space is reserved whether progress bar is visible or not
 - Container size doesn't change between loading states
@@ -2809,6 +3066,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - `width: 130px` locks button to fixed size
 - No shift when text changes between "Refresh" ↔ "Loading..."
 - 130px comfortably fits "LOADING..." with letter-spacing
@@ -2821,6 +3079,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 48-53
 
 **Current:**
+
 ```css
 .inline-progress {
   display: flex;
@@ -2831,6 +3090,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Change To:**
+
 ```css
 .inline-progress {
   display: flex;
@@ -2843,6 +3103,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - Fixed `width: 220px` means space is ALWAYS reserved
 - Even when progress bar is hidden (not loading), the space exists
 - No shift when progress bar appears/disappears
@@ -2855,6 +3116,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 73-88
 
 **Current:**
+
 ```css
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
@@ -2869,6 +3131,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Change To:**
+
 ```css
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
@@ -2886,6 +3149,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - Centers percentage text with progress bar
 - Better visual alignment
 - 45px accommodates "100%" comfortably
@@ -2897,6 +3161,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` line 57
 
 **From:**
+
 ```css
 .inline-progress .loading-progress-bar {
   flex: 1;
@@ -2904,6 +3169,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **To:**
+
 ```css
 .inline-progress .loading-progress-bar {
   flex: 1;
@@ -2911,6 +3177,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - 6px is hard to see in the TRON aesthetic
 - 8px matches full-screen progress bar height
 - Better accessibility for low vision users
@@ -2926,6 +3193,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **Update `.inline-progress .loading-progress-text` (lines 73-88):**
 
 **From:**
+
 ```css
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
@@ -2940,6 +3208,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **To:**
+
 ```css
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
@@ -2957,6 +3226,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - Centers percentage text within its container
 - Vertically aligns with progress bar
 - 45px accommodates "100%" without truncation
@@ -2971,6 +3241,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **Optional Enhancement:**
 
 **From:**
+
 ```css
 .inline-progress .loading-progress-bar {
   flex: 1;
@@ -2978,6 +3249,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **To:**
+
 ```css
 .inline-progress .loading-progress-bar {
   flex: 1;
@@ -2985,6 +3257,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Rationale:**
+
 - 6px is quite thin and hard to see at a glance
 - 8px matches the full-screen progress bar height
 - Better visual prominence without being overwhelming
@@ -3005,12 +3278,14 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Key Design Principle:**
+
 - Progress bar area (220px) is ALWAYS reserved in the layout
 - When not loading: space exists but is empty/invisible
 - When loading: progress bar fades in within the pre-allocated space
 - **Result:** Zero layout shift, zero jarring jumps
 
 **Advantages:**
+
 - ✅ No vertical or horizontal layout shift
 - ✅ Compact single-row layout
 - ✅ Space efficiently used
@@ -3027,6 +3302,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 42-46
 
 **Change:**
+
 ```css
 .refresh-controls {
   display: flex;
@@ -3038,6 +3314,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Why:**
+
 - Container always takes same width whether loading or not
 - No shift when progress bar appears/disappears
 
@@ -3048,6 +3325,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 133-145
 
 **Add these properties:**
+
 ```css
 .analyser-controls button {
   padding: 10px 20px;
@@ -3070,6 +3348,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Why:**
+
 - Button won't resize when text changes "Refresh" → "Loading..."
 - Text stays centered in both states
 - 130px fits "LOADING..." with letter-spacing comfortably
@@ -3081,6 +3360,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 48-53
 
 **Change:**
+
 ```css
 .inline-progress {
   display: flex;
@@ -3093,6 +3373,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Why:**
+
 - Fixed 220px width means space is ALWAYS there
 - Even when hidden, layout doesn't collapse
 - Progress bar and percentage appear within pre-allocated space
@@ -3105,6 +3386,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` lines 79-88
 
 **Change:**
+
 ```css
 .inline-progress .loading-progress-text {
   font-size: 0.85rem;
@@ -3122,6 +3404,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Why:**
+
 - Centers percentage with progress bar
 - Better visual alignment
 - 45px accommodates "100%" perfectly
@@ -3133,6 +3416,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 **File:** `src/MintRedeemAnalyser.css` line 57
 
 **Change:**
+
 ```css
 .inline-progress .loading-progress-bar {
   flex: 1;
@@ -3146,6 +3430,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ```
 
 **Why:**
+
 - More visible in the TRON aesthetic
 - Better accessibility
 - Matches full-screen progress bar height
@@ -3155,6 +3440,7 @@ Keep the horizontal layout but fix sizing and alignment to eliminate shifts and 
 ## 🎨 **Visual Result After Changes**
 
 ### **Before (Current):**
+
 ```
 DAYS TO LOOK BACK: [30 days▼] [LOADING...]  ████░░  20%
                    └─80px──┘  └─variable─┘  └─cramped─┘
@@ -3162,6 +3448,7 @@ DAYS TO LOOK BACK: [30 days▼] [LOADING...]  ████░░  20%
 ```
 
 ### **After (Proposed - No Layout Shift):**
+
 ```
 DAYS TO LOOK BACK: [30 days▼] [  LOADING...  ]  ████████████░░░░░░  20%
                    └──label──┘ └────130px─────┘  └────220px reserved────┘
@@ -3169,6 +3456,7 @@ DAYS TO LOOK BACK: [30 days▼] [  LOADING...  ]  ██████████
 ```
 
 **When NOT Loading (Refresh state):**
+
 ```
 DAYS TO LOOK BACK: [30 days▼] [   REFRESH   ]  [          empty space         ]
                    └──label──┘ └────130px─────┘  └────220px reserved────┘
@@ -3176,6 +3464,7 @@ DAYS TO LOOK BACK: [30 days▼] [   REFRESH   ]  [          empty space         
 ```
 
 **Improvements:**
+
 - ✅ Fixed widths prevent ALL layout shifts
 - ✅ Space reserved whether loading or not
 - ✅ Horizontal layout eliminates vertical jumping
@@ -3187,15 +3476,17 @@ DAYS TO LOOK BACK: [30 days▼] [   REFRESH   ]  [          empty space         
 
 ## 📊 **Layout Comparison**
 
-| Aspect | Current (Screenshot) | Proposed (No-Shift Horizontal) |
-|--------|---------------------|-------------------------------|
-| **Button Width** | Variable (jumps) | Fixed 130px |
-| **Progress Position** | Right of button, cramped | Right of button, reserved space |
-| **Percentage Alignment** | Right of bar | Centered with bar |
-| **Vertical Space** | 1 row (no shift) | 1 row (no shift) |
-| **Visual Balance** | Asymmetric, cramped | Balanced, breathing room |
-| **Layout Shift** | Yes (button text & progress appear) | No (space always reserved) |
-| **Jarring Jumps** | Yes | No |
+
+| Aspect                   | Current (Screenshot)                | Proposed (No-Shift Horizontal)  |
+| ------------------------ | ----------------------------------- | ------------------------------- |
+| **Button Width**         | Variable (jumps)                    | Fixed 130px                     |
+| **Progress Position**    | Right of button, cramped            | Right of button, reserved space |
+| **Percentage Alignment** | Right of bar                        | Centered with bar               |
+| **Vertical Space**       | 1 row (no shift)                    | 1 row (no shift)                |
+| **Visual Balance**       | Asymmetric, cramped                 | Balanced, breathing room        |
+| **Layout Shift**         | Yes (button text & progress appear) | No (space always reserved)      |
+| **Jarring Jumps**        | Yes                                 | No                              |
+
 
 ---
 
@@ -3211,20 +3502,24 @@ DAYS TO LOOK BACK: [30 days▼] [   REFRESH   ]  [          empty space         
 ## ✅ **Benefits of Proposed Changes**
 
 ### **1. Visual Harmony**
+
 - Equal widths create pleasing geometric balance
 - Follows Gestalt principles of symmetry and proximity
 
 ### **2. Reduced Layout Shift**
+
 - Fixed button width prevents CLS when text changes
 - Improves perceived performance (Google Core Web Vitals)
 
 ### **3. Better Focus**
+
 - Vertical stacking creates clear hierarchy:
   1. Configuration (dropdown)
   2. Action (button)
   3. Feedback (progress)
 
 ### **4. Accessibility**
+
 - Centered layout easier to scan for users with tunnel vision
 - Larger progress bar (8px vs 6px) more visible for low vision users
 - Fixed widths help users with motor control issues (predictable targets)
@@ -3266,6 +3561,7 @@ To achieve the smoothest experience, the container could ALWAYS be in the DOM:
 ```
 
 **Benefits:**
+
 - Container always exists (220px space always reserved)
 - Only inner content appears/disappears
 - Smoother CSS transitions possible (opacity fade)
@@ -3280,6 +3576,7 @@ To achieve the smoothest experience, the container could ALWAYS be in the DOM:
 ### **Implement: Horizontal Layout with Reserved Space (Zero Layout Shift)**
 
 **Rationale:**
+
 1. **Zero Layout Shift** - Critical user requirement, prevents jarring jumps
 2. **Reserved Space Pattern** - Space always allocated, progress fades in/out
 3. **Visual Balance** - Fixed widths create rhythm and predictability
@@ -3300,20 +3597,20 @@ To achieve the smoothest experience, the container could ALWAYS be in the DOM:
 
 ### **CSS Changes (MintRedeemAnalyser.css only):**
 
-- [ ] Add `min-width: 450px` to `.refresh-controls` (line ~42)
-- [ ] Add `width: fit-content` to `.refresh-controls` (line ~42)
-- [ ] Add `min-width: 130px` to `.analyser-controls button` (line ~133)
-- [ ] Add `width: 130px` to `.analyser-controls button` (line ~133)
-- [ ] Add `text-align: center` to `.analyser-controls button` (line ~133)
-- [ ] Change `.inline-progress` `min-width` from `150px` to `220px` (line ~48)
-- [ ] Add `width: 220px` to `.inline-progress` (line ~48)
-- [ ] Add `justify-content: center` to `.inline-progress` (line ~48)
-- [ ] Change `.loading-progress-text` `min-width` from `40px` to `45px` (line ~79)
-- [ ] Change `.loading-progress-text` `text-align` from `right` to `center` (line ~79)
-- [ ] Add `display: flex` to `.loading-progress-text` (line ~79)
-- [ ] Add `align-items: center` to `.loading-progress-text` (line ~79)
-- [ ] Add `justify-content: center` to `.loading-progress-text` (line ~79)
-- [ ] Change `.loading-progress-bar` `height` from `6px` to `8px` (line ~57)
+- Add `min-width: 450px` to `.refresh-controls` (line ~42)
+- Add `width: fit-content` to `.refresh-controls` (line ~42)
+- Add `min-width: 130px` to `.analyser-controls button` (line ~133)
+- Add `width: 130px` to `.analyser-controls button` (line ~133)
+- Add `text-align: center` to `.analyser-controls button` (line ~133)
+- Change `.inline-progress` `min-width` from `150px` to `220px` (line ~48)
+- Add `width: 220px` to `.inline-progress` (line ~48)
+- Add `justify-content: center` to `.inline-progress` (line ~48)
+- Change `.loading-progress-text` `min-width` from `40px` to `45px` (line ~79)
+- Change `.loading-progress-text` `text-align` from `right` to `center` (line ~79)
+- Add `display: flex` to `.loading-progress-text` (line ~79)
+- Add `align-items: center` to `.loading-progress-text` (line ~79)
+- Add `justify-content: center` to `.loading-progress-text` (line ~79)
+- Change `.loading-progress-bar` `height` from `6px` to `8px` (line ~57)
 
 **Estimated Time:** 10 minutes  
 **Files Changed:** 1 (MintRedeemAnalyser.css)  
@@ -3321,6 +3618,7 @@ To achieve the smoothest experience, the container could ALWAYS be in the DOM:
 
 **Validation:**
 After implementation, test both states and verify NO layout shift occurs:
+
 1. Refresh state → Loading state (button text changes)
 2. Loading state → Progress bar appears
 3. Progress bar updates 0% → 100%
@@ -3331,6 +3629,7 @@ After implementation, test both states and verify NO layout shift occurs:
 ## 🖼️ **Before & After Mockup**
 
 ### **Before (Current State):**
+
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║ DAYS TO LOOK BACK: [30 days▼] [LOADING...] ██░░ 20%         ║
@@ -3342,6 +3641,7 @@ After implementation, test both states and verify NO layout shift occurs:
 ### **After (Zero-Shift Solution):**
 
 **State 1: Not Loading**
+
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║ DAYS TO LOOK BACK: [30 days▼] [   REFRESH   ] [   (empty)   ]║
@@ -3351,6 +3651,7 @@ After implementation, test both states and verify NO layout shift occurs:
 ```
 
 **State 2: Loading (Progress Bar Fades In)**
+
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║ DAYS TO LOOK BACK: [30 days▼] [  LOADING...  ] ████████░░ 20%║
@@ -3360,6 +3661,7 @@ After implementation, test both states and verify NO layout shift occurs:
 ```
 
 **Visual Impact:**
+
 - ✅ Zero layout shift between states
 - ✅ Smooth fade in/out transitions
 - ✅ Balanced spacing and alignment
@@ -3383,10 +3685,12 @@ After implementation, test both states and verify NO layout shift occurs:
 **The Secret:** Progress bar area (220px) exists in the DOM whether loading or not.
 
 **When Not Loading:**
+
 - `.inline-progress` container: 220px width, no content (or invisible placeholder)
 - No visual presence, but space is reserved in layout
 
 **When Loading:**
+
 - Progress bar and percentage fade in within the 220px pre-allocated space
 - No shift because space was already there
 
@@ -3405,23 +3709,26 @@ After implementation, test both states and verify NO layout shift occurs:
 After implementation, Coder agent should verify:
 
 ### **1. Zero Layout Shift Test**
-- [ ] Click Refresh button
-- [ ] Verify NO elements move when button text changes to "Loading..."
-- [ ] Verify NO elements move when progress bar appears
-- [ ] Watch progress bar fill 0% → 100%
-- [ ] Verify NO elements move during progress updates
-- [ ] Verify NO elements move when loading completes and progress disappears
+
+- Click Refresh button
+- Verify NO elements move when button text changes to "Loading..."
+- Verify NO elements move when progress bar appears
+- Watch progress bar fill 0% → 100%
+- Verify NO elements move during progress updates
+- Verify NO elements move when loading completes and progress disappears
 
 ### **2. Visual Alignment Test**
-- [ ] Refresh button and "Loading..." button are same width (130px)
-- [ ] Progress bar and percentage are centered within their 220px space
-- [ ] Percentage text ("20%") is centered, not right-aligned
-- [ ] All elements horizontally aligned (same baseline)
+
+- Refresh button and "Loading..." button are same width (130px)
+- Progress bar and percentage are centered within their 220px space
+- Percentage text ("20%") is centered, not right-aligned
+- All elements horizontally aligned (same baseline)
 
 ### **3. Responsive Test**
-- [ ] Test on desktop (1920px)
-- [ ] Test on tablet (768px)
-- [ ] Test on mobile (375px) - should stack per existing media query
+
+- Test on desktop (1920px)
+- Test on tablet (768px)
+- Test on mobile (375px) - should stack per existing media query
 
 **Success Criteria:**
 ✅ User experiences smooth, stable loading with no jarring jumps  
@@ -3448,6 +3755,7 @@ After implementation, Coder agent should verify:
 ## 🔍 **Layout Analysis from Screenshot**
 
 Current layout shows:
+
 ```
 [ ALL ] [ USDRIF ] [ RIFPRO ] [ 7 days ▼ ] [ REFRESH ] [ XLS ]
 └────── Filter Buttons ──────┘ └──── Action Controls ────┘
@@ -3455,6 +3763,7 @@ Current layout shows:
 ```
 
 **User Requirement:**
+
 - Filter buttons (ALL, USDRIF, RIFPRO) stay on the left
 - Last three controls (dropdown, REFRESH, XLS) should be right-aligned
 - Creates visual separation between "filter" and "action" controls
@@ -3464,15 +3773,18 @@ Current layout shows:
 ## 📐 **UX Principles Applied**
 
 ### **1. Proximity (Gestalt)**
+
 - Group related elements together
 - Filter buttons grouped on left (data filtering)
 - Action controls grouped on right (data operations)
 
 ### **2. Visual Hierarchy**
+
 - Left-to-right reading flow: Filter → View Results → Take Action
 - Spatial separation indicates different functional groups
 
 ### **3. Consistency (Nielsen Norman #4)**
+
 - Common UI pattern: filters left, actions right
 - Users expect action buttons (refresh, export) on the right
 - Matches conventions from Gmail, GitHub, Notion, etc.
@@ -3503,6 +3815,7 @@ Current layout shows:
 **File:** `src/MintRedeemAnalyser.css` lines 35-40
 
 **Current:**
+
 ```css
 .analyser-controls {
   display: flex;
@@ -3513,6 +3826,7 @@ Current layout shows:
 ```
 
 **Change To:**
+
 ```css
 .analyser-controls {
   display: flex;
@@ -3525,6 +3839,7 @@ Current layout shows:
 ```
 
 **Rationale:**
+
 - `justify-content: space-between` - Pushes first child (filters) left, last child (actions) right
 - `width: 100%` - Ensures container spans full width, giving space-between room to work
 - `flex-wrap: wrap` - Allows responsive wrapping on smaller screens (mobile)
@@ -3536,6 +3851,7 @@ Current layout shows:
 **File:** `src/MintRedeemAnalyser.css` lines 341-346
 
 **Current (should already be there):**
+
 ```css
 .right-controls {
   display: flex;
@@ -3552,6 +3868,7 @@ Current layout shows:
 ## 🎨 **Visual Result**
 
 ### **Before (Current):**
+
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║ [ ALL ] [ USDRIF ] [ RIFPRO ] [ 7 days ▼ ] [ REFRESH ] [ XLS ]║
@@ -3560,6 +3877,7 @@ Current layout shows:
 ```
 
 ### **After (Proposed):**
+
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║ [ ALL ] [ USDRIF ] [ RIFPRO ]          [ 7 days ▼ ] [ REFRESH ] [ XLS ] ║
@@ -3569,6 +3887,7 @@ Current layout shows:
 ```
 
 **Visual Impact:**
+
 - ✅ Clear functional grouping (filter vs. action)
 - ✅ Better use of horizontal space
 - ✅ Follows common UI conventions
@@ -3579,14 +3898,16 @@ Current layout shows:
 
 ## 📊 **Layout Comparison**
 
-| Aspect | Current | After Change |
-|--------|---------|--------------|
-| **Filter Position** | Left (bunched) | Left (clear group) |
-| **Action Position** | Middle/left | Right (clear group) |
-| **Visual Separation** | Minimal | Clear spatial gap |
-| **Functional Clarity** | Medium | High |
-| **Space Utilization** | Inefficient | Efficient |
-| **Mobile Wrapping** | May break awkwardly | Wraps gracefully |
+
+| Aspect                 | Current             | After Change        |
+| ---------------------- | ------------------- | ------------------- |
+| **Filter Position**    | Left (bunched)      | Left (clear group)  |
+| **Action Position**    | Middle/left         | Right (clear group) |
+| **Visual Separation**  | Minimal             | Clear spatial gap   |
+| **Functional Clarity** | Medium              | High                |
+| **Space Utilization**  | Inefficient         | Efficient           |
+| **Mobile Wrapping**    | May break awkwardly | Wraps gracefully    |
+
 
 ---
 
@@ -3597,11 +3918,13 @@ Current layout shows:
 ### **Step 1: Update `.analyser-controls` (lines 35-40)**
 
 Add these three properties:
-- [ ] Add `justify-content: space-between` to `.analyser-controls`
-- [ ] Change `flex-wrap: nowrap` to `flex-wrap: wrap` in `.analyser-controls`
-- [ ] Add `width: 100%` to `.analyser-controls`
+
+- Add `justify-content: space-between` to `.analyser-controls`
+- Change `flex-wrap: nowrap` to `flex-wrap: wrap` in `.analyser-controls`
+- Add `width: 100%` to `.analyser-controls`
 
 **Complete rule should look like:**
+
 ```css
 .analyser-controls {
   display: flex;
@@ -3615,9 +3938,10 @@ Add these three properties:
 
 ### **Step 2: Verify `.right-controls` (lines 341-346)**
 
-- [ ] Confirm `margin-left: auto` exists (should already be there)
+- Confirm `margin-left: auto` exists (should already be there)
 
 **No changes needed if it already has:**
+
 ```css
 .right-controls {
   display: flex;
@@ -3632,19 +3956,23 @@ Add these three properties:
 ## ✅ **Benefits**
 
 ### **1. Functional Clarity (Information Scent)**
+
 - Clear visual separation between "what to show" (filters) and "what to do" (actions)
 - Users immediately understand control groupings
 
 ### **2. Visual Balance**
+
 - Utilizes full horizontal space
 - Creates pleasing left-right symmetry
 - Prevents cramping on the left side
 
 ### **3. Responsive Behavior**
+
 - `flex-wrap: wrap` ensures graceful wrapping on mobile
 - Groups maintain their internal structure when stacked
 
 ### **4. Convention Compliance**
+
 - Matches common patterns (filters left, actions right)
 - Reduces cognitive load (users recognize the pattern)
 
@@ -3655,21 +3983,24 @@ Add these three properties:
 After implementation:
 
 ### **Desktop (1920px):**
-- [ ] Filter buttons grouped on left
-- [ ] Dropdown, REFRESH, XLS buttons grouped on right
-- [ ] Clear horizontal space between groups
-- [ ] All buttons horizontally aligned (same baseline)
+
+- Filter buttons grouped on left
+- Dropdown, REFRESH, XLS buttons grouped on right
+- Clear horizontal space between groups
+- All buttons horizontally aligned (same baseline)
 
 ### **Tablet (768px):**
-- [ ] Groups should remain intact
-- [ ] May start to wrap if needed
-- [ ] Filter group wraps first (if needed)
+
+- Groups should remain intact
+- May start to wrap if needed
+- Filter group wraps first (if needed)
 
 ### **Mobile (375px):**
-- [ ] Should wrap into two rows:
+
+- Should wrap into two rows:
   - Row 1: Filter buttons
   - Row 2: Action controls
-- [ ] Each row maintains internal spacing
+- Each row maintains internal spacing
 
 **Success Criteria:**
 ✅ Clear visual grouping (filter vs. action)  
@@ -3708,11 +4039,13 @@ TIME (UTC)    STATUS   ASSET   TYPE   AMOUNT   RECEIVER                         
 ```
 
 **Current State:**
+
 - Most columns have consistent 8px padding between them
 - RECEIVER → BLOCK gap appears to be 40-50px (much wider)
 - Creates visual imbalance and disrupts table rhythm
 
 **User Requirement:**
+
 - Reduce space between RECEIVER and BLOCK columns
 - Match the consistent 8px spacing used between TIME and STATUS (and all other columns)
 
@@ -3725,6 +4058,7 @@ TIME (UTC)    STATUS   ASSET   TYPE   AMOUNT   RECEIVER                         
 ### **Current CSS:**
 
 **Base table cell padding (line 511-512):**
+
 ```css
 .transactions-table td {
   padding: 10px 8px;  /* vertical: 10px, horizontal: 8px */
@@ -3733,6 +4067,7 @@ TIME (UTC)    STATUS   ASSET   TYPE   AMOUNT   RECEIVER                         
 ```
 
 **RECEIVER column override (lines 497-503):**
+
 ```css
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
@@ -3744,6 +4079,7 @@ TIME (UTC)    STATUS   ASSET   TYPE   AMOUNT   RECEIVER                         
 ```
 
 **BLOCK column override (lines 506-509):**
+
 ```css
 .transactions-table th:nth-child(7),
 .transactions-table td:nth-child(7) {
@@ -3756,6 +4092,7 @@ TIME (UTC)    STATUS   ASSET   TYPE   AMOUNT   RECEIVER                         
 The RECEIVER column has **no fixed width** (`/* No fixed width - allow column to expand for full address */`), so it expands to fill all available horizontal space in the table. This pushes the receiver address text far to the left, creating a large visual gap between the end of the address and the BLOCK column.
 
 **Effective layout:**
+
 ```
 | AMOUNT | RECEIVER (expands to fill space)                           | BLOCK |
 |   7    | 0x81b94...            [~~~~ large empty space ~~~~]        | 8605195 |
@@ -3772,6 +4109,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 **File:** `src/MintRedeemAnalyser.css` lines 497-503
 
 **Change from:**
+
 ```css
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
@@ -3783,6 +4121,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 ```
 
 **To:**
+
 ```css
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
@@ -3797,6 +4136,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 **Also update BLOCK column (lines 506-509):**
 
 **Change from:**
+
 ```css
 .transactions-table th:nth-child(7),
 .transactions-table td:nth-child(7) {
@@ -3805,6 +4145,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 ```
 
 **To:**
+
 ```css
 .transactions-table th:nth-child(7),
 .transactions-table td:nth-child(7) {
@@ -3816,6 +4157,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 ```
 
 **Rationale:**
+
 - `max-width: 420px` on RECEIVER prevents it from expanding to fill all available space
 - `width: auto` allows column to shrink-wrap closer to content width
 - Standard `8px` padding on both sides creates consistent spacing
@@ -3829,6 +4171,7 @@ Constrain the RECEIVER column so it doesn't expand beyond necessary content widt
 If you want RECEIVER to remain flexible but just reduce the visual gap:
 
 **Change RECEIVER column:**
+
 ```css
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
@@ -3839,6 +4182,7 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 ```
 
 **Change BLOCK column:**
+
 ```css
 .transactions-table th:nth-child(7),
 .transactions-table td:nth-child(7) {
@@ -3853,6 +4197,7 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 ## 🎨 **Visual Result**
 
 ### **Before (Current):**
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════╗
 ║ AMOUNT │ RECEIVER                                       │ BLOCK       ║
@@ -3863,6 +4208,7 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 ```
 
 ### **After (Option A - Recommended):**
+
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║ AMOUNT │ RECEIVER                    │ BLOCK            ║
@@ -3873,6 +4219,7 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 ```
 
 **Visual Impact:**
+
 - ✅ Consistent spacing across all columns (16px = 8px + 8px)
 - ✅ Receiver addresses don't float in excessive white space
 - ✅ Table feels more compact and data-dense
@@ -3882,14 +4229,16 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 
 ## 📊 **Spacing Comparison**
 
-| Column Pair | Current Spacing | After Fix (Option A) |
-|-------------|----------------|----------------------|
-| TIME → STATUS | 16px (8+8) | 16px (8+8) ✅ |
-| STATUS → ASSET | 16px (8+8) | 16px (8+8) ✅ |
-| ASSET → TYPE | 16px (8+8) | 16px (8+8) ✅ |
-| TYPE → AMOUNT | 16px (8+8) | 16px (8+8) ✅ |
-| AMOUNT → RECEIVER | 17px (9+8) | 16px (8+8) ✅ |
-| **RECEIVER → BLOCK** | **~40-50px** ❌ | **16px (8+8)** ✅ |
+
+| Column Pair          | Current Spacing | After Fix (Option A) |
+| -------------------- | --------------- | -------------------- |
+| TIME → STATUS        | 16px (8+8)      | 16px (8+8) ✅         |
+| STATUS → ASSET       | 16px (8+8)      | 16px (8+8) ✅         |
+| ASSET → TYPE         | 16px (8+8)      | 16px (8+8) ✅         |
+| TYPE → AMOUNT        | 16px (8+8)      | 16px (8+8) ✅         |
+| AMOUNT → RECEIVER    | 17px (9+8)      | 16px (8+8) ✅         |
+| **RECEIVER → BLOCK** | **~40-50px** ❌  | **16px (8+8)** ✅     |
+
 
 ---
 
@@ -3899,12 +4248,13 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 
 ### **Step 1: Update RECEIVER Column (lines 497-503)**
 
-- [ ] Add `max-width: 420px` to column 6
-- [ ] Add `width: auto` to column 6
-- [ ] Change `padding-left` from `9px` to `8px` in column 6
-- [ ] Change `padding-right` from `2px` to `8px` in column 6
+- Add `max-width: 420px` to column 6
+- Add `width: auto` to column 6
+- Change `padding-left` from `9px` to `8px` in column 6
+- Change `padding-right` from `2px` to `8px` in column 6
 
 **Complete rule should look like:**
+
 ```css
 .transactions-table th:nth-child(6),
 .transactions-table td:nth-child(6) {
@@ -3918,12 +4268,13 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 
 ### **Step 2: Update BLOCK Column (lines 506-509)**
 
-- [ ] Change `padding-left` from `2px` to `8px` in column 7
-- [ ] Add `width: 90px` to column 7
-- [ ] Add `max-width: 90px` to column 7
-- [ ] Add `min-width: 90px` to column 7
+- Change `padding-left` from `2px` to `8px` in column 7
+- Add `width: 90px` to column 7
+- Add `max-width: 90px` to column 7
+- Add `min-width: 90px` to column 7
 
 **Complete rule should look like:**
+
 ```css
 .transactions-table th:nth-child(7),
 .transactions-table td:nth-child(7) {
@@ -3939,16 +4290,19 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 ## ✅ **Benefits**
 
 ### **1. Visual Consistency (Gestalt - Similarity)**
+
 - All column gaps are now 16px (8px + 8px)
 - Creates uniform rhythm across the table
 - Professional, data-dense appearance
 
 ### **2. Better Space Utilization**
+
 - RECEIVER column doesn't waste horizontal space
 - More data visible without excessive scrolling
 - Addresses shrink-wrap closer to their natural width
 
 ### **3. Improved Readability (Proximity)**
+
 - Eyes can scan across rows more easily
 - Less distance to travel between RECEIVER and BLOCK
 - Clearer data relationships
@@ -3960,15 +4314,17 @@ If you want RECEIVER to remain flexible but just reduce the visual gap:
 After implementation:
 
 ### **Visual Spacing:**
-- [ ] Measure spacing between RECEIVER and BLOCK columns
-- [ ] Verify it matches spacing between TIME and STATUS (~16px)
-- [ ] Check that RECEIVER addresses don't overflow (should break to next line with `word-break`)
-- [ ] Confirm BLOCK numbers fit comfortably in 90px column
+
+- Measure spacing between RECEIVER and BLOCK columns
+- Verify it matches spacing between TIME and STATUS (~16px)
+- Check that RECEIVER addresses don't overflow (should break to next line with `word-break`)
+- Confirm BLOCK numbers fit comfortably in 90px column
 
 ### **Content Behavior:**
-- [ ] Test with short addresses (should work fine)
-- [ ] Test with full-length addresses (42 characters, should wrap with `word-break: break-all`)
-- [ ] Test with large block numbers (7+ digits should fit in 90px)
+
+- Test with short addresses (should work fine)
+- Test with full-length addresses (42 characters, should wrap with `word-break: break-all`)
+- Test with large block numbers (7+ digits should fit in 90px)
 
 **Success Criteria:**
 ✅ Consistent 16px spacing between all columns  
@@ -3999,6 +4355,7 @@ After implementation:
 ## 📊 **Executive Summary**
 
 The Analytics section represents a **significant UX achievement**, demonstrating:
+
 - ✅ Consistent TRON aesthetic throughout
 - ✅ Excellent functional grouping and hierarchy
 - ✅ Strong information architecture
@@ -4015,6 +4372,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ### **1. Page Header (Grade: A)**
 
 **Current Implementation:**
+
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║                     ANALYTICS                         ║
@@ -4025,6 +4383,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ```
 
 **Strengths:**
+
 - ✅ **Typography Hierarchy** - "ANALYTICS" title at 3rem with Orbitron font creates strong brand presence
 - ✅ **Subtitle Clarity** - "Transaction analytics and insights for RIF on Chain" provides clear context
 - ✅ **Navigation Symmetry** - Two navigation links centered and balanced
@@ -4032,11 +4391,13 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 - ✅ **Breathing Room** - 40px bottom margin creates clear separation from content
 
 **Observations:**
+
 - Title uses proper sentence case "Analytics" instead of all-caps - good readability
 - Subtitle opacity at 0.7 creates visual hierarchy without being too faint
 - Navigation links have consistent hover states (background rgba, box-shadow, transform)
 
 **Minor Opportunities:**
+
 - Consider adding `aria-label` to navigation links for screen readers
 - Navigation links could benefit from keyboard focus indicators (`:focus-visible` styles)
 
@@ -4047,6 +4408,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ### **2. Filter & Control Bar (Grade: A+)**
 
 **Current Implementation:**
+
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║ [ALL] [USDRIF] [RIFPRO]          [7 days▼] [REFRESH] [XLS]  ║
@@ -4055,12 +4417,14 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ```
 
 **Implemented Changes:**
+
 - ✅ `.analyser-controls` has `justify-content: space-between` and `width: 100%`
 - ✅ `.filter-toggle` groups filter buttons with 10px gap
 - ✅ `.right-controls` has `margin-left: auto` for right alignment
 - ✅ Filter buttons have active state with increased background opacity and glow
 
 **Strengths:**
+
 - ✅ **Proximity (Gestalt)** - Related controls grouped together
 - ✅ **Visual Separation** - Clear spatial gap between filter and action groups
 - ✅ **Active State Feedback** - "ALL" button has visible active state (rgba(0, 255, 255, 0.2) background)
@@ -4069,6 +4433,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 - ✅ **Convention Compliance** - Filters left, actions right (matches Gmail, GitHub, Notion patterns)
 
 **Observations:**
+
 - Filter buttons use smaller font (12px) and width (80px) - appropriate hierarchy
 - Active filter button has enhanced box-shadow (20px blur vs 10px default)
 - Dropdown, Refresh, and XLS buttons properly aligned to right
@@ -4082,23 +4447,27 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 
 **Current Implementation:**
 
-| Column | Width | Padding | Notes |
-|--------|-------|---------|-------|
-| TIME (UTC) | 198px | 8px | Fixed width |
-| STATUS | Auto | 8px | Flexible |
-| ASSET | 80px | 8px | Fixed width |
-| TYPE | 70px | 8px | Right-aligned |
-| AMOUNT | 120px | 9px right | Right-aligned |
-| RECEIVER | 380px | 8px both | **Fixed width, nowrap** |
-| BLOCK | 90px | 8px | **Fixed width** |
+
+| Column     | Width | Padding   | Notes                   |
+| ---------- | ----- | --------- | ----------------------- |
+| TIME (UTC) | 198px | 8px       | Fixed width             |
+| STATUS     | Auto  | 8px       | Flexible                |
+| ASSET      | 80px  | 8px       | Fixed width             |
+| TYPE       | 70px  | 8px       | Right-aligned           |
+| AMOUNT     | 120px | 9px right | Right-aligned           |
+| RECEIVER   | 380px | 8px both  | **Fixed width, nowrap** |
+| BLOCK      | 90px  | 8px       | **Fixed width**         |
+
 
 **Implemented Improvements:**
+
 - ✅ RECEIVER column now has fixed width (380px) to prevent excessive expansion
 - ✅ Standard 8px padding on RECEIVER (was 9px left, 2px right)
 - ✅ BLOCK column has fixed width (90px) with standard 8px padding
 - ✅ Consistent 16px spacing between columns (8px + 8px)
 
 **Strengths:**
+
 - ✅ **Consistent Spacing** - All columns now have uniform 16px gaps
 - ✅ **No Wasted Space** - RECEIVER column doesn't expand to fill all space
 - ✅ **Fixed Widths** - Prevents layout shifts during data updates
@@ -4108,6 +4477,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 - ✅ **External Link Pattern** - Links open in new tab with `rel="noopener noreferrer"` (security best practice)
 
 **Observations from Screenshot:**
+
 - Table appears to have proper spacing between RECEIVER and BLOCK now
 - Active filter (ALL) shows all transaction types (Mint and Redeem)
 - Data is clearly readable with good contrast
@@ -4115,14 +4485,13 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 - Block numbers right-aligned for easy scanning
 
 **Remaining Opportunities:**
+
 1. **RECEIVER Column Width** - At 380px with `white-space: nowrap`, long addresses might overflow
-   - Consider using `overflow: hidden; text-overflow: ellipsis;` OR
-   - Keep full width but adjust to 400px for safety margin
-
+  - Consider using `overflow: hidden; text-overflow: ellipsis;` OR
+  - Keep full width but adjust to 400px for safety margin
 2. **Link Hover States** - Links could use more prominent hover feedback
-   - Current: `text-decoration: underline`
-   - Suggestion: Add `color: #00ff88` (slight color shift) + increased glow
-
+  - Current: `text-decoration: underline`
+  - Suggestion: Add `color: #00ff88` (slight color shift) + increased glow
 3. **Column Header Tooltips** - Headers like "TYPE" or "AMOUNT" could benefit from explanatory tooltips
 
 **Verdict:** Excellent data table with strong improvements implemented. Minor refinements would elevate to A+.
@@ -4132,6 +4501,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ### **4. Summary Footer (Grade: A)**
 
 **Current Implementation:**
+
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║ Total Transactions: 9 (filtered from 14), Mints: 2 | Redeems: 7  ║
@@ -4140,6 +4510,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ```
 
 **Strengths:**
+
 - ✅ **Summary Context** - Shows filtered count, total count, breakdown by type
 - ✅ **Right-Aligned Timestamp** - `margin-left: auto` + `text-align: right` positions timestamp correctly
 - ✅ **Subtle Background** - `rgba(0, 255, 255, 0.05)` background distinguishes footer from table
@@ -4147,16 +4518,17 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 - ✅ **Conditional Display** - Shows additional breakdown (USDRIF/RifPro count) when "All" filter is active
 
 **Observations:**
+
 - Timestamp format is compact: `YYYYMMDD HH:MM:SS.cs` (centiseconds)
 - Font weight at 500 (medium) provides good readability
 - Opacity at 0.8 creates subtle hierarchy
 
 **Minor Opportunities:**
-1. **Timestamp Readability** - Consider more human-friendly format
-   - Current: `20260309 11:07:10.15`
-   - Suggestion: `2026-03-09 11:07:10` (ISO 8601 format with dashes)
-   - Or: `Mar 9, 2026 11:07 AM` (human-readable)
 
+1. **Timestamp Readability** - Consider more human-friendly format
+  - Current: `20260309 11:07:10.15`
+  - Suggestion: `2026-03-09 11:07:10` (ISO 8601 format with dashes)
+  - Or: `Mar 9, 2026 11:07 AM` (human-readable)
 2. **Semantic HTML** - Wrap summary stats in `<strong>` or `<span>` with classes for better targeting
 
 **Verdict:** Strong implementation with excellent information architecture. Timestamp format is the only point of consideration.
@@ -4194,6 +4566,7 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 ```
 
 **Spacing Hierarchy:**
+
 - ✅ Page header → Content: 40px (clear major section break)
 - ✅ Component internal padding: 30px (generous breathing room)
 - ✅ Component header → Table: 25px (visual separation)
@@ -4209,48 +4582,40 @@ The Analytics section represents a **significant UX achievement**, demonstrating
 
 ### **Implemented Features:**
 
-| Feature | Status | Implementation | Score |
-|---------|--------|----------------|-------|
-| **Semantic HTML** | ✅ Good | `<header>`, `<h1>`, `<h2>`, `<table>` | A |
-| **ARIA Attributes** | ✅ Excellent | `aria-pressed` on filter buttons | A+ |
-| **Focus Management** | ⚠️ Partial | Links focusable, but styles could be enhanced | B+ |
-| **Color Contrast** | ✅ Good | Cyan (#00ffff) on dark backgrounds | A |
-| **Keyboard Navigation** | ✅ Good | All interactive elements accessible | A |
-| **Screen Reader Support** | ⚠️ Good | Semantic markup, but some labels missing | B+ |
-| **Touch Targets** | ✅ Excellent | Filter buttons 80px, action buttons 104px+ | A+ |
-| **External Links** | ✅ Excellent | `rel="noopener noreferrer"` for security | A+ |
+
+| Feature                   | Status      | Implementation                                | Score |
+| ------------------------- | ----------- | --------------------------------------------- | ----- |
+| **Semantic HTML**         | ✅ Good      | `<header>`, `<h1>`, `<h2>`, `<table>`         | A     |
+| **ARIA Attributes**       | ✅ Excellent | `aria-pressed` on filter buttons              | A+    |
+| **Focus Management**      | ⚠️ Partial  | Links focusable, but styles could be enhanced | B+    |
+| **Color Contrast**        | ✅ Good      | Cyan (#00ffff) on dark backgrounds            | A     |
+| **Keyboard Navigation**   | ✅ Good      | All interactive elements accessible           | A     |
+| **Screen Reader Support** | ⚠️ Good     | Semantic markup, but some labels missing      | B+    |
+| **Touch Targets**         | ✅ Excellent | Filter buttons 80px, action buttons 104px+    | A+    |
+| **External Links**        | ✅ Excellent | `rel="noopener noreferrer"` for security      | A+    |
+
 
 ### **Accessibility Opportunities:**
 
 1. **Focus Indicators Enhancement**
-   - Current: Browser default focus rings
-   - Recommendation: Add `:focus-visible` styles with cyan glow
-   ```css
-   button:focus-visible, a:focus-visible {
-     outline: 2px solid #00ffff;
-     outline-offset: 2px;
-     box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.3);
-   }
-   ```
-
+  - Current: Browser default focus rings
+  - Recommendation: Add `:focus-visible` styles with cyan glow
 2. **ARIA Labels for Navigation**
-   ```tsx
+  ```tsx
    <Link to="/" className="back-link" aria-label="Navigate back to metrics dashboard">
      ← Back to Metrics
    </Link>
-   ```
-
+  ```
 3. **Table Caption**
-   ```tsx
+  ```tsx
    <table className="transactions-table">
      <caption className="sr-only">USDRIF Mint and Redeem Transactions</caption>
      <thead>...</thead>
    </table>
-   ```
-
+  ```
 4. **Loading State Announcement**
-   - Already has `aria-busy` on refresh button ✅
-   - Could add `role="status" aria-live="polite"` to loading overlay
+  - Already has `aria-busy` on refresh button ✅
+  - Could add `role="status" aria-live="polite"` to loading overlay
 
 **Overall Accessibility Grade: A-**  
 Excellent foundation with minor enhancements needed for perfection.
@@ -4262,16 +4627,19 @@ Excellent foundation with minor enhancements needed for perfection.
 ### **Content Hierarchy:**
 
 **Level 1: Page Context**
+
 - Primary: "ANALYTICS" (largest, most prominent)
 - Secondary: Subtitle explaining purpose
 - Tertiary: Navigation options
 
 **Level 2: Data Tool**
+
 - Primary: "USDRIF MINT/REDEEM ANALYSER" (component title)
 - Secondary: Filter and action controls
 - Tertiary: Data table
 
 **Level 3: Data Details**
+
 - Primary: Transaction rows (main content)
 - Secondary: Column headers (context)
 - Tertiary: Summary statistics (meta information)
@@ -4285,51 +4653,42 @@ Excellent foundation with minor enhancements needed for perfection.
 ### **Nielsen Norman 10 Principles:**
 
 1. **Visibility of System Status** (A+)
-   - ✅ Active filter highlighted
-   - ✅ Loading spinner on refresh button
-   - ✅ Last updated timestamp
-   - ✅ Transaction count in footer
-
+  - ✅ Active filter highlighted
+  - ✅ Loading spinner on refresh button
+  - ✅ Last updated timestamp
+  - ✅ Transaction count in footer
 2. **Match Between System and Real World** (A)
-   - ✅ "Mint" and "Redeem" are domain-appropriate terms
-   - ✅ Timestamp shows actual time (though format could be more human)
-   - ✅ Ethereum addresses displayed in full hex format
-
+  - ✅ "Mint" and "Redeem" are domain-appropriate terms
+  - ✅ Timestamp shows actual time (though format could be more human)
+  - ✅ Ethereum addresses displayed in full hex format
 3. **User Control and Freedom** (A+)
-   - ✅ Filter buttons allow easy switching
-   - ✅ Export to Excel provides data portability
-   - ✅ Clear navigation back to Metrics
-
+  - ✅ Filter buttons allow easy switching
+  - ✅ Export to Excel provides data portability
+  - ✅ Clear navigation back to Metrics
 4. **Consistency and Standards** (A+)
-   - ✅ TRON aesthetic throughout entire application
-   - ✅ Button styles consistent across all sections
-   - ✅ Filter left / Actions right (industry convention)
-
+  - ✅ TRON aesthetic throughout entire application
+  - ✅ Button styles consistent across all sections
+  - ✅ Filter left / Actions right (industry convention)
 5. **Error Prevention** (A)
-   - ✅ Disabled state on buttons during loading
-   - ✅ Fixed column widths prevent layout shifts
-
+  - ✅ Disabled state on buttons during loading
+  - ✅ Fixed column widths prevent layout shifts
 6. **Recognition Rather Than Recall** (A)
-   - ✅ Active filter state clearly visible
-   - ✅ Column headers always visible (sticky)
-   - ✅ Summary footer provides context
-
+  - ✅ Active filter state clearly visible
+  - ✅ Column headers always visible (sticky)
+  - ✅ Summary footer provides context
 7. **Flexibility and Efficiency of Use** (A)
-   - ✅ Quick filter toggles
-   - ✅ Time period dropdown
-   - ✅ One-click Excel export
-
+  - ✅ Quick filter toggles
+  - ✅ Time period dropdown
+  - ✅ One-click Excel export
 8. **Aesthetic and Minimalist Design** (A+)
-   - ✅ Clean table layout
-   - ✅ No unnecessary decoration
-   - ✅ Information-dense without clutter
-
+  - ✅ Clean table layout
+  - ✅ No unnecessary decoration
+  - ✅ Information-dense without clutter
 9. **Help Users Recognize, Diagnose, and Recover from Errors** (B)
-   - ⚠️ No visible error handling in UI (though present in code with try/catch)
-   - Opportunity: Add error display mechanism
-
+  - ⚠️ No visible error handling in UI (though present in code with try/catch)
+  - Opportunity: Add error display mechanism
 10. **Help and Documentation** (B+)
-    - ⚠️ No tooltips or help text for columns
+  - ⚠️ No tooltips or help text for columns
     - ⚠️ Could benefit from "?" info icons for technical terms
     - ✅ Context provided through page subtitle
 
@@ -4342,20 +4701,24 @@ Excellent foundation with minor enhancements needed for perfection.
 ### **Current Breakpoints:**
 
 **Desktop (> 768px):**
+
 - ✅ Full horizontal layout
 - ✅ Controls grouped in single row
 - ✅ Table horizontal scroll if needed (`min-width: 1200px`)
 
 **Tablet/Mobile (≤ 768px):**
+
 - ✅ `.analyser-header` changes to `flex-direction: column`
 - ✅ Controls likely wrap (`.analyser-controls` has `flex-wrap: wrap`)
 
 **Observations:**
+
 - Table has `min-width: 1200px`, ensuring data integrity on small screens via horizontal scroll
 - Analytics container has `max-width: 1400px` for large screens
 - Filter buttons and action controls will stack gracefully
 
 **Recommendations:**
+
 - Consider adding a mobile-optimized table view for very small screens
 - Could show fewer columns or card-based layout on mobile
 
@@ -4366,14 +4729,16 @@ Well-handled with room for mobile-specific optimizations.
 
 ## 🎨 **Visual Polish Scorecard**
 
-| Aspect | Grade | Notes |
-|--------|-------|-------|
-| **Typography** | A+ | Excellent font hierarchy (Orbitron + Rajdhani) |
-| **Color Palette** | A+ | Consistent TRON cyan theme |
-| **Spacing** | A | Consistent rhythm, one minor refinement needed (RECEIVER→BLOCK) |
-| **Visual Hierarchy** | A+ | Clear primary/secondary/tertiary levels |
-| **Consistency** | A+ | Perfect alignment with overall app aesthetic |
-| **Polish** | A | Small refinements would achieve A+ |
+
+| Aspect               | Grade | Notes                                                           |
+| -------------------- | ----- | --------------------------------------------------------------- |
+| **Typography**       | A+    | Excellent font hierarchy (Orbitron + Rajdhani)                  |
+| **Color Palette**    | A+    | Consistent TRON cyan theme                                      |
+| **Spacing**          | A     | Consistent rhythm, one minor refinement needed (RECEIVER→BLOCK) |
+| **Visual Hierarchy** | A+    | Clear primary/secondary/tertiary levels                         |
+| **Consistency**      | A+    | Perfect alignment with overall app aesthetic                    |
+| **Polish**           | A     | Small refinements would achieve A+                              |
+
 
 **Overall Visual Grade: A (Excellent)**
 
@@ -4389,6 +4754,7 @@ Well-handled with room for mobile-specific optimizations.
 4. **React Best Practices** - `useCallback` for export function ✅
 
 **Recommendations:**
+
 - Consider virtualization for very large transaction lists (100+ rows)
 - Table currently handles 9-14 transactions well
 
@@ -4399,25 +4765,30 @@ Well-handled with room for mobile-specific optimizations.
 Based on previous feedback, the following have been successfully implemented:
 
 ### **1. Right-Aligned Controls** ✅
+
 - `.analyser-controls` has `justify-content: space-between` and `width: 100%`
 - `.right-controls` has `margin-left: auto`
 - Clear spatial separation between filter and action groups
 
 ### **2. Consistent Table Spacing** ✅
+
 - RECEIVER column: Fixed 380px width with standard 8px padding
 - BLOCK column: Fixed 90px width with standard 8px padding
 - Uniform 16px spacing between all columns
 
 ### **3. Filter Button Active State** ✅
+
 - Active button has enhanced background (rgba 0.2) and box-shadow (20px blur)
 - `aria-pressed` attribute for accessibility
 
 ### **4. Professional Analytics Header** ✅
+
 - Clear "ANALYTICS" title with TRON aesthetic
 - Informative subtitle
 - Symmetric navigation links
 
 ### **5. Summary Footer** ✅
+
 - Transaction count with filter context
 - Breakdown by type (Mint/Redeem)
 - Right-aligned last updated timestamp
@@ -4429,26 +4800,21 @@ Based on previous feedback, the following have been successfully implemented:
 ### **Priority: LOW (Polish Items)**
 
 1. **Enhanced Focus Indicators** (5 minutes)
-   - Add `:focus-visible` styles with cyan glow for keyboard navigation
-
+  - Add `:focus-visible` styles with cyan glow for keyboard navigation
 2. **Link Hover Enhancement** (3 minutes)
-   - Add color shift on address/block links (cyan → green-cyan)
-   - Enhance glow effect
-
+  - Add color shift on address/block links (cyan → green-cyan)
+  - Enhance glow effect
 3. **Timestamp Format** (2 minutes)
-   - Make more human-readable: `2026-03-09 11:07:10` or `Mar 9, 2026 11:07 AM`
-
+  - Make more human-readable: `2026-03-09 11:07:10` or `Mar 9, 2026 11:07 AM`
 4. **Table Column Tooltips** (15 minutes - OPTIONAL)
-   - Add "?" icons with explanations for TYPE, AMOUNT, RECEIVER headers
-   - Implement only if user testing shows confusion
-
+  - Add "?" icons with explanations for TYPE, AMOUNT, RECEIVER headers
+  - Implement only if user testing shows confusion
 5. **ARIA Label Enhancement** (5 minutes)
-   - Add descriptive labels to navigation links
-   - Add `<caption>` to table for screen readers
-
+  - Add descriptive labels to navigation links
+  - Add `<caption>` to table for screen readers
 6. **Error State Display** (10 minutes)
-   - Add visual error message component for API failures
-   - Currently handles errors in console, but no user-facing display
+  - Add visual error message component for API failures
+  - Currently handles errors in console, but no user-facing display
 
 **Total Optional Polish Time:** ~40 minutes for perfection
 
@@ -4463,6 +4829,7 @@ Based on previous feedback, the following have been successfully implemented:
 #### **Why ARIA Labels?**
 
 **Problem:** Screen readers will read the visible text including arrow symbols:
+
 - "← Back to Metrics" announces as "left arrow Back to Metrics"
 - "Play Light Cycle →" announces as "Play Light Cycle right arrow"
 
@@ -4477,6 +4844,7 @@ These arrow symbols sound awkward when announced and don't add meaningful contex
 **File:** `src/Analytics.tsx` lines 14-15
 
 **Current Code:**
+
 ```tsx
 <div className="analytics-header-actions">
   <Link to="/" className="back-link">← Back to Metrics</Link>
@@ -4485,6 +4853,7 @@ These arrow symbols sound awkward when announced and don't add meaningful contex
 ```
 
 **Updated Code (Recommended):**
+
 ```tsx
 <div className="analytics-header-actions">
   <Link 
@@ -4509,11 +4878,13 @@ These arrow symbols sound awkward when announced and don't add meaningful contex
 #### **What This Achieves:**
 
 **For Visual Users (No Change):**
+
 - Still see: "← Back to Metrics"
 - Still see: "Play Light Cycle →"
 - Visual appearance unchanged
 
 **For Screen Reader Users (Improved):**
+
 - Hear: "Navigate back to the main metrics dashboard" ✅
 - Hear: "Navigate to the Light Cycle game" ✅
 - No awkward arrow symbol announcements
@@ -4535,12 +4906,14 @@ These arrow symbols sound awkward when announced and don't add meaningful contex
 #### **Alternative ARIA Label Options:**
 
 **Option A (Concise):**
+
 ```tsx
 aria-label="Back to metrics dashboard"
 aria-label="Go to Light Cycle game"
 ```
 
 **Option B (Very Brief):**
+
 ```tsx
 aria-label="Return to metrics"
 aria-label="Play Light Cycle"
@@ -4553,6 +4926,7 @@ aria-label="Play Light Cycle"
 #### **Testing After Implementation:**
 
 **1. macOS with VoiceOver:**
+
 ```bash
 # Enable VoiceOver: Cmd + F5
 # Tab to each link
@@ -4561,17 +4935,20 @@ aria-label="Play Light Cycle"
 ```
 
 **2. Windows with NVDA/JAWS:**
+
 ```bash
 # Tab to each link
 # Verify proper announcement (no arrow symbols)
 ```
 
 **3. Chrome DevTools Accessibility Panel:**
+
 - Right-click link → Inspect
 - Open Accessibility panel (bottom drawer)
 - Verify "Accessible Name" shows the aria-label value
 
 **Success Criteria:**
+
 - ✅ Screen reader announces aria-label (not visible text + arrows)
 - ✅ Visual appearance unchanged
 - ✅ Keyboard navigation still works (Tab key)
@@ -4586,6 +4963,7 @@ While implementing ARIA labels, also add a screen reader caption to the table:
 **File:** `src/MintRedeemAnalyser.tsx` (find the `<table>` element)
 
 **Add this after `<table className="transactions-table">`:**
+
 ```tsx
 <table className="transactions-table">
   <caption className="sr-only">
@@ -4600,6 +4978,7 @@ While implementing ARIA labels, also add a screen reader caption to the table:
 ```
 
 **Add to CSS (create `.sr-only` class if not exists):**
+
 ```css
 .sr-only {
   position: absolute;
@@ -4621,18 +5000,21 @@ This caption is invisible to sighted users but provides context to screen reader
 #### **Impact Assessment:**
 
 **Accessibility Improvement:**
+
 - ✅ Clear context about link destinations
 - ✅ Removes awkward arrow symbol announcements
 - ✅ Better compliance with WCAG 2.1 Level AA
 - ✅ Improved user experience for ~1 billion screen reader users globally
 
 **Implementation Details:**
+
 - **Effort:** 5 minutes
 - **Files Changed:** 1-2 (Analytics.tsx, optionally MintRedeemAnalyser.tsx + CSS)
 - **Lines Changed:** 2-4
 - **Risk:** Very low (additive enhancement, no breaking changes)
 
 **Grade Improvement:**
+
 - **Before:** Accessibility A-
 - **After:** Accessibility A
 
@@ -4649,6 +5031,7 @@ This caption is invisible to sighted users but provides context to screen reader
 ### **Overall Analytics Section Grade: A (Excellent)**
 
 **Breakdown:**
+
 - Visual Design: A+ (Exceptional)
 - Information Architecture: A (Excellent)
 - Accessibility: A- (Strong, minor enhancements possible)
@@ -4673,14 +5056,16 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ## 📋 **Recommended Next Steps**
 
 ### **For Immediate Launch:**
-- [ ] Verify table spacing on live data with long addresses
-- [ ] Test keyboard navigation flow
-- [ ] Confirm mobile responsive behavior
+
+- Verify table spacing on live data with long addresses
+- Test keyboard navigation flow
+- Confirm mobile responsive behavior
 
 ### **Post-Launch Enhancements (Optional):**
-- [ ] Add focus indicators (`:focus-visible` styles)
-- [ ] Implement column header tooltips (if user feedback indicates confusion)
-- [ ] Consider timestamp format change for better readability
+
+- Add focus indicators (`:focus-visible` styles)
+- Implement column header tooltips (if user feedback indicates confusion)
+- Consider timestamp format change for better readability
 
 ---
 
@@ -4707,6 +5092,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Status:** ❌ **FAILING** - Application has multiple critical responsive design issues preventing proper mobile rendering on iPhone 12 Pro.
 
 **Primary Issue:** The application's breakpoints and fixed-width elements are not optimized for iPhone 12 Pro's 390px viewport width, causing:
+
 - Horizontal scrolling on Analytics page
 - Awkward layout between breakpoint gaps
 - Poor usability on mobile devices
@@ -4717,14 +5103,16 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 
 ## 📐 **Device Specifications: iPhone 12 Pro**
 
-| Specification | Value |
-|---------------|-------|
-| **Screen Size** | 6.1 inches |
-| **Physical Resolution** | 1170 x 2532 pixels |
-| **CSS Viewport Width** | 390px (at default zoom) |
-| **CSS Viewport Height** | 844px |
-| **Pixel Ratio** | 3x (@3x retina) |
-| **Safe Area** | ~15px top/bottom for notch/home indicator |
+
+| Specification           | Value                                     |
+| ----------------------- | ----------------------------------------- |
+| **Screen Size**         | 6.1 inches                                |
+| **Physical Resolution** | 1170 x 2532 pixels                        |
+| **CSS Viewport Width**  | 390px (at default zoom)                   |
+| **CSS Viewport Height** | 844px                                     |
+| **Pixel Ratio**         | 3x (@3x retina)                           |
+| **Safe Area**           | ~15px top/bottom for notch/home indicator |
+
 
 **Critical Context:** iPhone 12 Pro at **390px viewport width** falls in the gap between the app's two existing breakpoints (375px and 768px).
 
@@ -4759,6 +5147,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ### **The Problem:**
 
 **iPhone 12 Pro at 390px viewport width:**
+
 - ❌ **TOO WIDE** for 375px breakpoint (not applied)
 - ❌ **TOO NARROW** for 768px breakpoint (not applied)
 - ❌ **FALLS IN THE GAP** - Gets desktop styles on a mobile device
@@ -4784,12 +5173,14 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Impact:**
+
 - Table forces 1200px minimum width
 - iPhone 12 Pro viewport is only 390px
 - User must scroll horizontally **3+ screen widths** to see all data
 - Completely breaks mobile usability
 
 **User Experience:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ iPhone Screen (390px)                       │
@@ -4810,6 +5201,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Location:** `src/MintRedeemAnalyser.css` lines 516-573
 
 **Fixed Width Columns:**
+
 ```css
 /* TIME column: 198px */
 .transactions-table th:first-child,
@@ -4849,6 +5241,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 390px - 40px (body padding) = **350px usable**
 
 **Impact:**
+
 - RECEIVER column alone (380px) exceeds iPhone screen width (390px)
 - Forces horizontal scrolling
 - Ethereum addresses cannot be read without scrolling
@@ -4860,11 +5253,13 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ### **Issue #3: Breakpoint Gap (375px to 768px)** ⚠️ HIGH
 
 **Problem:**
+
 - iPhone 12 Pro (390px) + iPhone 13/14/15 (390-428px) are common devices
 - Current breakpoints: 375px and 768px
 - **393px gap** where modern iPhones receive no mobile optimizations
 
 **Affected Devices:**
+
 - iPhone 12 Pro: 390px ❌
 - iPhone 13 Pro: 390px ❌
 - iPhone 14 Pro: 393px ❌
@@ -4872,6 +5267,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 - iPhone 12/13/14/15 Pro Max: 428px ❌
 
 **Impact:**
+
 - All modern large iPhones get desktop layout
 - Cramped UI, tiny touch targets, horizontal scrolling
 - Represents significant portion of user base
@@ -4885,6 +5281,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Location:** `src/index.css` lines 82-93, `src/Analytics.css` lines 30-41
 
 **Desktop Sizes (applied to iPhone 12 Pro):**
+
 ```css
 /* Main header - applied to 390px screen! */
 .header h1 {
@@ -4900,6 +5297,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Mobile Fix (only at 768px and below):**
+
 ```css
 @media (max-width: 768px) {
   .header h1 {
@@ -4909,6 +5307,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Impact:**
+
 - Headings take up excessive vertical space on iPhone 12 Pro
 - Pushes content below fold
 - Creates cramped feeling
@@ -4922,6 +5321,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Location:** `src/MintRedeemAnalyser.css`
 
 **Filter Buttons:**
+
 ```css
 .filter-button {
   min-width: 80px;
@@ -4930,6 +5330,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Action Buttons:**
+
 ```css
 .analyser-controls button {
   min-width: 104px;
@@ -4938,6 +5339,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Progress Bar Container:**
+
 ```css
 .inline-progress {
   min-width: 220px;
@@ -4946,6 +5348,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 ```
 
 **Total Width Required:**
+
 - Filters: 3 × 80px = 240px
 - Gap: 2 × 10px = 20px
 - Dropdown: ~100px
@@ -4958,6 +5361,7 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 390px - 40px padding = **350px**
 
 **Impact:**
+
 - Controls forced to wrap awkwardly or overflow
 - Layout breaks at 390px viewport
 - Poor visual balance
@@ -4972,14 +5376,17 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 
 **Current Touch Targets on Mobile (390px viewport):**
 
-| Element | Current Size | WCAG Requirement | Status |
-|---------|-------------|------------------|--------|
-| Filter buttons | 80px × ~34px | 44x44px | ⚠️ Height insufficient |
-| Table links | Variable × ~30px | 44x44px | ❌ Too small |
-| Dropdown | ~100px × ~38px | 44x44px | ⚠️ Height insufficient |
-| Nav links | Variable × ~38px | 44x44px | ⚠️ Height insufficient |
+
+| Element        | Current Size     | WCAG Requirement | Status                 |
+| -------------- | ---------------- | ---------------- | ---------------------- |
+| Filter buttons | 80px × ~34px     | 44x44px          | ⚠️ Height insufficient |
+| Table links    | Variable × ~30px | 44x44px          | ❌ Too small            |
+| Dropdown       | ~100px × ~38px   | 44x44px          | ⚠️ Height insufficient |
+| Nav links      | Variable × ~38px | 44x44px          | ⚠️ Height insufficient |
+
 
 **Impact:**
+
 - Difficult to tap accurately on mobile
 - Accidental taps on wrong elements
 - Frustrating user experience
@@ -4994,22 +5401,26 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Location:** `index.html` line 5
 
 **Current:**
+
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 ```
 
 **Analysis:**
+
 - ✅ `width=device-width` is correct
 - ✅ `initial-scale=1.0` is correct
 - ❌ Missing `maximum-scale` constraint (optional)
 - ❌ Missing `user-scalable` specification (optional)
 
 **Recommendation (Optional):**
+
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 ```
 
 **Rationale:**
+
 - Allows users to zoom if needed
 - `maximum-scale=5.0` prevents excessive zoom-out
 - `user-scalable=yes` maintains accessibility
@@ -5025,18 +5436,21 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Status:** ⚠️ MODERATE ISSUES
 
 **What Works:**
+
 - ✅ Container max-width: 800px adapts reasonably
 - ✅ Grid layout responds at 768px
 - ✅ Card padding reduces at 768px (30px → 20px)
 - ✅ Metrics stack vertically
 
 **What Breaks on iPhone 12 Pro (390px):**
+
 - ❌ H1 font-size: 3rem (48px) - too large, not scaled until 768px
 - ❌ Metric values: 3rem (48px) - too large, not scaled until 768px (2rem)
 - ⚠️ Header meta (git hash, deployment count) may wrap awkwardly
 - ⚠️ Navigation links wrap but could be optimized
 
 **Specific Issues:**
+
 ```css
 /* Applied at 390px (no breakpoint) */
 .header h1 {
@@ -5057,15 +5471,18 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Status:** ⚠️ MODERATE ISSUES (Header) + CRITICAL (Table)
 
 **Header Issues:**
+
 - ❌ H1 font-size: 3rem (48px) - not responsive until 768px
 - ❌ No mobile breakpoint for 390px
 - ⚠️ Navigation links work but could be tighter
 
 **Table Issues (see Issue #1):**
+
 - ❌ CRITICAL: min-width: 1200px causes severe horizontal scrolling
 - ❌ CRITICAL: Fixed column widths don't adapt
 
 **Fix Needed:** 
+
 1. Add mobile breakpoint for header
 2. Completely redesign table for mobile (card-based layout)
 
@@ -5076,18 +5493,21 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Status:** ❌ CRITICAL FAILURES
 
 **Control Bar:**
+
 - ❌ Fixed widths exceed viewport (729px total vs. 350px available)
 - ❌ Filter buttons + action buttons forced to wrap
 - ⚠️ Progress bar (220px fixed) takes majority of screen width
 - ⚠️ Space-between layout breaks on narrow screen
 
 **Table:**
+
 - ❌ CRITICAL: 1200px min-width
 - ❌ CRITICAL: RECEIVER column (380px) wider than screen (390px)
 - ❌ No mobile-optimized table view
 - ❌ Horizontal scroll required for all transactions
 
 **Summary Footer:**
+
 - ⚠️ Long transaction text may wrap awkwardly
 - ⚠️ Timestamp may overflow on narrow screens
 
@@ -5100,12 +5520,14 @@ The Analytics section is **production-ready** as-is. The remaining opportunities
 **Status:** ✅ LIKELY OK (needs verification)
 
 **Observations:**
+
 - Game board is grid-based with 20px cells
 - Has padding: 20px which adapts
 - Centered layout should work
 - Game controls use keyboard/swipe (touch-friendly)
 
 **Potential Issues:**
+
 - Game board size may need scaling for 390px viewport
 - Touch swipe controls need testing on iPhone
 
@@ -5126,6 +5548,7 @@ These fixes address the most severe issues preventing mobile usability.
 **File:** ALL CSS files
 
 **Add new breakpoint:**
+
 ```css
 /* Modern Large iPhones (iPhone 12 Pro and up) */
 @media (max-width: 430px) {
@@ -5134,6 +5557,7 @@ These fixes address the most severe issues preventing mobile usability.
 ```
 
 **Rationale:**
+
 - Captures iPhone 12/13/14/15 Pro (390px)
 - Captures iPhone 12/13/14/15 Pro Max (428px)
 - Fills the critical gap between 375px and 768px
@@ -5145,6 +5569,7 @@ These fixes address the most severe issues preventing mobile usability.
 **File:** `src/MintRedeemAnalyser.css`
 
 **Current (line 488):**
+
 ```css
 .transactions-table {
   width: 100%;
@@ -5153,6 +5578,7 @@ These fixes address the most severe issues preventing mobile usability.
 ```
 
 **Add responsive override:**
+
 ```css
 @media (max-width: 430px) {
   .transactions-table {
@@ -5174,6 +5600,7 @@ These fixes address the most severe issues preventing mobile usability.
 **Strategy:** Convert table rows to vertical cards on mobile
 
 **Add new styles:**
+
 ```css
 @media (max-width: 430px) {
   /* Hide table header on mobile */
@@ -5244,6 +5671,7 @@ These fixes address the most severe issues preventing mobile usability.
 **Visual Result:**
 
 **Desktop:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ TIME     STATUS  ASSET  TYPE   AMOUNT  ...  │
@@ -5252,6 +5680,7 @@ These fixes address the most severe issues preventing mobile usability.
 ```
 
 **Mobile (Card View):**
+
 ```
 ┌─────────────────────────────┐
 │ TIME:      2026-01-24 01:00 │
@@ -5275,6 +5704,7 @@ These fixes address the most severe issues preventing mobile usability.
 **Files:** `src/index.css`, `src/Analytics.css`
 
 **Add to index.css:**
+
 ```css
 @media (max-width: 430px) {
   /* Main header - reduce from 3rem (48px) */
@@ -5303,6 +5733,7 @@ These fixes address the most severe issues preventing mobile usability.
 ```
 
 **Add to Analytics.css:**
+
 ```css
 @media (max-width: 430px) {
   /* Analytics header */
@@ -5327,6 +5758,7 @@ These fixes address the most severe issues preventing mobile usability.
 **File:** `src/MintRedeemAnalyser.css`
 
 **Add responsive styles:**
+
 ```css
 @media (max-width: 430px) {
   /* Stack analyser controls vertically */
@@ -5380,11 +5812,13 @@ These fixes address the most severe issues preventing mobile usability.
 **Visual Result:**
 
 **Desktop (Current):**
+
 ```
 [ ALL ][ USDRIF ][ RIFPRO ]         [ 7 days▼ ][ REFRESH ][ XLS ]
 ```
 
 **Mobile (Proposed):**
+
 ```
 [ ALL ]         [ USDRIF ]        [ RIFPRO ]
 ────────────────────────────────────────────
@@ -5404,6 +5838,7 @@ These fixes address the most severe issues preventing mobile usability.
 **File:** `src/MintRedeemAnalyser.css`, `src/index.css`
 
 **Add to MintRedeemAnalyser.css:**
+
 ```css
 @media (max-width: 430px) {
   /* Ensure filter buttons meet 44px height */
@@ -5427,6 +5862,7 @@ These fixes address the most severe issues preventing mobile usability.
 ```
 
 **Add to index.css:**
+
 ```css
 @media (max-width: 430px) {
   /* Navigation links */
@@ -5535,13 +5971,13 @@ These fixes address the most severe issues preventing mobile usability.
 
 **Priority: P0 - CRITICAL**
 
-- [ ] **1.1** Add `@media (max-width: 430px)` breakpoint to all CSS files
-- [ ] **1.2** Remove `min-width: 1200px` from `.transactions-table` on mobile
-- [ ] **1.3** Implement card-based table layout for mobile
-- [ ] **1.3a** Add CSS for card-based rows
-- [ ] **1.3b** Add `data-label` attributes to all `<td>` elements in TSX
-- [ ] **1.3c** Test card layout on iPhone 12 Pro
-- [ ] **1.3d** Verify no horizontal scrolling in Analytics
+- **1.1** Add `@media (max-width: 430px)` breakpoint to all CSS files
+- **1.2** Remove `min-width: 1200px` from `.transactions-table` on mobile
+- **1.3** Implement card-based table layout for mobile
+- **1.3a** Add CSS for card-based rows
+- **1.3b** Add `data-label` attributes to all `<td>` elements in TSX
+- **1.3c** Test card layout on iPhone 12 Pro
+- **1.3d** Verify no horizontal scrolling in Analytics
 
 **Estimated Time:** 3-4 hours  
 **Files Changed:** 3 (MintRedeemAnalyser.css, MintRedeemAnalyser.tsx, index.css)
@@ -5552,20 +5988,20 @@ These fixes address the most severe issues preventing mobile usability.
 
 **Priority: P1 - HIGH**
 
-- [ ] **2.1** Scale typography for 430px breakpoint
-- [ ] **2.1a** Reduce h1 from 3rem to 2rem
-- [ ] **2.1b** Reduce metric values from 3rem to 2.2rem
-- [ ] **2.1c** Test readability on iPhone 12 Pro
-- [ ] **2.2** Implement flexible control layout
-- [ ] **2.2a** Stack controls vertically on mobile
-- [ ] **2.2b** Make filter buttons flexible width
-- [ ] **2.2c** Full-width dropdowns and action buttons
-- [ ] **2.2d** Test control interactions on touchscreen
-- [ ] **2.3** Increase touch target heights to 44px minimum
-- [ ] **2.3a** Update filter buttons
-- [ ] **2.3b** Update action buttons
-- [ ] **2.3c** Update navigation links
-- [ ] **2.3d** Verify with iOS accessibility inspector
+- **2.1** Scale typography for 430px breakpoint
+- **2.1a** Reduce h1 from 3rem to 2rem
+- **2.1b** Reduce metric values from 3rem to 2.2rem
+- **2.1c** Test readability on iPhone 12 Pro
+- **2.2** Implement flexible control layout
+- **2.2a** Stack controls vertically on mobile
+- **2.2b** Make filter buttons flexible width
+- **2.2c** Full-width dropdowns and action buttons
+- **2.2d** Test control interactions on touchscreen
+- **2.3** Increase touch target heights to 44px minimum
+- **2.3a** Update filter buttons
+- **2.3b** Update action buttons
+- **2.3c** Update navigation links
+- **2.3d** Verify with iOS accessibility inspector
 
 **Estimated Time:** 2-3 hours  
 **Files Changed:** 3 (index.css, Analytics.css, MintRedeemAnalyser.css)
@@ -5576,13 +6012,13 @@ These fixes address the most severe issues preventing mobile usability.
 
 **Priority: P2 - MEDIUM**
 
-- [ ] **3.1** Optimize padding for mobile screens
-- [ ] **3.2** Improve horizontal spacing
-- [ ] **3.3** Optimize summary footer layout
-- [ ] **3.4** Add smooth transitions for responsive changes
-- [ ] **3.5** Test on multiple iPhone models (12, 13, 14, 15)
-- [ ] **3.6** Test in landscape orientation
-- [ ] **3.7** Verify all animations respect `prefers-reduced-motion`
+- **3.1** Optimize padding for mobile screens
+- **3.2** Improve horizontal spacing
+- **3.3** Optimize summary footer layout
+- **3.4** Add smooth transitions for responsive changes
+- **3.5** Test on multiple iPhone models (12, 13, 14, 15)
+- **3.6** Test in landscape orientation
+- **3.7** Verify all animations respect `prefers-reduced-motion`
 
 **Estimated Time:** 1-2 hours  
 **Files Changed:** 2 (index.css, MintRedeemAnalyser.css)
@@ -5594,6 +6030,7 @@ These fixes address the most severe issues preventing mobile usability.
 ### **Phase 1: Basic Functional Testing**
 
 **Devices to Test:**
+
 1. iPhone 12 Pro (390x844) - Primary target
 2. iPhone 13 Pro (390x844)
 3. iPhone 14 Pro (393x852)
@@ -5603,6 +6040,7 @@ These fixes address the most severe issues preventing mobile usability.
 **Test Cases:**
 
 #### **TC-1: Analytics Table Horizontal Scroll**
+
 - **Goal:** Verify no horizontal page scroll required
 - **Steps:**
   1. Navigate to Analytics page on iPhone 12 Pro
@@ -5612,6 +6050,7 @@ These fixes address the most severe issues preventing mobile usability.
 - **Pass Criteria:** No page-wide horizontal scrolling
 
 #### **TC-2: Card-Based Table Layout**
+
 - **Goal:** Verify transactions display as cards on mobile
 - **Steps:**
   1. Navigate to Analytics page
@@ -5622,6 +6061,7 @@ These fixes address the most severe issues preventing mobile usability.
 - **Pass Criteria:** All transaction data readable without horizontal scroll
 
 #### **TC-3: Control Layout**
+
 - **Goal:** Verify controls stack properly and are tappable
 - **Steps:**
   1. Navigate to Analytics page
@@ -5633,6 +6073,7 @@ These fixes address the most severe issues preventing mobile usability.
 - **Pass Criteria:** No control overflow, all buttons respond to tap
 
 #### **TC-4: Typography Sizing**
+
 - **Goal:** Verify headers fit within viewport
 - **Steps:**
   1. Navigate to main page
@@ -5643,6 +6084,7 @@ These fixes address the most severe issues preventing mobile usability.
 - **Pass Criteria:** Headers don't dominate screen, content visible above fold
 
 #### **TC-5: Touch Targets**
+
 - **Goal:** Verify all interactive elements meet 44x44px minimum
 - **Steps:**
   1. Navigate to all pages
@@ -5656,11 +6098,13 @@ These fixes address the most severe issues preventing mobile usability.
 ### **Phase 2: Cross-Device Testing**
 
 Test on:
+
 - Safari iOS 15, 16, 17
 - Chrome iOS
 - Firefox iOS
 
 **Verify:**
+
 - Layout consistency across browsers
 - Touch interactions work correctly
 - No rendering bugs
@@ -5671,6 +6115,7 @@ Test on:
 ### **Phase 3: Edge Case Testing**
 
 **Test Scenarios:**
+
 1. Long Ethereum addresses - verify wrapping/truncation
 2. Large transaction counts - verify table performance
 3. Landscape orientation - verify layout adapts
@@ -5716,6 +6161,7 @@ After fixes are implemented, the application should use this breakpoint structur
 ```
 
 **Rationale:**
+
 - **430px** captures 98% of modern iPhones (2020-2025)
 - **768px** remains for tablets and landscape phones
 - Mobile-first approach ensures better performance
@@ -5728,24 +6174,21 @@ After fixes are implemented, the application should use this breakpoint structur
 ### **DO NOT:**
 
 1. ❌ **Do not use `user-scalable=no` in viewport meta tag**
-   - Violates accessibility guidelines
-   - Prevents users with vision impairments from zooming
-   - Apple App Store may reject
-
+  - Violates accessibility guidelines
+  - Prevents users with vision impairments from zooming
+  - Apple App Store may reject
 2. ❌ **Do not use `overflow-x: hidden` on body**
-   - Hides content instead of fixing layout
-   - Band-aid solution that doesn't address root cause
-   - Can break scroll behavior
-
+  - Hides content instead of fixing layout
+  - Band-aid solution that doesn't address root cause
+  - Can break scroll behavior
 3. ❌ **Do not use `transform: scale()` to shrink content**
-   - Creates blurry text
-   - Breaks touch targets (appear larger than actual hit area)
-   - Poor accessibility
-
+  - Creates blurry text
+  - Breaks touch targets (appear larger than actual hit area)
+  - Poor accessibility
 4. ❌ **Do not test only in Chrome DevTools**
-   - Mobile emulation is not accurate
-   - Touch interactions behave differently
-   - Must test on actual iOS device
+  - Mobile emulation is not accurate
+  - Touch interactions behave differently
+  - Must test on actual iOS device
 
 ---
 
@@ -5756,31 +6199,37 @@ After fixes are implemented, the application should use this breakpoint structur
 The mobile responsive implementation is complete when:
 
 ✅ **1. No Horizontal Scrolling**
+
 - Analytics table viewable within 390px viewport
 - No page-wide horizontal scroll on any page
 - Table scroll (if any) contained within table component
 
 ✅ **2. All Content Readable**
+
 - Typography scaled appropriately (h1 at 2rem on mobile)
 - Transaction data readable without zooming
 - Ethereum addresses visible (truncated with ellipsis if needed)
 
 ✅ **3. Touch Targets Compliant**
+
 - All interactive elements ≥ 44x44px
 - Buttons, links, dropdowns easily tappable
 - No accidental taps on adjacent elements
 
 ✅ **4. Layout Stable**
+
 - Controls stack properly on narrow screens
 - No awkward wrapping or overflow
 - Visual hierarchy maintained
 
 ✅ **5. Performance Acceptable**
+
 - Page loads in < 3 seconds on 4G
 - Smooth scrolling (60fps)
 - No layout shifts during load
 
 ✅ **6. Cross-Device Tested**
+
 - Works on iPhone 12, 13, 14, 15 (Pro and Pro Max)
 - Works in Safari, Chrome, Firefox iOS
 - Works in portrait and landscape
@@ -5790,6 +6239,7 @@ The mobile responsive implementation is complete when:
 ## 📊 **Estimated Impact**
 
 ### **Before Fixes:**
+
 - ❌ iPhone 12 Pro users: **CANNOT use Analytics** (horizontal scroll 3× screen width)
 - ❌ iPhone 13-15 users: **POOR experience** (cramped desktop layout)
 - ❌ Touch targets: **FAIL** WCAG accessibility guidelines
@@ -5797,6 +6247,7 @@ The mobile responsive implementation is complete when:
 - ⚠️ Represents ~40-50% of potential mobile user base
 
 ### **After Fixes:**
+
 - ✅ iPhone 12-15 users: **FULL functionality** on mobile
 - ✅ Analytics table: **Card-based layout** optimized for mobile
 - ✅ Touch targets: **PASS** WCAG 2.1 Level AA guidelines
@@ -5807,14 +6258,16 @@ The mobile responsive implementation is complete when:
 
 ## 💰 **Estimated Development Effort**
 
-| Phase | Description | Time | Priority |
-|-------|-------------|------|----------|
-| **Phase 1** | Critical fixes (table, breakpoint) | 3-4 hours | P0 |
-| **Phase 2** | High-priority improvements | 2-3 hours | P1 |
-| **Phase 3** | Polish & optimization | 1-2 hours | P2 |
-| **Testing** | Cross-device testing | 2-3 hours | P0 |
-| **QA** | Bug fixes and refinement | 1-2 hours | P1 |
-| **Total** | End-to-end implementation | **9-14 hours** | - |
+
+| Phase       | Description                        | Time           | Priority |
+| ----------- | ---------------------------------- | -------------- | -------- |
+| **Phase 1** | Critical fixes (table, breakpoint) | 3-4 hours      | P0       |
+| **Phase 2** | High-priority improvements         | 2-3 hours      | P1       |
+| **Phase 3** | Polish & optimization              | 1-2 hours      | P2       |
+| **Testing** | Cross-device testing               | 2-3 hours      | P0       |
+| **QA**      | Bug fixes and refinement           | 1-2 hours      | P1       |
+| **Total**   | End-to-end implementation          | **9-14 hours** | -        |
+
 
 **Recommended Sprint:** 2-3 days (with buffer for unexpected issues)
 
@@ -5823,20 +6276,23 @@ The mobile responsive implementation is complete when:
 ## 🚀 **Implementation Priority**
 
 ### **MUST FIX (Production Blocker):**
+
 1. ✅ Add 430px breakpoint
 2. ✅ Remove table min-width on mobile
 3. ✅ Implement card-based table layout
 4. ✅ Test on actual iPhone 12 Pro
 
 ### **SHOULD FIX (High Impact):**
-5. Scale typography for mobile
-6. Flexible control layout
-7. Increase touch target sizes
+
+1. Scale typography for mobile
+2. Flexible control layout
+3. Increase touch target sizes
 
 ### **NICE TO HAVE (Polish):**
-8. Optimize padding
-9. Improve spacing
-10. Test on multiple devices
+
+1. Optimize padding
+2. Improve spacing
+3. Test on multiple devices
 
 ---
 
@@ -5845,29 +6301,25 @@ The mobile responsive implementation is complete when:
 ### **Key Implementation Tips:**
 
 1. **Start with Mobile First**
-   - Write base styles for 390px viewport
-   - Add desktop enhancements with `min-width` media queries
-   - Easier to enhance up than strip down
-
+  - Write base styles for 390px viewport
+  - Add desktop enhancements with `min-width` media queries
+  - Easier to enhance up than strip down
 2. **Test Early, Test Often**
-   - Preview on actual iPhone after each major change
-   - Use Safari Web Inspector for remote debugging
-   - Don't rely solely on Chrome DevTools
-
+  - Preview on actual iPhone after each major change
+  - Use Safari Web Inspector for remote debugging
+  - Don't rely solely on Chrome DevTools
 3. **Preserve Existing Behavior**
-   - All changes should be additive (new breakpoints)
-   - Don't break desktop/tablet layouts
-   - Maintain TRON aesthetic on mobile
-
+  - All changes should be additive (new breakpoints)
+  - Don't break desktop/tablet layouts
+  - Maintain TRON aesthetic on mobile
 4. **Use Semantic Breakpoints**
-   - Name breakpoints by device class (not dimensions)
-   - Comment why breakpoint exists
-   - Document target devices
-
+  - Name breakpoints by device class (not dimensions)
+  - Comment why breakpoint exists
+  - Document target devices
 5. **Accessibility First**
-   - Always maintain 44x44px touch targets
-   - Ensure sufficient color contrast
-   - Test with VoiceOver enabled
+  - Always maintain 44x44px touch targets
+  - Ensure sufficient color contrast
+  - Test with VoiceOver enabled
 
 ---
 
@@ -5916,17 +6368,20 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 **Implementation:** `@media (max-width: 430px)` breakpoint added to all CSS files
 
 **Files Modified:**
+
 - ✅ `src/index.css` (line 439)
 - ✅ `src/Analytics.css` (line 92)
 - ✅ `src/MintRedeemAnalyser.css` (line 493)
 
 **Impact:**
+
 - Successfully captures iPhone 12 Pro (390px)
 - Covers iPhone 12/13/14/15 Pro (390px)
 - Covers iPhone 12/13/14/15 Pro Max (428px)
 - Fills critical gap between 375px and 768px breakpoints
 
 **Verification:**
+
 ```css
 /* Modern Large iPhones (iPhone 12 Pro and up) - 390-428px */
 @media (max-width: 430px) {
@@ -5945,6 +6400,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 **Changes Made:**
 
 1. **Removed Fixed Min-Width:**
+
 ```css
 .transactions-table {
   min-width: 100%; /* Changed from 1200px */
@@ -5952,7 +6408,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-2. **Reduced Column Widths:**
+1. **Reduced Column Widths:**
+
 ```css
 /* TIME column: 198px → 160px on mobile */
 .transactions-table th:first-child {
@@ -5970,11 +6427,13 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Calculation:**
+
 - Previous total: 198 + 90 + 80 + 70 + 120 + 380 + 90 = **1,028px** ❌
 - New mobile total: 160 + 90 + 80 + 70 + 120 + 280 + 90 = **890px**
 - With horizontal scroll container: **FITS in 390px viewport** ✅
 
 **Impact:**
+
 - No page-wide horizontal scrolling
 - Table scrolls within container
 - All columns accessible
@@ -5988,7 +6447,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 **Implementation:** All three CSS files updated
 
-**`src/index.css` (lines 440-457):**
+`**src/index.css` (lines 440-457):**
+
 ```css
 @media (max-width: 430px) {
   .header h1 {
@@ -6012,7 +6472,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-**`src/Analytics.css` (lines 93-101):**
+`**src/Analytics.css` (lines 93-101):**
+
 ```css
 @media (max-width: 430px) {
   .analytics-header h1 {
@@ -6028,6 +6489,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Impact:**
+
 - Headers no longer dominate mobile screen
 - More content visible above fold
 - Better visual balance
@@ -6084,11 +6546,13 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 **Visual Result:**
 
 **Desktop:**
+
 ```
 [ALL][USDRIF][RIFPRO]         [7 days▼][REFRESH][XLS]
 ```
 
 **Mobile (390px):**
+
 ```
 ┌────────────────────────────┐
 │ [ALL][USDRIF][RIFPRO]      │ ← Filter group, full width
@@ -6102,6 +6566,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Impact:**
+
 - All controls accessible
 - No overflow or awkward wrapping
 - Clean vertical stacking
@@ -6115,7 +6580,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 **Implementation:** Multiple files updated with 44px minimum heights
 
-**`src/MintRedeemAnalyser.css` (lines 544-558):**
+`**src/MintRedeemAnalyser.css` (lines 544-558):**
+
 ```css
 @media (max-width: 430px) {
   /* Filter buttons */
@@ -6138,7 +6604,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-**`src/index.css` (lines 471-477):**
+`**src/index.css` (lines 471-477):**
+
 ```css
 @media (max-width: 430px) {
   .game-link,
@@ -6150,7 +6617,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-**`src/Analytics.css` (lines 107-111):**
+`**src/Analytics.css` (lines 107-111):**
+
 ```css
 @media (max-width: 430px) {
   .back-link,
@@ -6163,12 +6631,14 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 **WCAG Compliance Table:**
 
-| Element | Before | After | Status |
-|---------|--------|-------|--------|
-| Filter buttons | ~34px | 44px | ✅ PASS |
-| Action buttons | ~38px | 44px | ✅ PASS |
-| Dropdowns | ~38px | 44px | ✅ PASS |
-| Navigation links | ~38px | 44px | ✅ PASS |
+
+| Element          | Before | After | Status |
+| ---------------- | ------ | ----- | ------ |
+| Filter buttons   | ~34px  | 44px  | ✅ PASS |
+| Action buttons   | ~38px  | 44px  | ✅ PASS |
+| Dropdowns        | ~38px  | 44px  | ✅ PASS |
+| Navigation links | ~38px  | 44px  | ✅ PASS |
+
 
 **Status:** ✅ FULLY IMPLEMENTED - WCAG 2.1 Level AA compliant
 
@@ -6178,7 +6648,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 **Implementation:** Multiple files updated
 
-**`src/index.css` (lines 459-469):**
+`**src/index.css` (lines 459-469):**
+
 ```css
 @media (max-width: 430px) {
   body {
@@ -6195,7 +6666,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-**`src/Analytics.css` (lines 103-105):**
+`**src/Analytics.css` (lines 103-105):**
+
 ```css
 @media (max-width: 430px) {
   .analytics-page {
@@ -6204,7 +6676,8 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 }
 ```
 
-**`src/MintRedeemAnalyser.css` (lines 561-568):**
+`**src/MintRedeemAnalyser.css` (lines 561-568):**
+
 ```css
 @media (max-width: 430px) {
   .mint-redeem-analyser {
@@ -6219,6 +6692,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Impact:**
+
 - Usable viewport width: 350px → 360px
 - More breathing room for content
 - Better space utilization on mobile
@@ -6247,6 +6721,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Impact:**
+
 - Summary text doesn't overflow
 - Timestamp fully visible
 - No awkward wrapping
@@ -6258,16 +6733,18 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 ## 📊 **Implementation Scorecard**
 
-| Recommendation | Priority | Status | Implementation Quality |
-|----------------|----------|--------|----------------------|
-| **Add 430px breakpoint** | P0 Critical | ✅ DONE | Excellent - Applied to all files |
+
+| Recommendation             | Priority    | Status | Implementation Quality           |
+| -------------------------- | ----------- | ------ | -------------------------------- |
+| **Add 430px breakpoint**   | P0 Critical | ✅ DONE | Excellent - Applied to all files |
 | **Remove table min-width** | P0 Critical | ✅ DONE | Excellent - Table now responsive |
-| **Reduce column widths** | P0 Critical | ✅ DONE | Excellent - Fits 390px viewport |
-| **Scale typography** | P1 High | ✅ DONE | Excellent - All headings scaled |
-| **Flexible controls** | P1 High | ✅ DONE | Excellent - Vertical stacking |
-| **44px touch targets** | P1 High | ✅ DONE | Excellent - WCAG compliant |
-| **Optimize padding** | P2 Medium | ✅ DONE | Excellent - Better space usage |
-| **Summary footer** | P2 Medium | ✅ DONE | Excellent - Clean stacking |
+| **Reduce column widths**   | P0 Critical | ✅ DONE | Excellent - Fits 390px viewport  |
+| **Scale typography**       | P1 High     | ✅ DONE | Excellent - All headings scaled  |
+| **Flexible controls**      | P1 High     | ✅ DONE | Excellent - Vertical stacking    |
+| **44px touch targets**     | P1 High     | ✅ DONE | Excellent - WCAG compliant       |
+| **Optimize padding**       | P2 Medium   | ✅ DONE | Excellent - Better space usage   |
+| **Summary footer**         | P2 Medium   | ✅ DONE | Excellent - Clean stacking       |
+
 
 **Overall Implementation Grade:** A+ (Exceptional)
 
@@ -6289,6 +6766,7 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 ```
 
 **Coverage Analysis:**
+
 - ✅ iPhone SE (375px): Covered by 375px breakpoint
 - ✅ iPhone 12/13/14/15 Pro (390px): Covered by NEW 430px breakpoint
 - ✅ iPhone 12/13/14/15 Pro Max (428px): Covered by NEW 430px breakpoint
@@ -6302,66 +6780,70 @@ The application now **renders correctly on iPhone 12 Pro** and similar devices. 
 
 ### **Main Metrics Dashboard:**
 
-| Aspect | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **H1 Size (390px)** | 48px (too large) | 32px | ✅ 33% reduction |
-| **Metric Values** | 48px (too large) | 35.2px | ✅ 27% reduction |
-| **Body Padding** | 20px | 15px | ✅ +10px usable width |
-| **Touch Targets** | ~38px (FAIL) | 44px (PASS) | ✅ WCAG compliant |
+
+| Aspect              | Before           | After       | Improvement          |
+| ------------------- | ---------------- | ----------- | -------------------- |
+| **H1 Size (390px)** | 48px (too large) | 32px        | ✅ 33% reduction      |
+| **Metric Values**   | 48px (too large) | 35.2px      | ✅ 27% reduction      |
+| **Body Padding**    | 20px             | 15px        | ✅ +10px usable width |
+| **Touch Targets**   | ~38px (FAIL)     | 44px (PASS) | ✅ WCAG compliant     |
+
 
 ---
 
 ### **Analytics Page:**
 
-| Aspect | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **Table Min-Width** | 1200px ❌ | 100% ✅ | ✅ No page scroll |
-| **Total Table Width** | 1,028px | 890px | ✅ Fits viewport |
-| **RECEIVER Column** | 380px (overflow) | 280px | ✅ Fits screen |
-| **H1 Size** | 48px | 32px | ✅ Better balance |
-| **Controls Layout** | Horizontal overflow | Vertical stack | ✅ Clean layout |
-| **Touch Targets** | ~38px (FAIL) | 44px (PASS) | ✅ WCAG compliant |
+
+| Aspect                | Before              | After          | Improvement      |
+| --------------------- | ------------------- | -------------- | ---------------- |
+| **Table Min-Width**   | 1200px ❌            | 100% ✅         | ✅ No page scroll |
+| **Total Table Width** | 1,028px             | 890px          | ✅ Fits viewport  |
+| **RECEIVER Column**   | 380px (overflow)    | 280px          | ✅ Fits screen    |
+| **H1 Size**           | 48px                | 32px           | ✅ Better balance |
+| **Controls Layout**   | Horizontal overflow | Vertical stack | ✅ Clean layout   |
+| **Touch Targets**     | ~38px (FAIL)        | 44px (PASS)    | ✅ WCAG compliant |
+
 
 ---
 
 ### **MintRedeemAnalyser Component:**
 
-| Aspect | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **Control Width** | 729px (overflow) | 100% stacked | ✅ No overflow |
-| **Filter Buttons** | Fixed 80px | Flexible | ✅ Adapts to screen |
-| **Touch Targets** | 34-38px | 44px | ✅ Accessible |
-| **Summary Layout** | Horizontal wrap | Vertical stack | ✅ Readable |
-| **Padding** | 30px | 15px | ✅ More space |
+
+| Aspect             | Before           | After          | Improvement        |
+| ------------------ | ---------------- | -------------- | ------------------ |
+| **Control Width**  | 729px (overflow) | 100% stacked   | ✅ No overflow      |
+| **Filter Buttons** | Fixed 80px       | Flexible       | ✅ Adapts to screen |
+| **Touch Targets**  | 34-38px          | 44px           | ✅ Accessible       |
+| **Summary Layout** | Horizontal wrap  | Vertical stack | ✅ Readable         |
+| **Padding**        | 30px             | 15px           | ✅ More space       |
+
 
 ---
 
 ## ✅ **User Experience Verification**
 
 ### **Reported by User:**
+
 > "It now works fine on my iPhone 12 Pro"
 
 ### **Expected Improvements User Experiences:**
 
 1. ✅ **No Horizontal Scrolling**
-   - Analytics page viewable within screen
-   - Table scrolls within container (not entire page)
-   - Ethereum addresses readable
-
+  - Analytics page viewable within screen
+  - Table scrolls within container (not entire page)
+  - Ethereum addresses readable
 2. ✅ **Clean Layout**
-   - Headers appropriately sized
-   - Controls stack vertically
-   - No awkward wrapping or overflow
-
+  - Headers appropriately sized
+  - Controls stack vertically
+  - No awkward wrapping or overflow
 3. ✅ **Easy Touch Interactions**
-   - All buttons easily tappable
-   - No accidental taps on adjacent elements
-   - Smooth, responsive interactions
-
+  - All buttons easily tappable
+  - No accidental taps on adjacent elements
+  - Smooth, responsive interactions
 4. ✅ **Professional Appearance**
-   - TRON aesthetic maintained
-   - Visual hierarchy clear
-   - Polished mobile experience
+  - TRON aesthetic maintained
+  - Visual hierarchy clear
+  - Polished mobile experience
 
 ---
 
@@ -6371,43 +6853,43 @@ While the implementation is successful, comprehensive testing is recommended:
 
 ### **Device Testing Checklist:**
 
-- [ ] iPhone 12 Pro (390px) - ✅ **CONFIRMED WORKING** by user
-- [ ] iPhone 13 Pro (390px)
-- [ ] iPhone 14 Pro (393px)
-- [ ] iPhone 15 Pro (393px)
-- [ ] iPhone 12/13/14/15 Pro Max (428px)
-- [ ] iPhone SE (375px)
-- [ ] iPad Mini (768px) in portrait
-- [ ] iPad Mini (1024px) in landscape
+- iPhone 12 Pro (390px) - ✅ **CONFIRMED WORKING** by user
+- iPhone 13 Pro (390px)
+- iPhone 14 Pro (393px)
+- iPhone 15 Pro (393px)
+- iPhone 12/13/14/15 Pro Max (428px)
+- iPhone SE (375px)
+- iPad Mini (768px) in portrait
+- iPad Mini (1024px) in landscape
 
 ### **Orientation Testing:**
 
-- [ ] Portrait mode (primary)
-- [ ] Landscape mode (verify layout adapts)
+- Portrait mode (primary)
+- Landscape mode (verify layout adapts)
 
 ### **Browser Testing:**
 
-- [ ] Safari iOS (primary)
-- [ ] Chrome iOS
-- [ ] Firefox iOS
+- Safari iOS (primary)
+- Chrome iOS
+- Firefox iOS
 
 ### **Interaction Testing:**
 
-- [ ] Tap filter buttons (ALL, USDRIF, RIFPRO)
-- [ ] Tap dropdown, select different time periods
-- [ ] Tap REFRESH button, verify loading state
-- [ ] Tap XLS export button
-- [ ] Scroll transaction table horizontally (within container)
-- [ ] Tap transaction links (addresses, block numbers)
-- [ ] Navigate between pages (Metrics ↔ Analytics ↔ Game)
+- Tap filter buttons (ALL, USDRIF, RIFPRO)
+- Tap dropdown, select different time periods
+- Tap REFRESH button, verify loading state
+- Tap XLS export button
+- Scroll transaction table horizontally (within container)
+- Tap transaction links (addresses, block numbers)
+- Navigate between pages (Metrics ↔ Analytics ↔ Game)
 
 ### **Accessibility Testing:**
 
-- [ ] VoiceOver navigation (iOS screen reader)
-- [ ] Dynamic Type sizing (iOS text size settings)
-- [ ] Zoom functionality (pinch to zoom)
-- [ ] Dark mode (if supported)
-- [ ] Reduced motion (prefers-reduced-motion)
+- VoiceOver navigation (iOS screen reader)
+- Dynamic Type sizing (iOS text size settings)
+- Zoom functionality (pinch to zoom)
+- Dark mode (if supported)
+- Reduced motion (prefers-reduced-motion)
 
 ---
 
@@ -6420,6 +6902,7 @@ While the current implementation is excellent, these optional enhancements could
 **Current:** RECEIVER column shows full Ethereum addresses at 280px
 
 **Alternative Option:**
+
 ```css
 @media (max-width: 430px) {
   .transactions-table td:nth-child(6) {
@@ -6499,31 +6982,37 @@ While the current implementation is excellent, these optional enhancements could
 ### **Definition of Done - All Criteria Met:**
 
 ✅ **1. No Horizontal Page Scrolling**
+
 - Analytics page fits within 390px viewport
 - Table scroll contained within table component
 - User confirmed: "works fine on my iPhone 12 Pro"
 
 ✅ **2. All Content Readable**
+
 - Typography scaled appropriately (2rem for h1)
 - Transaction data readable
 - Ethereum addresses visible in 280px column
 
 ✅ **3. Touch Targets WCAG Compliant**
+
 - All interactive elements ≥ 44px height
 - Easy to tap on iPhone 12 Pro
 - No accidental adjacent taps
 
 ✅ **4. Layout Stable**
+
 - Controls stack cleanly
 - No overflow or awkward wrapping
 - Visual hierarchy maintained
 
 ✅ **5. Cross-Device Coverage**
+
 - 430px breakpoint covers iPhone 12-15 range
 - Fills critical gap in responsive design
 - ~98% modern smartphone coverage
 
 ✅ **6. TRON Aesthetic Preserved**
+
 - Cyan color scheme maintained
 - Glow effects working on mobile
 - Brand consistency across all viewports
@@ -6533,12 +7022,14 @@ While the current implementation is excellent, these optional enhancements could
 ## 📈 **Impact Assessment**
 
 ### **Before Implementation:**
+
 - ❌ iPhone 12-15 users: BROKEN experience
 - ❌ Analytics unusable (3× horizontal scroll)
 - ❌ ~40-50% of mobile users affected
 - ❌ WCAG accessibility violations
 
 ### **After Implementation:**
+
 - ✅ iPhone 12-15 users: EXCELLENT experience
 - ✅ Analytics fully functional on mobile
 - ✅ Expands addressable user base by 40-50%
@@ -6546,6 +7037,7 @@ While the current implementation is excellent, these optional enhancements could
 - ✅ User confirmation: "works fine"
 
 **Business Impact:**
+
 - 📈 Mobile user base expansion: +40-50%
 - 📈 Analytics engagement: Previously 0% (broken) → Now 100% (working)
 - 📈 Accessibility compliance: FAIL → PASS
@@ -6564,6 +7056,7 @@ While the current implementation is excellent, these optional enhancements could
 **Coverage:** 98% of modern smartphones ✅
 
 ### **Breakdown:**
+
 - **Phase 1 (Critical):** ✅ 100% Implemented
 - **Phase 2 (High Priority):** ✅ 100% Implemented  
 - **Phase 3 (Polish):** ✅ 100% Implemented
@@ -6577,6 +7070,7 @@ While the current implementation is excellent, these optional enhancements could
 **Status:** 🟢 **APPROVED FOR PRODUCTION**
 
 **Mobile Support:**
+
 - ✅ iPhone 12/13/14/15 Pro: WORKING (user confirmed)
 - ✅ iPhone 12/13/14/15 Pro Max: WORKING (430px breakpoint)
 - ✅ iPhone SE: WORKING (375px breakpoint)
@@ -6584,6 +7078,7 @@ While the current implementation is excellent, these optional enhancements could
 - ✅ Android phones 390-430px: WORKING (430px breakpoint)
 
 **Functionality:**
+
 - ✅ Main metrics dashboard: Fully responsive
 - ✅ Analytics page: Fully responsive
 - ✅ Transaction table: Horizontal scroll contained
@@ -6591,12 +7086,14 @@ While the current implementation is excellent, these optional enhancements could
 - ✅ Navigation: Works across all pages
 
 **Accessibility:**
+
 - ✅ WCAG 2.1 Level AA compliant
 - ✅ Touch targets ≥ 44x44px
 - ✅ Color contrast maintained
 - ✅ Keyboard navigation supported
 
 **Performance:**
+
 - ✅ No layout shifts during load
 - ✅ Smooth scrolling
 - ✅ Fast rendering on mobile
@@ -6608,6 +7105,7 @@ While the current implementation is excellent, these optional enhancements could
 The responsive design implementation has been **exceptionally successful**. All critical issues identified in the initial audit have been resolved, and the application now provides an excellent mobile experience on iPhone 12 Pro and similar devices.
 
 **Key Achievements:**
+
 1. ✅ Zero horizontal page scrolling
 2. ✅ Perfect breakpoint coverage (430px)
 3. ✅ WCAG accessibility compliance
@@ -6640,12 +7138,15 @@ The responsive design implementation has been **exceptionally successful**. All 
 ## 🔍 **Current Implementation Analysis**
 
 ### **Location:**
+
 Network badges appear in component headers:
+
 - `MintRedeemAnalyser.tsx` line 1215: "Rootstock Mainnet" badge
 - `BTCVaultAnalyser.tsx` line 395: "Rootstock Testnet" badge
 - `VaultDepositWithdrawAnalyser.tsx` line 768: "Rootstock Mainnet" badge
 
 **Usage:**
+
 ```tsx
 <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
   Rootstock Mainnet
@@ -6657,6 +7158,7 @@ Network badges appear in component headers:
 ### **Current Styling (MintRedeemAnalyser.css lines 56-77):**
 
 **Base Badge:**
+
 ```css
 .network-badge {
   display: inline-flex;
@@ -6671,6 +7173,7 @@ Network badges appear in component headers:
 ```
 
 **Mainnet Variant:**
+
 ```css
 .network-badge--mainnet {
   background: linear-gradient(135deg, #00c853 0%, #009624 100%);
@@ -6680,6 +7183,7 @@ Network badges appear in component headers:
 ```
 
 **Testnet Variant:**
+
 ```css
 .network-badge--testnet {
   background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
@@ -6695,6 +7199,7 @@ Network badges appear in component headers:
 ### **Problem #1: Material Design, Not TRON** ❌ CRITICAL
 
 **Visual Evidence from Screenshot:**
+
 - ❌ **Solid green background** badges for "ROOTSTOCK MAI[NNET]"
 - ❌ **Solid orange background** badge for "ROOTSTOCK TES[TNET]"
 - ❌ **White text** on colored backgrounds
@@ -6703,6 +7208,7 @@ Network badges appear in component headers:
 - ❌ **Badges are inside rounded cyan boxes** - creating visual clutter
 
 **Current Style Analysis:**
+
 - Green: #00c853 (Material Design green-600)
 - Orange: #ff9800 (Material Design orange-500)
 - Solid, opaque gradient backgrounds
@@ -6710,6 +7216,7 @@ Network badges appear in component headers:
 - Zero glowing effects
 
 **TRON Aesthetic Throughout Rest of App:**
+
 - ✅ Transparent/dark backgrounds with rgba
 - ✅ Cyan (#00ffff) as primary accent color
 - ✅ Box-shadow glows on all elements (10-20px)
@@ -6728,6 +7235,7 @@ Network badges appear in component headers:
 ### **Problem #2: Color Palette Completely Foreign**
 
 **Application Color System:**
+
 - **Primary:** Cyan (#00ffff) - used for all primary elements
 - **Success/Positive:** Green-cyan (#00ff88) - used for Mint transactions only
 - **Warning/Error:** Magenta (#ff0080) - used for Redeem transactions
@@ -6735,6 +7243,7 @@ Network badges appear in component headers:
 - **Accent:** Cyan glows throughout (box-shadow, text-shadow)
 
 **Network Badge Colors (SCREENSHOT EVIDENCE):**
+
 - **Mainnet:** Solid green (#00c853) ❌ NOT in color system
 - **Testnet:** Solid orange (#ff9800) ❌ NOT in color system
 - **Text:** Black on green, white on orange ❌ Inconsistent
@@ -6742,6 +7251,7 @@ Network badges appear in component headers:
 
 **Visual Impact:**
 Looking at the screenshot, the green and orange badges are **immediately jarring** - they stand out like foreign objects because:
+
 1. Green and orange don't appear ANYWHERE else in the app
 2. Solid backgrounds violate the "dark + transparent rgba" pattern
 3. No glowing effects make them look flat and lifeless
@@ -6756,6 +7266,7 @@ Looking at the screenshot, the green and orange badges are **immediately jarring
 **Observed Layout Problems:**
 
 **Visual Layer Breakdown (from screenshot):**
+
 ```
 ┌────────────────────────────────────────┐
 │  ┌──────────────────┐  ┌──────────┐   │  ← Outer cyan container
@@ -6772,33 +7283,31 @@ Result: 3 competing visual elements for one piece of information!
 **Specific Issues:**
 
 1. ❌ **Three-Layer Visual Structure**
-   - Outer container with cyan border + glow
-   - Badge with green/orange fill + border
-   - Play button with cyan border in separate box
-   - Excessive visual complexity for simple network indicator
-
+  - Outer container with cyan border + glow
+  - Badge with green/orange fill + border
+  - Play button with cyan border in separate box
+  - Excessive visual complexity for simple network indicator
 2. ❌ **Play Button Icons (▶)** in Cyan Boxes
-   - Each badge has a separate cyan-bordered square box with play icon
-   - Unclear purpose - what does clicking play do?
-   - Icon color (cyan) clashes with badge color (green/orange)
-   - Creates confusion - is this a media player? a toggle? decorative?
-   - No clear relationship between badge and play icon
-
+  - Each badge has a separate cyan-bordered square box with play icon
+  - Unclear purpose - what does clicking play do?
+  - Icon color (cyan) clashes with badge color (green/orange)
+  - Creates confusion - is this a media player? a toggle? decorative?
+  - No clear relationship between badge and play icon
 3. ❌ **Text Truncation**
-   - "ROOTSTOCK MAI..." (cuts off last 4 characters: "NNET")
-   - "ROOTSTOCK TES..." (cuts off last 4 characters: "TNET")
-   - Users cannot read full network name
-   - Bad for accessibility and clarity
-   - Caused by insufficient padding (4px 10px)
-
+  - "ROOTSTOCK MAI..." (cuts off last 4 characters: "NNET")
+  - "ROOTSTOCK TES..." (cuts off last 4 characters: "TNET")
+  - Users cannot read full network name
+  - Bad for accessibility and clarity
+  - Caused by insufficient padding (4px 10px)
 4. ❌ **Large Outer Container Boxes**
-   - Each badge + play button wrapped in large cyan-bordered rounded rectangle
-   - Creates double/triple border effect
-   - Takes up excessive space
-   - Boxes don't match any other UI pattern in the app
-   - Looks like a separate component rather than an inline badge
+  - Each badge + play button wrapped in large cyan-bordered rounded rectangle
+  - Creates double/triple border effect
+  - Takes up excessive space
+  - Boxes don't match any other UI pattern in the app
+  - Looks like a separate component rather than an inline badge
 
 **Visual Hierarchy Disaster:**
+
 ```
 Current Layout (from screenshot):
 ╔═══════════════════════════════════════╗
@@ -6813,6 +7322,7 @@ Current Layout (from screenshot):
 ```
 
 **Issues:**
+
 - Too many visual elements competing (badge fill + badge border + container border + icon border)
 - Color clash (green/orange badges inside cyan containers)
 - Play icon purpose completely unclear
@@ -6827,17 +7337,20 @@ Current Layout (from screenshot):
 ### **Problem #4: Insufficient Visual Weight**
 
 **Current Badge:**
+
 - Font-size: 0.75rem (12px) - very small
 - Padding: 4px 10px - minimal, causing text truncation
 - Border: 1px - thin
 - No glow effects
 
 **Component Context:**
+
 - Appears next to H2 heading (1.8rem/28.8px)
 - Surrounded by elements with 2px borders and 10px+ glows
 - Looks like an afterthought, not a key piece of information
 
 **Network Type Information Importance:**
+
 - **Critical context** for users (mainnet = real money, testnet = play money)
 - Should have appropriate visual prominence
 - Currently truncated and feels like a tiny tag instead of important system indicator
@@ -6849,12 +7362,14 @@ Current Layout (from screenshot):
 ### **Problem #4: No Interactive Feedback**
 
 **Current Implementation:**
+
 - No hover state
 - No glow on hover
 - No transition effects
 - Static appearance
 
 **TRON Pattern:**
+
 - All interactive elements have hover states
 - Buttons/links glow on hover (box-shadow increase)
 - Smooth transitions (0.3s)
@@ -6871,14 +7386,17 @@ Current Layout (from screenshot):
 Use **color-coded borders and glows** instead of solid backgrounds to maintain the TRON aesthetic while still clearly distinguishing mainnet vs. testnet.
 
 **Color Strategy:**
+
 - **Mainnet:** Cyan glow (primary color) - production, established
 - **Testnet:** Magenta/Pink glow (#ff0080) - experimental, warning-like
 
 This leverages the existing color system:
+
 - Cyan = primary/stable
 - Magenta = already used for "Redeem" (removing/testing)
 
 **Layout Strategy:**
+
 - Remove play button icons (unclear purpose)
 - Remove extra container boxes (visual clutter)
 - Increase padding to prevent text truncation
@@ -6939,6 +7457,7 @@ This leverages the existing color system:
 **Visual Result:**
 
 **Mainnet Badge:**
+
 ```
 ┌─────────────────────────┐
 │  ROOTSTOCK MAINNET      │  ← Cyan glow, cyan text
@@ -6946,6 +7465,7 @@ This leverages the existing color system:
 ```
 
 **Testnet Badge:**
+
 ```
 ┌─────────────────────────┐
 │  ROOTSTOCK TESTNET      │  ← Magenta glow, magenta text
@@ -6953,6 +7473,7 @@ This leverages the existing color system:
 ```
 
 **Advantages:**
+
 - ✅ Matches TRON aesthetic (transparent bg, glowing borders)
 - ✅ Uses existing color palette (cyan primary, magenta warning)
 - ✅ Consistent 2px borders
@@ -7007,6 +7528,7 @@ This leverages the existing color system:
 **Visual Result:**
 
 **Mainnet:**
+
 ```
 ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐
 │  ROOTSTOCK MAINNET     │  ← Cyan outline, no fill
@@ -7014,6 +7536,7 @@ This leverages the existing color system:
 ```
 
 **Testnet:**
+
 ```
 ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐
 │  ROOTSTOCK TESTNET     │  ← Magenta outline, no fill
@@ -7021,12 +7544,14 @@ This leverages the existing color system:
 ```
 
 **Advantages:**
+
 - ✅ Very minimal, doesn't compete with other elements
 - ✅ Matches ghost button style used throughout app
 - ✅ Uses existing color system
 - ✅ Clean, professional appearance
 
 **Disadvantages:**
+
 - ⚠️ Less visual prominence than Option A
 - ⚠️ Might feel too subtle for critical network information
 
@@ -7085,6 +7610,7 @@ This leverages the existing color system:
 **Visual Result:**
 
 **Mainnet:**
+
 ```
 ┌─────────────────────────┐
 │ ● ROOTSTOCK MAINNET     │  ← Pulsing green-cyan dot + cyan badge
@@ -7092,6 +7618,7 @@ This leverages the existing color system:
 ```
 
 **Testnet:**
+
 ```
 ┌─────────────────────────┐
 │ ● ROOTSTOCK TESTNET     │  ← Pulsing orange dot + magenta badge
@@ -7099,12 +7626,14 @@ This leverages the existing color system:
 ```
 
 **Advantages:**
+
 - ✅ Clear visual distinction with animated indicator
 - ✅ Matches TRON aesthetic
 - ✅ Communicates "live connection" (pulsing dot)
 - ✅ Professional and distinctive
 
 **Disadvantages:**
+
 - ⚠️ More complex (animation, pseudo-element)
 - ⚠️ May be overkill for static information
 
@@ -7112,17 +7641,19 @@ This leverages the existing color system:
 
 ## 📊 **Design System Comparison**
 
-| Aspect | Current (Material) | TRON Standard | Recommended |
-|--------|-------------------|---------------|-------------|
-| **Background** | Solid gradient | Transparent rgba | rgba(0, 255, 255, 0.08) |
-| **Border Width** | 1px | 2px | 2px |
-| **Border Style** | Solid color | Glowing | With box-shadow glow |
-| **Text Color** | Black/White | Cyan (#00ffff) | Cyan/Magenta |
-| **Font Family** | Not specified | Rajdhani/Orbitron | Rajdhani |
-| **Box Shadow** | None | Glowing (10-20px) | 0 0 10px rgba(...) |
-| **Text Shadow** | None | Glowing | 0 0 5px rgba(...) |
-| **Transitions** | None | 0.3s | 0.3s |
-| **Hover State** | None | Enhanced glow | Enhanced glow + lift |
+
+| Aspect           | Current (Material) | TRON Standard     | Recommended             |
+| ---------------- | ------------------ | ----------------- | ----------------------- |
+| **Background**   | Solid gradient     | Transparent rgba  | rgba(0, 255, 255, 0.08) |
+| **Border Width** | 1px                | 2px               | 2px                     |
+| **Border Style** | Solid color        | Glowing           | With box-shadow glow    |
+| **Text Color**   | Black/White        | Cyan (#00ffff)    | Cyan/Magenta            |
+| **Font Family**  | Not specified      | Rajdhani/Orbitron | Rajdhani                |
+| **Box Shadow**   | None               | Glowing (10-20px) | 0 0 10px rgba(...)      |
+| **Text Shadow**  | None               | Glowing           | 0 0 5px rgba(...)       |
+| **Transitions**  | None               | 0.3s              | 0.3s                    |
+| **Hover State**  | None               | Enhanced glow     | Enhanced glow + lift    |
+
 
 ---
 
@@ -7138,11 +7669,13 @@ This leverages the existing color system:
 ```
 
 **Visual Hierarchy Issues:**
+
 - Badge uses completely different visual language (green fill vs. cyan outlines)
 - Feels like a foreign element inserted into the design
 - Doesn't harmonize with surrounding elements
 
 **Desired Harmony:**
+
 ```
 ╔════════════════════════════════════════════════════════════╗
 ║  USDRIF MINT/REDEEM    ┌──────────────────┐    [▼]        ║
@@ -7158,11 +7691,13 @@ This leverages the existing color system:
 ### **1. Consistency (Nielsen Norman #4) - VIOLATED**
 
 **Current State:**
+
 - Badges use Material Design green/orange
 - Rest of app uses TRON cyan/magenta
 - Creates cognitive dissonance
 
 **Recommended:**
+
 - Use cyan for mainnet (established, stable)
 - Use magenta for testnet (experimental, caution)
 - Maintain consistent visual language
@@ -7172,11 +7707,13 @@ This leverages the existing color system:
 ### **2. Visual Hierarchy**
 
 **Current State:**
+
 - Badge is too subtle (12px font, 4px padding)
 - Gets lost next to large H2 heading
 - Doesn't communicate importance
 
 **Recommended:**
+
 - Slightly larger (12.8px font, 6px padding)
 - Glowing effects give appropriate prominence
 - Balances with heading without dominating
@@ -7186,11 +7723,13 @@ This leverages the existing color system:
 ### **3. Gestalt - Similarity**
 
 **Current State:**
+
 - Badge looks completely different from all other elements
 - User's brain has to process a new visual pattern
 - Increases cognitive load
 
 **Recommended:**
+
 - Badge uses same visual patterns (glows, borders, colors)
 - Brain recognizes it as part of the same system
 - Reduces cognitive load
@@ -7210,6 +7749,7 @@ This leverages the existing color system:
 ### **Step 0: Fix Layout Issues (CRITICAL)**
 
 **Problem from Screenshot:** 
+
 - Play button icons (▶) appearing next to badges
 - Text truncation ("ROOTSTOCK MAI..." / "ROOTSTOCK TES...")
 - Badges wrapped in extra cyan-bordered containers
@@ -7222,6 +7762,7 @@ This leverages the existing color system:
 4. **Simplify Layout** - Badge should sit cleanly next to heading
 
 **If play buttons are intended as collapse/expand controls:**
+
 - They should be separate from the badge
 - Should use the existing collapse-toggle button pattern
 - Should not be visually grouped with network badge
@@ -7233,6 +7774,7 @@ This leverages the existing color system:
 **File:** `src/MintRedeemAnalyser.css` lines 56-65
 
 **Current:**
+
 ```css
 .network-badge {
   display: inline-flex;
@@ -7247,6 +7789,7 @@ This leverages the existing color system:
 ```
 
 **Change To:**
+
 ```css
 .network-badge {
   display: inline-flex;
@@ -7270,6 +7813,7 @@ This leverages the existing color system:
 **File:** `src/MintRedeemAnalyser.css` lines 67-71
 
 **Current:**
+
 ```css
 .network-badge--mainnet {
   background: linear-gradient(135deg, #00c853 0%, #009624 100%);
@@ -7279,6 +7823,7 @@ This leverages the existing color system:
 ```
 
 **Change To:**
+
 ```css
 .network-badge--mainnet {
   background: rgba(0, 255, 255, 0.08);          /* Subtle cyan tint */
@@ -7296,6 +7841,7 @@ This leverages the existing color system:
 ```
 
 **Rationale:**
+
 - Cyan = primary color = stable/production
 - Matches all other primary elements
 - Glowing effect consistent with TRON theme
@@ -7308,6 +7854,7 @@ This leverages the existing color system:
 **File:** `src/MintRedeemAnalyser.css` lines 73-77
 
 **Current:**
+
 ```css
 .network-badge--testnet {
   background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
@@ -7317,6 +7864,7 @@ This leverages the existing color system:
 ```
 
 **Change To:**
+
 ```css
 .network-badge--testnet {
   background: rgba(255, 0, 128, 0.08);          /* Subtle magenta tint */
@@ -7334,6 +7882,7 @@ This leverages the existing color system:
 ```
 
 **Rationale:**
+
 - Magenta (#ff0080) already used for "Redeem" type
 - Conveys warning/experimental nature (appropriate for testnet)
 - Maintains TRON aesthetic
@@ -7346,6 +7895,7 @@ This leverages the existing color system:
 ### **Before (Current - SCREENSHOT EVIDENCE):**
 
 **Mainnet (What User Sees Now):**
+
 ```
 ┌─────────────────────────────┐
 │ [ROOTSTOCK MAI...] [▶]      │  ← Solid GREEN fill, truncated text
@@ -7354,6 +7904,7 @@ This leverages the existing color system:
 ```
 
 **Testnet (What User Sees Now):**
+
 ```
 ┌─────────────────────────────┐
 │ [ROOTSTOCK TES...] [▶]      │  ← Solid ORANGE fill, truncated text
@@ -7362,6 +7913,7 @@ This leverages the existing color system:
 ```
 
 **Visual Problems:**
+
 - ❌ Green and orange (not in TRON palette)
 - ❌ Solid opaque backgrounds (should be transparent)
 - ❌ Text truncated due to small padding
@@ -7374,6 +7926,7 @@ This leverages the existing color system:
 ### **After (Proposed - TRON Aesthetic):**
 
 **Mainnet (Clean TRON Style):**
+
 ```
 ╔══════════════════════════╗
 ║ ROOTSTOCK MAINNET        ║  ← Transparent with CYAN glow
@@ -7382,6 +7935,7 @@ This leverages the existing color system:
 ```
 
 **Testnet (Clean TRON Style):**
+
 ```
 ╔══════════════════════════╗
 ║ ROOTSTOCK TESTNET        ║  ← Transparent with MAGENTA glow
@@ -7390,6 +7944,7 @@ This leverages the existing color system:
 ```
 
 **Visual Improvements:**
+
 - ✅ Uses TRON color palette (cyan/magenta)
 - ✅ Transparent backgrounds with rgba tint
 - ✅ Full text visible (no truncation)
@@ -7403,18 +7958,21 @@ This leverages the existing color system:
 ## 🔍 **Color Psychology & Meaning**
 
 ### **Mainnet (Cyan):**
+
 - **Color:** #00ffff (primary app color)
 - **Meaning:** Stable, established, production-ready
 - **Emotion:** Trust, reliability, professional
 - **Association:** Primary actions, main content, live data
 
 ### **Testnet (Magenta):**
+
 - **Color:** #ff0080 (already used for "Redeem" = withdrawing/testing)
 - **Meaning:** Experimental, cautionary, non-production
 - **Emotion:** Attention, warning (but not error)
 - **Association:** Test environment, development, safe to experiment
 
 **Why This Works:**
+
 - ✅ Leverages existing color associations in the app
 - ✅ Users already understand cyan = primary/live
 - ✅ Magenta already conveys "withdrawal/testing" context
@@ -7426,15 +7984,18 @@ This leverages the existing color system:
 
 ### **Current Issues:**
 
-| Property | Current | Issue | Recommended |
-|----------|---------|-------|-------------|
-| **font-size** | 0.75rem (12px) | Too small | 0.8rem (12.8px) |
-| **padding** | 4px 10px | Too tight | 6px 14px |
-| **letter-spacing** | 0.5px | Not TRON style | 1px |
-| **font-family** | Inherited | Unspecified | Rajdhani |
-| **border-width** | 1px | Inconsistent | 2px |
+
+| Property           | Current        | Issue          | Recommended     |
+| ------------------ | -------------- | -------------- | --------------- |
+| **font-size**      | 0.75rem (12px) | Too small      | 0.8rem (12.8px) |
+| **padding**        | 4px 10px       | Too tight      | 6px 14px        |
+| **letter-spacing** | 0.5px          | Not TRON style | 1px             |
+| **font-family**    | Inherited      | Unspecified    | Rajdhani        |
+| **border-width**   | 1px            | Inconsistent   | 2px             |
+
 
 **Rationale:**
+
 - Slightly larger font improves readability
 - Increased padding improves visual weight
 - 1px letter-spacing matches TRON typography
@@ -7448,52 +8009,61 @@ This leverages the existing color system:
 After implementation, verify:
 
 ### **Visual Consistency:**
-- [ ] Badge colors (cyan/magenta) match color system
-- [ ] Glow effects similar to buttons and links
-- [ ] 2px borders consistent with other elements
-- [ ] Font (Rajdhani) matches rest of UI
+
+- Badge colors (cyan/magenta) match color system
+- Glow effects similar to buttons and links
+- 2px borders consistent with other elements
+- Font (Rajdhani) matches rest of UI
 
 ### **Hover States:**
-- [ ] Hover increases glow intensity
-- [ ] Subtle translateY(-1px) lift effect
-- [ ] Smooth 0.3s transition
-- [ ] Background opacity increases slightly
+
+- Hover increases glow intensity
+- Subtle translateY(-1px) lift effect
+- Smooth 0.3s transition
+- Background opacity increases slightly
 
 ### **Responsive Behavior:**
-- [ ] Badge readable at 390px viewport (iPhone 12 Pro)
-- [ ] Doesn't overflow or wrap awkwardly
-- [ ] Scales appropriately with heading
+
+- Badge readable at 390px viewport (iPhone 12 Pro)
+- Doesn't overflow or wrap awkwardly
+- Scales appropriately with heading
 
 ### **Context:**
-- [ ] Mainnet badge next to "USDRIF Mint/Redeem" heading
-- [ ] Testnet badge next to "BTC Vault" heading
-- [ ] Badge aligns properly with heading and collapse button
+
+- Mainnet badge next to "USDRIF Mint/Redeem" heading
+- Testnet badge next to "BTC Vault" heading
+- Badge aligns properly with heading and collapse button
 
 ---
 
 ## ✅ **Benefits of TRON-Aligned Redesign**
 
 ### **1. Visual Consistency**
+
 - Badge matches the established TRON aesthetic
 - Uses existing color palette (cyan, magenta)
 - Follows same patterns (glows, borders, transitions)
 
 ### **2. Brand Integrity**
+
 - Maintains cohesive visual identity
 - Reinforces TRON theme throughout app
 - Professional, polished appearance
 
 ### **3. Clear Communication**
+
 - Cyan (mainnet) = stable/production
 - Magenta (testnet) = experimental/caution
 - Leverages existing color associations
 
 ### **4. Better Visual Weight**
+
 - Larger font and padding improve prominence
 - Glow effects give appropriate attention
 - Balanced with surrounding elements
 
 ### **5. Interactive Polish**
+
 - Hover states add refinement
 - Smooth transitions feel professional
 - Consistent with all other interactive elements
@@ -7502,15 +8072,17 @@ After implementation, verify:
 
 ## 📊 **Design System Alignment Score**
 
-| Criterion | Current Badge | TRON Standard | Compliance |
-|-----------|--------------|---------------|------------|
-| **Color Palette** | Material (green/orange) | Cyan/Magenta | ❌ 0% |
-| **Background** | Solid gradient | Transparent rgba | ❌ 0% |
-| **Border Width** | 1px | 2px | ❌ 0% |
-| **Glow Effects** | None | Required | ❌ 0% |
-| **Font Family** | Unspecified | Rajdhani | ⚠️ 50% |
-| **Transitions** | None | 0.3s | ❌ 0% |
-| **Hover States** | None | Required | ❌ 0% |
+
+| Criterion         | Current Badge           | TRON Standard    | Compliance |
+| ----------------- | ----------------------- | ---------------- | ---------- |
+| **Color Palette** | Material (green/orange) | Cyan/Magenta     | ❌ 0%       |
+| **Background**    | Solid gradient          | Transparent rgba | ❌ 0%       |
+| **Border Width**  | 1px                     | 2px              | ❌ 0%       |
+| **Glow Effects**  | None                    | Required         | ❌ 0%       |
+| **Font Family**   | Unspecified             | Rajdhani         | ⚠️ 50%     |
+| **Transitions**   | None                    | 0.3s             | ❌ 0%       |
+| **Hover States**  | None                    | Required         | ❌ 0%       |
+
 
 **Overall TRON Compliance:** ❌ **14% (F - Failing)**
 
@@ -7523,6 +8095,7 @@ After implementation, verify:
 ### **Primary Recommendation: Implement Option A (Glowing Border Style)**
 
 **Why:**
+
 1. ✅ Perfect TRON aesthetic alignment
 2. ✅ Uses existing color system
 3. ✅ Clear mainnet vs. testnet distinction
@@ -7531,6 +8104,7 @@ After implementation, verify:
 6. ✅ Professional, polished appearance
 
 **Implementation:**
+
 - **Priority:** MEDIUM (visual consistency)
 - **Effort:** 5 minutes (CSS changes only)
 - **Risk:** Very low (CSS-only, no logic changes)
@@ -7553,6 +8127,7 @@ After implementation, verify:
 **Files:** `src/MintRedeemAnalyser.tsx` (line 1215), `src/BTCVaultAnalyser.tsx` (line 395), `src/VaultDepositWithdrawAnalyser.tsx` (line 768)
 
 #### **Current Code (line 1215 in MintRedeemAnalyser.tsx):**
+
 ```tsx
 <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
   Rootstock Mainnet
@@ -7560,10 +8135,11 @@ After implementation, verify:
 ```
 
 **Checklist:**
-- [ ] **Verify no extra wrapper containers** around badge (check if badge is inside extra divs)
-- [ ] **Remove play button icons** if they exist next to badges (check for `▶` or play icons)
-- [ ] **Ensure badge is direct sibling** to `<h2>` in `.analyser-header`
-- [ ] Verify text is full: "Rootstock Mainnet" not "Rootstock Mai..."
+
+- **Verify no extra wrapper containers** around badge (check if badge is inside extra divs)
+- **Remove play button icons** if they exist next to badges (check for `▶` or play icons)
+- **Ensure badge is direct sibling** to `<h2>` in `.analyser-header`
+- Verify text is full: "Rootstock Mainnet" not "Rootstock Mai..."
 
 **If play buttons exist, remove them or move them to a separate logical location (not grouped with badge).**
 
@@ -7574,33 +8150,37 @@ After implementation, verify:
 **File:** `src/MintRedeemAnalyser.css` lines 56-77
 
 #### **Step 1: Update Base Badge (lines 56-65)**
-- [ ] Increase padding: `4px 10px` → `7px 16px` (prevent truncation!)
-- [ ] Change border-radius: `6px` → `4px` (match buttons)
-- [ ] Increase font-size: `0.75rem` → `0.85rem` (better readability)
-- [ ] Increase letter-spacing: `0.5px` → `1px` (TRON style)
-- [ ] Add `font-family: 'Rajdhani', sans-serif`
-- [ ] Add `transition: all 0.3s`
-- [ ] Add `white-space: nowrap` (prevent text wrapping/truncation)
+
+- Increase padding: `4px 10px` → `7px 16px` (prevent truncation!)
+- Change border-radius: `6px` → `4px` (match buttons)
+- Increase font-size: `0.75rem` → `0.85rem` (better readability)
+- Increase letter-spacing: `0.5px` → `1px` (TRON style)
+- Add `font-family: 'Rajdhani', sans-serif`
+- Add `transition: all 0.3s`
+- Add `white-space: nowrap` (prevent text wrapping/truncation)
 
 #### **Step 2: Redesign Mainnet Badge (lines 67-71)**
-- [ ] Remove solid green gradient
-- [ ] Change background: → `rgba(0, 255, 255, 0.08)` (subtle cyan tint)
-- [ ] Change color: `#000` → `#00ffff` (cyan text)
-- [ ] Change border: `1px solid rgba(...)` → `2px solid #00ffff` (2px cyan)
-- [ ] Add `box-shadow: 0 0 10px rgba(0, 255, 255, 0.4)` (cyan glow)
-- [ ] Add `text-shadow: 0 0 5px rgba(0, 255, 255, 0.6)` (text glow)
-- [ ] Add hover state with enhanced glow and lift effect
+
+- Remove solid green gradient
+- Change background: → `rgba(0, 255, 255, 0.08)` (subtle cyan tint)
+- Change color: `#000` → `#00ffff` (cyan text)
+- Change border: `1px solid rgba(...)` → `2px solid #00ffff` (2px cyan)
+- Add `box-shadow: 0 0 10px rgba(0, 255, 255, 0.4)` (cyan glow)
+- Add `text-shadow: 0 0 5px rgba(0, 255, 255, 0.6)` (text glow)
+- Add hover state with enhanced glow and lift effect
 
 #### **Step 3: Redesign Testnet Badge (lines 73-77)**
-- [ ] Remove solid orange gradient
-- [ ] Change background: → `rgba(255, 0, 128, 0.08)` (subtle magenta tint)
-- [ ] Change color: `#fff` → `#ff0080` (magenta text)
-- [ ] Change border: `1px solid rgba(...)` → `2px solid #ff0080` (2px magenta)
-- [ ] Add `box-shadow: 0 0 10px rgba(255, 0, 128, 0.4)` (magenta glow)
-- [ ] Add `text-shadow: 0 0 5px rgba(255, 0, 128, 0.6)` (text glow)
-- [ ] Add hover state with enhanced glow and lift effect
+
+- Remove solid orange gradient
+- Change background: → `rgba(255, 0, 128, 0.08)` (subtle magenta tint)
+- Change color: `#fff` → `#ff0080` (magenta text)
+- Change border: `1px solid rgba(...)` → `2px solid #ff0080` (2px magenta)
+- Add `box-shadow: 0 0 10px rgba(255, 0, 128, 0.4)` (magenta glow)
+- Add `text-shadow: 0 0 5px rgba(255, 0, 128, 0.6)` (text glow)
+- Add hover state with enhanced glow and lift effect
 
 **Total Changes:** 
+
 - Layout fixes: Check 3 TSX files
 - CSS properties: ~25 changes across 3 rules
 
@@ -7611,6 +8191,7 @@ After implementation, verify:
 ### **Issue from Screenshot:**
 
 **Current Layout (What User Sees):**
+
 ```
 ┌───────────────────────────────────┐
 │  ┌──────────────────────────────┐ │
@@ -7620,12 +8201,14 @@ After implementation, verify:
 ```
 
 **Problems:**
+
 1. Badge is truncated ("MAI..." instead of "MAINNET")
 2. Play button icon (▶) serves unclear purpose
 3. Badge wrapped in cyan-bordered container box
 4. Multiple layers create visual confusion
 
 **Root Cause:**
+
 - Padding too small (4px 10px) causes truncation
 - Unknown element creating play button
 - Possible extra wrapper div creating container box
@@ -7635,6 +8218,7 @@ After implementation, verify:
 ### **Proposed Layout (Clean, Simple):**
 
 **Simple Badge in Header:**
+
 ```
 ╔═══════════════════════════════════════════════════╗
 ║  USDRIF MINT/REDEEM    ROOTSTOCK MAINNET    ▼    ║
@@ -7643,6 +8227,7 @@ After implementation, verify:
 ```
 
 **Characteristics:**
+
 - ✅ Badge is self-contained (no extra wrappers)
 - ✅ Full text visible ("ROOTSTOCK MAINNET")
 - ✅ No play button confusion
@@ -7650,6 +8235,7 @@ After implementation, verify:
 - ✅ Proper spacing between elements
 
 **Implementation:**
+
 - Remove any wrapper divs around badge
 - Remove play button icons
 - Increase badge padding to prevent truncation
@@ -7690,14 +8276,16 @@ After implementation, verify:
 
 ## 💰 **Cost-Benefit Analysis**
 
-| Aspect | Current State | After Redesign |
-|--------|--------------|----------------|
-| **Design Consistency** | Inconsistent (F) | Consistent (A+) |
-| **Brand Integrity** | Violated | Maintained |
-| **User Confusion** | "Why is this green?" | Clear, familiar |
-| **Visual Harmony** | Disjointed | Cohesive |
-| **Professional Polish** | Feels rushed | Feels refined |
-| **Implementation Time** | - | 5 minutes |
+
+| Aspect                  | Current State        | After Redesign  |
+| ----------------------- | -------------------- | --------------- |
+| **Design Consistency**  | Inconsistent (F)     | Consistent (A+) |
+| **Brand Integrity**     | Violated             | Maintained      |
+| **User Confusion**      | "Why is this green?" | Clear, familiar |
+| **Visual Harmony**      | Disjointed           | Cohesive        |
+| **Professional Polish** | Feels rushed         | Feels refined   |
+| **Implementation Time** | -                    | 5 minutes       |
+
 
 **ROI:** Very high - small effort, significant visual improvement
 
@@ -7708,6 +8296,7 @@ After implementation, verify:
 ### **Implement Option A: Glowing Border Style**
 
 **Reasoning:**
+
 1. **Perfect TRON Alignment** - Uses cyan/magenta from existing palette
 2. **Clear Distinction** - Mainnet (cyan) vs. Testnet (magenta) immediately recognizable
 3. **Visual Consistency** - Matches all other elements (buttons, borders, glows)
@@ -7716,6 +8305,7 @@ After implementation, verify:
 6. **Professional Polish** - Hover states and transitions add refinement
 
 **Expected Outcome:**
+
 - Network badges feel like an integrated part of the design system
 - Users immediately understand mainnet (cyan = primary) vs. testnet (magenta = caution)
 - Brand consistency maintained across all UI elements
@@ -7745,12 +8335,14 @@ After implementation, verify:
 ### **The Core Problem:**
 
 **Over-engineered complexity:**
+
 ```
 Current: [Container [Badge] [Play Button]]  ← 3 elements for 1 piece of info
 Needed: [Badge]                             ← 1 simple element
 ```
 
 **Wrong visual system:**
+
 ```
 Current: Material Design (Google)  ← Solid fills, green/orange
 Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
@@ -7761,6 +8353,7 @@ Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
 #### **A. SIMPLIFY LAYOUT (TSX Files) - CRITICAL**
 
 **Current Complex Structure:**
+
 ```tsx
 <div className="some-container">  ← REMOVE THIS
   <span className="network-badge network-badge--mainnet">
@@ -7771,6 +8364,7 @@ Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
 ```
 
 **Correct Simple Structure:**
+
 ```tsx
 <span className="network-badge network-badge--mainnet" title="Rootstock Mainnet">
   Rootstock Mainnet
@@ -7778,6 +8372,7 @@ Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
 ```
 
 **Action Items:**
+
 - ✅ Remove ALL play button elements (▶)
 - ✅ Remove ALL wrapper containers around badges
 - ✅ Badge should be simple inline `<span>` directly in `.analyser-header`
@@ -7790,6 +8385,7 @@ Needed: TRON/Cyberpunk            ← Glowing borders, cyan/magenta
 **Replace Material Design with TRON:**
 
 **Mainnet:** 
+
 ```css
 /* REMOVE: Solid green gradient */
 background: linear-gradient(135deg, #00c853 0%, #009624 100%); ❌
@@ -7803,6 +8399,7 @@ text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
 ```
 
 **Testnet:**
+
 ```css
 /* REMOVE: Solid orange gradient */
 background: linear-gradient(135deg, #ff9800 0%, #e65100 100%); ❌
@@ -7816,17 +8413,20 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 ```
 
 **Increase Padding:**
+
 - Change padding: `4px 10px` → `7px 16px` (prevents truncation)
 - Add `white-space: nowrap` (ensures "ROOTSTOCK MAINNET" displays in full)
 
 ### **Expected Result:**
 
 **Before (Screenshot):**
+
 ```
 [ROOTSTOCK MAI...] [▶]  ← Green Material Design, truncated, cluttered
 ```
 
 **After (TRON Aligned):**
+
 ```
 ░░ ROOTSTOCK MAINNET ░░  ← Cyan glow, full text, clean
 ```
@@ -7853,27 +8453,23 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 ### **✅ Layout Improvements (Partially Addressed):**
 
 1. ✅ **Simplified Structure**
-   - Badges are now simple inline `<span>` elements
-   - No extra wrapper containers
-   - Clean placement in `.analyser-header`
-
+  - Badges are now simple inline `<span>` elements
+  - No extra wrapper containers
+  - Clean placement in `.analyser-header`
 2. ✅ **Background Made Transparent**
-   - Changed from solid gradients to `background: transparent`
-   - Better alignment with TRON aesthetic
-
+  - Changed from solid gradients to `background: transparent`
+  - Better alignment with TRON aesthetic
 3. ✅ **Text Simplified**
-   - "Rootstock Mainnet" → "Mainnet"
-   - "Rootstock Testnet" → "Testnet"
-   - More concise, less truncation risk
-
+  - "Rootstock Mainnet" → "Mainnet"
+  - "Rootstock Testnet" → "Testnet"
+  - More concise, less truncation risk
 4. ✅ **Rootstock Logo Added**
-   - 14px logo image included
-   - Provides brand identity
-   - Better than text-only
-
+  - 14px logo image included
+  - Provides brand identity
+  - Better than text-only
 5. ✅ **Fixed Width**
-   - Consistent 90px width for both badges
-   - Prevents layout shifts
+  - Consistent 90px width for both badges
+  - Prevents layout shifts
 
 ---
 
@@ -7900,6 +8496,7 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 **Problem:** Still using Material Design green (#00c853) and orange (#ff9800) - these colors don't exist anywhere else in the TRON-themed application.
 
 **Should Be:**
+
 - Mainnet: Cyan (#00ffff) - matches app's primary color
 - Testnet: Magenta (#ff0080) - matches app's warning/redeem color
 
@@ -7908,6 +8505,7 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 ### **❌ Missing TRON Visual Effects**
 
 **Current Badges Have:**
+
 - ❌ No box-shadow glow effects
 - ❌ No text-shadow glow effects
 - ❌ 1px borders (should be 2px)
@@ -7915,6 +8513,7 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 - ❌ No transitions
 
 **TRON Standard (Every Other Element Has):**
+
 - ✅ Box-shadow glows (0 0 10px rgba(...))
 - ✅ Text-shadow glows (0 0 5px rgba(...))
 - ✅ 2px borders
@@ -7928,6 +8527,7 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 ### **❌ Typography Too Small**
 
 **Current Sizing:**
+
 ```css
 .network-badge {
   padding: 3px 8px;        /* Very tight */
@@ -7937,15 +8537,18 @@ text-shadow: 0 0 5px rgba(255, 0, 128, 0.6);
 ```
 
 **TRON Standard:**
+
 - Buttons use: `padding: 10px 20px`, `font-size: 14px`, `letter-spacing: 2px`
 - Headers use: `letter-spacing: 2-3px`
 
 **Impact:**
+
 - Badges feel like an afterthought
 - Harder to read (11.52px is small)
 - Doesn't convey importance of network information
 
 **Recommended:**
+
 ```css
 padding: 6px 12px;       /* Comfortable spacing */
 font-size: 0.8rem;       /* 12.8px - better readability */
@@ -7956,18 +8559,20 @@ letter-spacing: 1px;     /* TRON style */
 
 ## 📐 **Current vs. TRON Standard Comparison**
 
-| Property | Current Badge | TRON Standard | Compliance |
-|----------|--------------|---------------|------------|
-| **Background** | Transparent | Transparent rgba | ✅ 50% |
-| **Text Color** | Green/Orange | Cyan/Magenta | ❌ 0% |
-| **Border Color** | Green/Orange | Cyan/Magenta | ❌ 0% |
-| **Border Width** | 1px | 2px | ❌ 0% |
-| **Box Shadow** | None | 10px glow | ❌ 0% |
-| **Text Shadow** | None | 5px glow | ❌ 0% |
-| **Font Family** | Not specified | Rajdhani | ⚠️ 50% |
-| **Letter Spacing** | 0.3px | 1px | ❌ 30% |
-| **Transitions** | None | 0.3s | ❌ 0% |
-| **Hover State** | None | Enhanced glow | ❌ 0% |
+
+| Property           | Current Badge | TRON Standard    | Compliance |
+| ------------------ | ------------- | ---------------- | ---------- |
+| **Background**     | Transparent   | Transparent rgba | ✅ 50%      |
+| **Text Color**     | Green/Orange  | Cyan/Magenta     | ❌ 0%       |
+| **Border Color**   | Green/Orange  | Cyan/Magenta     | ❌ 0%       |
+| **Border Width**   | 1px           | 2px              | ❌ 0%       |
+| **Box Shadow**     | None          | 10px glow        | ❌ 0%       |
+| **Text Shadow**    | None          | 5px glow         | ❌ 0%       |
+| **Font Family**    | Not specified | Rajdhani         | ⚠️ 50%     |
+| **Letter Spacing** | 0.3px         | 1px              | ❌ 30%      |
+| **Transitions**    | None          | 0.3s             | ❌ 0%       |
+| **Hover State**    | None          | Enhanced glow    | ❌ 0%       |
+
 
 **TRON Compliance Score:** ⚠️ **13% (F - Still Failing)**
 
@@ -7980,18 +8585,21 @@ letter-spacing: 1px;     /* TRON style */
 ### **Current State Assessment:**
 
 **Positive Changes:**
+
 - ✅ Layout simplified (no extra containers)
 - ✅ Transparent backgrounds
 - ✅ Logo adds brand identity
 - ✅ Concise text ("Mainnet" vs "Rootstock Mainnet")
 
 **Remaining Problems:**
+
 - ❌ Green and orange still clash with TRON cyan theme
 - ❌ Flat appearance (no glows) makes them feel disconnected
 - ❌ Small size and tight spacing reduce visual weight
 - ❌ 1px borders look thin compared to 2px throughout app
 
 **Visual Impact:**
+
 ```
 Current Badge Next to TRON Elements:
 
@@ -8017,6 +8625,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 **File:** `src/MintRedeemAnalyser.css` lines 83-93
 
 **Current:**
+
 ```css
 .network-badge--mainnet {
   background: transparent;
@@ -8032,6 +8641,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Change To:**
+
 ```css
 .network-badge--mainnet {
   background: rgba(0, 255, 255, 0.06);  /* Subtle cyan tint */
@@ -8051,6 +8661,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Rationale:**
+
 - Cyan = primary color used throughout app (mainnet = primary/stable)
 - Magenta = warning color used for Redeem transactions (testnet = experimental)
 - Subtle rgba backgrounds (0.06 opacity) maintain transparency
@@ -8079,6 +8690,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Rationale:**
+
 - Enhanced glow on hover (12px vs 8px)
 - Slight lift effect (translateY)
 - Increased background opacity (0.1 vs 0.06)
@@ -8091,6 +8703,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 **File:** `src/MintRedeemAnalyser.css` lines 57-73
 
 **Current:**
+
 ```css
 .network-badge {
   display: inline-flex;
@@ -8112,6 +8725,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Change To:**
+
 ```css
 .network-badge {
   display: inline-flex;
@@ -8136,6 +8750,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Rationale:**
+
 - Slightly larger font improves readability
 - More generous padding increases visual weight
 - Increased letter-spacing matches TRON typography
@@ -8149,6 +8764,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 #### **Change 4: Optimize Logo Sizing**
 
 **Current:**
+
 ```css
 .network-badge__logo {
   width: 14px;
@@ -8159,6 +8775,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Enhancement (Optional):**
+
 ```css
 .network-badge__logo {
   width: 14px;
@@ -8171,6 +8788,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Rationale:**
+
 - Subtle drop-shadow makes logo glow slightly
 - `currentColor` means it will match the badge text color (green → cyan, orange → magenta)
 - Opacity prevents logo from dominating badge
@@ -8181,30 +8799,35 @@ Since the layout has been improved, only **CSS changes** are needed now:
 
 ### **What's Been Fixed:**
 
-| Issue | Previous State | Current State | Status |
-|-------|---------------|---------------|---------|
+
+| Issue                 | Previous State        | Current State      | Status  |
+| --------------------- | --------------------- | ------------------ | ------- |
 | **Layout Complexity** | 3 layers + containers | Simple inline span | ✅ FIXED |
-| **Play Buttons** | Present (confusing) | Removed | ✅ FIXED |
-| **Text Truncation** | "MAI..." truncated | "Mainnet" full | ✅ FIXED |
-| **Extra Containers** | Large cyan boxes | Removed | ✅ FIXED |
-| **Background** | Solid gradients | Transparent | ✅ FIXED |
+| **Play Buttons**      | Present (confusing)   | Removed            | ✅ FIXED |
+| **Text Truncation**   | "MAI..." truncated    | "Mainnet" full     | ✅ FIXED |
+| **Extra Containers**  | Large cyan boxes      | Removed            | ✅ FIXED |
+| **Background**        | Solid gradients       | Transparent        | ✅ FIXED |
+
 
 ### **What Still Needs Fixing:**
 
-| Issue | Current State | Required State | Status |
-|-------|--------------|----------------|---------|
-| **Color Palette** | Green/Orange | Cyan/Magenta | ❌ NOT FIXED |
-| **Border Width** | 1px | 2px | ❌ NOT FIXED |
-| **Glow Effects** | None | Box-shadow + text-shadow | ❌ NOT FIXED |
-| **Hover States** | None | Enhanced glow | ❌ NOT FIXED |
-| **Transitions** | None | 0.3s | ❌ NOT FIXED |
-| **Typography Scale** | 0.72rem (small) | 0.75-0.8rem | ⚠️ PARTIAL |
+
+| Issue                | Current State   | Required State           | Status      |
+| -------------------- | --------------- | ------------------------ | ----------- |
+| **Color Palette**    | Green/Orange    | Cyan/Magenta             | ❌ NOT FIXED |
+| **Border Width**     | 1px             | 2px                      | ❌ NOT FIXED |
+| **Glow Effects**     | None            | Box-shadow + text-shadow | ❌ NOT FIXED |
+| **Hover States**     | None            | Enhanced glow            | ❌ NOT FIXED |
+| **Transitions**      | None            | 0.3s                     | ❌ NOT FIXED |
+| **Typography Scale** | 0.72rem (small) | 0.75-0.8rem              | ⚠️ PARTIAL  |
+
 
 ---
 
 ## 🎨 **Visual Comparison**
 
 ### **Previous State (First Screenshot):**
+
 ```
 ┌─────────────────────────────────┐
 │ [ROOTSTOCK MAI...] [▶]          │  ← Green fill, play button, container
@@ -8212,12 +8835,14 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 ### **Current State:**
+
 ```
 [🏠 Mainnet]  ← Green border, transparent bg, Rootstock logo
                Still using wrong colors (green instead of cyan)
 ```
 
 ### **Desired State (TRON Aligned):**
+
 ```
 ░░ 🏠 MAINNET ░░  ← Cyan border, cyan glow, Rootstock logo
                    Matches TRON aesthetic perfectly
@@ -8296,6 +8921,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ```
 
 **Changes Summary:**
+
 - Replace green (#00c853) → cyan (#00ffff)
 - Replace orange (#ff9800) → magenta (#ff0080)
 - Add subtle rgba background tints
@@ -8315,35 +8941,39 @@ Since the layout has been improved, only **CSS changes** are needed now:
 **File:** `src/MintRedeemAnalyser.css`
 
 ### **Base Badge Enhancements (lines 57-73):**
-- [ ] Increase `gap` from `5px` to `6px`
-- [ ] Increase `padding` from `3px 8px` to `5px 10px`
-- [ ] Change `border-radius` from `5px` to `4px`
-- [ ] Increase `font-size` from `0.72rem` to `0.75rem`
-- [ ] Increase `letter-spacing` from `0.3px` to `0.8px`
-- [ ] Add `font-family: 'Rajdhani', sans-serif`
-- [ ] Change `min-width` and `width` from `90px` to `95px`
-- [ ] Add `transition: all 0.3s`
-- [ ] Add `cursor: default`
+
+- Increase `gap` from `5px` to `6px`
+- Increase `padding` from `3px 8px` to `5px 10px`
+- Change `border-radius` from `5px` to `4px`
+- Increase `font-size` from `0.72rem` to `0.75rem`
+- Increase `letter-spacing` from `0.3px` to `0.8px`
+- Add `font-family: 'Rajdhani', sans-serif`
+- Change `min-width` and `width` from `90px` to `95px`
+- Add `transition: all 0.3s`
+- Add `cursor: default`
 
 ### **Logo Enhancements (lines 75-80):**
-- [ ] Add `filter: drop-shadow(0 0 2px currentColor)`
-- [ ] Add `opacity: 0.9`
+
+- Add `filter: drop-shadow(0 0 2px currentColor)`
+- Add `opacity: 0.9`
 
 ### **Mainnet Badge (lines 83-87):**
-- [ ] Change `background` from `transparent` to `rgba(0, 255, 255, 0.06)`
-- [ ] Change `color` from `#00c853` to `#00ffff`
-- [ ] Change `border` from `1px solid #00c853` to `2px solid #00ffff`
-- [ ] Add `box-shadow: 0 0 8px rgba(0, 255, 255, 0.3)`
-- [ ] Add `text-shadow: 0 0 3px rgba(0, 255, 255, 0.5)`
-- [ ] Add hover state with enhanced glow
+
+- Change `background` from `transparent` to `rgba(0, 255, 255, 0.06)`
+- Change `color` from `#00c853` to `#00ffff`
+- Change `border` from `1px solid #00c853` to `2px solid #00ffff`
+- Add `box-shadow: 0 0 8px rgba(0, 255, 255, 0.3)`
+- Add `text-shadow: 0 0 3px rgba(0, 255, 255, 0.5)`
+- Add hover state with enhanced glow
 
 ### **Testnet Badge (lines 89-93):**
-- [ ] Change `background` from `transparent` to `rgba(255, 0, 128, 0.06)`
-- [ ] Change `color` from `#ff9800` to `#ff0080`
-- [ ] Change `border` from `1px solid #ff9800` to `2px solid #ff0080`
-- [ ] Add `box-shadow: 0 0 8px rgba(255, 0, 128, 0.3)`
-- [ ] Add `text-shadow: 0 0 3px rgba(255, 0, 128, 0.5)`
-- [ ] Add hover state with enhanced glow
+
+- Change `background` from `transparent` to `rgba(255, 0, 128, 0.06)`
+- Change `color` from `#ff9800` to `#ff0080`
+- Change `border` from `1px solid #ff9800` to `2px solid #ff0080`
+- Add `box-shadow: 0 0 8px rgba(255, 0, 128, 0.3)`
+- Add `text-shadow: 0 0 3px rgba(255, 0, 128, 0.5)`
+- Add hover state with enhanced glow
 
 **Total Changes:** ~25 CSS properties across 4 rules  
 **Files Changed:** 1 (MintRedeemAnalyser.css only - no TSX changes needed!)  
@@ -8354,6 +8984,7 @@ Since the layout has been improved, only **CSS changes** are needed now:
 ## 🖼️ **Final Visual Mockup**
 
 ### **Current (Post-Layout-Fix):**
+
 ```
 Component Header:
 ──────────────────────────────────────────────────
@@ -8363,6 +8994,7 @@ Component Header:
 ```
 
 ### **After TRON Color Fix:**
+
 ```
 Component Header:
 ──────────────────────────────────────────────────
@@ -8376,16 +9008,19 @@ Component Header:
 ## ✅ **Benefits of Color Fix**
 
 ### **1. Visual Consistency**
+
 - All elements use TRON cyan/magenta palette
 - Harmonious glow effects throughout
 - Professional, cohesive appearance
 
 ### **2. Color Psychology**
+
 - Cyan = primary/stable/production (mainnet)
 - Magenta = warning/experimental (testnet)
 - Leverages existing color associations
 
 ### **3. Brand Integrity**
+
 - Maintains TRON/Cyberpunk theme
 - No foreign color systems (Material Design)
 - Consistent with application identity
@@ -8397,6 +9032,7 @@ Component Header:
 **Status:** ⚠️ **75% Complete** - Layout fixed, colors remain wrong
 
 **Required Next Step:**
+
 - Replace Material Design green/orange with TRON cyan/magenta
 - Add glow effects (box-shadow, text-shadow)
 - Increase border from 1px to 2px
@@ -8434,6 +9070,7 @@ Component Header:
 The USDRIF Tracker is a **well-designed, professionally executed application** with strong TRON aesthetic, excellent information architecture, and solid accessibility foundation. The application demonstrates sophisticated UX thinking with progressive disclosure, clear navigation, and responsive design.
 
 **Key Strengths:**
+
 - ✅ Consistent TRON/Cyberpunk aesthetic (98% compliance)
 - ✅ Excellent responsive design (iPhone 12 Pro compatible)
 - ✅ Strong information architecture
@@ -8442,6 +9079,7 @@ The USDRIF Tracker is a **well-designed, professionally executed application** w
 - ✅ Clear user flows and navigation
 
 **Key Issues:**
+
 - ⚠️ Network badges use Material Design colors (green/orange) - breaks visual consistency
 - ⚠️ Emojis added in some places (inconsistent with professional tone)
 - ⚠️ Some minor accessibility enhancements needed
@@ -8457,6 +9095,7 @@ The USDRIF Tracker is a **well-designed, professionally executed application** w
 3. **Light Cycle Game** (`/game`) - Interactive TRON-themed game
 
 **Navigation Flow:**
+
 ```
 Metrics Dashboard
 ├─→ Analytics (transaction data)
@@ -8510,52 +9149,48 @@ Light Cycle Game
 ### **✅ Strengths:**
 
 1. **Clear Visual Hierarchy**
-   - H1 dominant (3rem Orbitron with cyan glow)
-   - Subtitle provides context
-   - Meta information subtle (0.85rem, 0.5 opacity)
-   - Navigation clearly actionable (buttons with borders)
-
+  - H1 dominant (3rem Orbitron with cyan glow)
+  - Subtitle provides context
+  - Meta information subtle (0.85rem, 0.5 opacity)
+  - Navigation clearly actionable (buttons with borders)
 2. **Excellent Metric Display Pattern**
-   - Consistent card layout
-   - Clear labels (Title Case)
-   - Large readable values (3rem Orbitron)
-   - Units and help icons appropriately sized
-   - Mini line graphs provide trend context
-   - Tooltips accessible (click/tap, keyboard navigable)
-
+  - Consistent card layout
+  - Clear labels (Title Case)
+  - Large readable values (3rem Orbitron)
+  - Units and help icons appropriately sized
+  - Mini line graphs provide trend context
+  - Tooltips accessible (click/tap, keyboard navigable)
 3. **Professional Disclaimer**
-   - Clear legal language
-   - Appropriately subtle (0.6rem, reduced prominence)
-   - Placed early (after header, before metrics)
-
+  - Clear legal language
+  - Appropriately subtle (0.6rem, reduced prominence)
+  - Placed early (after header, before metrics)
 4. **Strong TRON Aesthetic**
-   - Cyan (#00ffff) dominant throughout
-   - Dark backgrounds with grid pattern
-   - Glowing effects on all interactive elements
-   - Orbitron + Rajdhani fonts
-   - 2px borders with box-shadows
+  - Cyan (#00ffff) dominant throughout
+  - Dark backgrounds with grid pattern
+  - Glowing effects on all interactive elements
+  - Orbitron + Rajdhani fonts
+  - 2px borders with box-shadows
 
 ### **⚠️ Issues:**
 
 1. **Emoji in Deployment Count** (Line 28: `Deployments: {deploymentCount} 😅`)
-   - **Issue:** Inconsistent with professional TRON aesthetic
-   - **Severity:** LOW
-   - **Rationale:** The app maintains a serious, cyberpunk/technical aesthetic. The 😅 emoji (sweat smile) adds casual, playful tone that clashes with the professional data dashboard vibe
-   - **Recommendation:** Remove emoji or replace with neutral symbol
-   - **Suggested:** `Deployments: {deploymentCount}` or `v{deploymentCount}`
-
+  - **Issue:** Inconsistent with professional TRON aesthetic
+  - **Severity:** LOW
+  - **Rationale:** The app maintains a serious, cyberpunk/technical aesthetic. The 😅 emoji (sweat smile) adds casual, playful tone that clashes with the professional data dashboard vibe
+  - **Recommendation:** Remove emoji or replace with neutral symbol
+  - **Suggested:** `Deployments: {deploymentCount}` or `v{deploymentCount}`
 2. **Animated GIF**
-   - **Current:** External Giphy GIF in header
-   - **Status:** ACCEPTABLE with `prefers-reduced-motion` handling ✅
-   - **Note:** Auto-plays but respects accessibility preferences
-
+  - **Current:** External Giphy GIF in header
+  - **Status:** ACCEPTABLE with `prefers-reduced-motion` handling ✅
+  - **Note:** Auto-plays but respects accessibility preferences
 3. **Metric Ordering**
-   - **Current Order:** Mixed priority (Staked USDRIF second)
-   - **Status:** Low priority issue (previously noted, not critical)
+  - **Current Order:** Mixed priority (Staked USDRIF second)
+  - **Status:** Low priority issue (previously noted, not critical)
 
 ### **Metrics Dashboard Grade:** A (Excellent)
 
 **Breakdown:**
+
 - Visual Design: A+
 - Information Architecture: A+
 - Accessibility: A
@@ -8594,53 +9229,49 @@ Light Cycle Game
 ### **✅ Strengths:**
 
 1. **Progressive Disclosure Pattern** ✅
-   - Three analyzers collapsible
-   - Users can focus on relevant data
-   - Reduces initial cognitive load
-   - Excellent use of `initialExpanded` prop with URL params
-   - URL state management (`?analyser=usdrif&days=30`)
-
+  - Three analyzers collapsible
+  - Users can focus on relevant data
+  - Reduces initial cognitive load
+  - Excellent use of `initialExpanded` prop with URL params
+  - URL state management (`?analyser=usdrif&days=30`)
 2. **Consistent Component Pattern**
-   - All three analyzers use `AnalyserShell` component
-   - DRY principle (Don't Repeat Yourself)
-   - Maintainable, consistent behavior
-   - Excellent code architecture
-
+  - All three analyzers use `AnalyserShell` component
+  - DRY principle (Don't Repeat Yourself)
+  - Maintainable, consistent behavior
+  - Excellent code architecture
 3. **Clear Navigation**
-   - Back to Metrics (clear escape route)
-   - Play Light Cycle (alternative action)
-   - Centered, symmetric layout
-
+  - Back to Metrics (clear escape route)
+  - Play Light Cycle (alternative action)
+  - Centered, symmetric layout
 4. **Disclaimer Placement**
-   - Consistent with Metrics page
-   - Clear legal protection
-   - Appropriate prominence
+  - Consistent with Metrics page
+  - Clear legal protection
+  - Appropriate prominence
 
 ### **⚠️ Issues:**
 
 1. **Emoji in Subtitle** (Line 31: `Transaction analytics and insights... 😊`)
-   - **Issue:** Inconsistent with professional cyberpunk aesthetic
-   - **Severity:** LOW
-   - **Rationale:** The "😊" (smiling face) adds casual tone to a data analytics tool. Doesn't match the serious TRON theme
-   - **Current:** "Transaction analytics and insights... 😊"
-   - **Recommended:** "Transaction analytics and insights for RIF on Chain" (no emoji)
-   - **Impact:** Maintains professional, technical tone
-
+  - **Issue:** Inconsistent with professional cyberpunk aesthetic
+  - **Severity:** LOW
+  - **Rationale:** The "😊" (smiling face) adds casual tone to a data analytics tool. Doesn't match the serious TRON theme
+  - **Current:** "Transaction analytics and insights... 😊"
+  - **Recommended:** "Transaction analytics and insights for RIF on Chain" (no emoji)
+  - **Impact:** Maintains professional, technical tone
 2. **Network Badge Colors** (CRITICAL - Already Documented)
-   - Mainnet badges: Green (#00c853) ❌
-   - Testnet badge: Orange (#ff9800) ❌
-   - Should be: Cyan/Magenta ✅
-   - **Status:** Previously documented in detail, awaiting implementation
-
+  - Mainnet badges: Green (#00c853) ❌
+  - Testnet badge: Orange (#ff9800) ❌
+  - Should be: Cyan/Magenta ✅
+  - **Status:** Previously documented in detail, awaiting implementation
 3. **Three Separate Analyzers**
-   - **Current:** USDRIF, USD VAULT, BTC VAULT as separate components
-   - **Status:** EXCELLENT architectural decision
-   - **Benefit:** Clean separation of concerns, each can be expanded/collapsed independently
-   - **Note:** Not an issue - this is good design!
+  - **Current:** USDRIF, USD VAULT, BTC VAULT as separate components
+  - **Status:** EXCELLENT architectural decision
+  - **Benefit:** Clean separation of concerns, each can be expanded/collapsed independently
+  - **Note:** Not an issue - this is good design!
 
 ### **Analytics Page Grade:** A- (Excellent, pending badge color fix)
 
 **Breakdown:**
+
 - Information Architecture: A+ (Progressive disclosure excellent)
 - Component Reusability: A+ (AnalyserShell pattern)
 - Navigation: A+
@@ -8676,49 +9307,45 @@ Light Cycle Game
 ### **✅ Strengths:**
 
 1. **Classic Game Design**
-   - Simple, understandable rules
-   - TRON theme perfectly executed
-   - Immediate feedback (trail, collisions)
-   - Progressive difficulty (speed increases)
-
+  - Simple, understandable rules
+  - TRON theme perfectly executed
+  - Immediate feedback (trail, collisions)
+  - Progressive difficulty (speed increases)
 2. **Dual Input Methods**
-   - Keyboard controls (arrow keys) for desktop ✅
-   - Touch swipe gestures for mobile ✅
-   - Minimum swipe distance (30px) prevents accidental inputs
-
+  - Keyboard controls (arrow keys) for desktop ✅
+  - Touch swipe gestures for mobile ✅
+  - Minimum swipe distance (30px) prevents accidental inputs
 3. **Leaderboard Integration**
-   - Social engagement element
-   - Optional name submission (progressive disclosure)
-   - Scores persist via API
-   - Timezone display for global context
-
+  - Social engagement element
+  - Optional name submission (progressive disclosure)
+  - Scores persist via API
+  - Timezone display for global context
 4. **TRON Visual Fidelity**
-   - Cyan glowing grid
-   - Grid-based movement
-   - Consistent font choices
-   - Glowing effects on cycle/trail
+  - Cyan glowing grid
+  - Grid-based movement
+  - Consistent font choices
+  - Glowing effects on cycle/trail
 
 ### **⚠️ Minor Observations:**
 
 1. **Game Controls Instructions**
-   - Currently shown as text
-   - Could benefit from visual keyboard icons
-   - Mobile swipe instructions could be more prominent
-   - **Status:** Acceptable as-is, enhancement opportunity
-
+  - Currently shown as text
+  - Could benefit from visual keyboard icons
+  - Mobile swipe instructions could be more prominent
+  - **Status:** Acceptable as-is, enhancement opportunity
 2. **Game Over Flow**
-   - Multiple steps (game over → submit? → leaderboard)
-   - **Status:** Previously noted as having cognitive overhead
-   - **Current:** Acceptable with progressive disclosure
-
+  - Multiple steps (game over → submit? → leaderboard)
+  - **Status:** Previously noted as having cognitive overhead
+  - **Current:** Acceptable with progressive disclosure
 3. **Leaderboard Timezone**
-   - Shows detailed timezone (e.g., "America/New_York")
-   - **Status:** Previously noted as verbose
-   - **Current:** Acceptable for global context
+  - Shows detailed timezone (e.g., "America/New_York")
+  - **Status:** Previously noted as verbose
+  - **Current:** Acceptable for global context
 
 ### **Game Page Grade:** A (Excellent)
 
 **Breakdown:**
+
 - Game Design: A+
 - Controls: A (dual input excellent)
 - Visual Theme: A+
@@ -8732,6 +9359,7 @@ Light Cycle Game
 ### **TRON Aesthetic Consistency:**
 
 **What Works (98% of Application):**
+
 - ✅ Cyan (#00ffff) primary color throughout
 - ✅ Dark backgrounds (#0a0a0a) with grid overlays
 - ✅ Glowing effects on all interactive elements
@@ -8743,6 +9371,7 @@ Light Cycle Game
 - ✅ Green-cyan (#00ff88) for success/mints
 
 **What Breaks Consistency (2% of Application):**
+
 - ❌ Network badges: Material Design green/orange
 - ⚠️ Emojis: 😊 😅 (two instances)
 
@@ -8754,60 +9383,57 @@ Light Cycle Game
 
 ### **Compliance Assessment:**
 
-| Criterion | Status | Grade | Notes |
-|-----------|--------|-------|-------|
-| **Perceivable** | ✅ Good | A | Color contrast strong, alt text present |
-| **Operable** | ✅ Excellent | A+ | Keyboard navigation, touch targets 44px |
-| **Understandable** | ✅ Excellent | A+ | Clear labels, consistent patterns |
-| **Robust** | ✅ Good | A | Semantic HTML, ARIA attributes |
+
+| Criterion          | Status      | Grade | Notes                                   |
+| ------------------ | ----------- | ----- | --------------------------------------- |
+| **Perceivable**    | ✅ Good      | A     | Color contrast strong, alt text present |
+| **Operable**       | ✅ Excellent | A+    | Keyboard navigation, touch targets 44px |
+| **Understandable** | ✅ Excellent | A+    | Clear labels, consistent patterns       |
+| **Robust**         | ✅ Good      | A     | Semantic HTML, ARIA attributes          |
+
 
 ### **Specific Accessibility Features:**
 
 **✅ Implemented Well:**
+
 1. **Keyboard Navigation**
-   - All interactive elements keyboard accessible
-   - Focus indicators present
-   - Tooltips accessible via click and keyboard
-   - Game controls keyboard-friendly
-
+  - All interactive elements keyboard accessible
+  - Focus indicators present
+  - Tooltips accessible via click and keyboard
+  - Game controls keyboard-friendly
 2. **Touch Targets**
-   - Buttons meet 44x44px minimum (WCAG 2.1)
-   - Properly implemented on mobile (430px breakpoint)
-   - Filter buttons, action buttons all compliant
-
+  - Buttons meet 44x44px minimum (WCAG 2.1)
+  - Properly implemented on mobile (430px breakpoint)
+  - Filter buttons, action buttons all compliant
 3. **ARIA Attributes**
-   - `aria-pressed` on filter buttons ✅
-   - `aria-busy` on loading buttons ✅
-   - `aria-live="polite"` on loading messages ✅
-   - `aria-expanded` on tooltips ✅
-   - `aria-label` on interactive elements ✅
-
+  - `aria-pressed` on filter buttons ✅
+  - `aria-busy` on loading buttons ✅
+  - `aria-live="polite"` on loading messages ✅
+  - `aria-expanded` on tooltips ✅
+  - `aria-label` on interactive elements ✅
 4. **Semantic HTML**
-   - Proper heading hierarchy (h1 → h2)
-   - Tables use `<table>` (not divs)
-   - Headers use `<header>`
-   - Navigation uses `<Link>` (accessible routing)
-
+  - Proper heading hierarchy (h1 → h2)
+  - Tables use `<table>` (not divs)
+  - Headers use `<header>`
+  - Navigation uses `<Link>` (accessible routing)
 5. **Reduced Motion Support**
-   - `@media (prefers-reduced-motion: reduce)` implemented ✅
-   - Stops animations for users with vestibular disorders
-   - Excellent accessibility consideration
+  - `@media (prefers-reduced-motion: reduce)` implemented ✅
+  - Stops animations for users with vestibular disorders
+  - Excellent accessibility consideration
 
 **⚠️ Minor Enhancement Opportunities:**
 
 1. **Focus Indicators**
-   - Browser default focus rings present
-   - Could add custom `:focus-visible` with cyan glow for brand consistency
-   - **Priority:** LOW
-
+  - Browser default focus rings present
+  - Could add custom `:focus-visible` with cyan glow for brand consistency
+  - **Priority:** LOW
 2. **Table Caption**
-   - Tables missing `<caption>` for screen readers
-   - **Priority:** LOW
-   - **Fix:** Add screen-reader-only caption explaining table purpose
-
+  - Tables missing `<caption>` for screen readers
+  - **Priority:** LOW
+  - **Fix:** Add screen-reader-only caption explaining table purpose
 3. **Navigation Link Labels**
-   - Could benefit from more descriptive `aria-label`
-   - **Priority:** LOW (already documented in detail previously)
+  - Could benefit from more descriptive `aria-label`
+  - **Priority:** LOW (already documented in detail previously)
 
 **Accessibility Grade:** A (Excellent, minor enhancements available)
 
@@ -8829,27 +9455,25 @@ Light Cycle Game
 ### **Responsive Implementation Quality:**
 
 **✅ Excellent:**
+
 1. **Mobile-First Approach**
-   - 430px breakpoint added for iPhone 12 Pro
-   - Typography scales appropriately
-   - Controls stack vertically on mobile
-   - Touch targets meet 44px minimum
-
+  - 430px breakpoint added for iPhone 12 Pro
+  - Typography scales appropriately
+  - Controls stack vertically on mobile
+  - Touch targets meet 44px minimum
 2. **Table Responsiveness**
-   - min-width removed on mobile (was 1200px)
-   - Column widths reduced (RECEIVER: 380px → 280px)
-   - Horizontal scroll contained within table
-   - **User Confirmed:** "Works fine on my iPhone 12 Pro" ✅
-
+  - min-width removed on mobile (was 1200px)
+  - Column widths reduced (RECEIVER: 380px → 280px)
+  - Horizontal scroll contained within table
+  - **User Confirmed:** "Works fine on my iPhone 12 Pro" ✅
 3. **Padding Optimization**
-   - Body: 20px → 15px on mobile
-   - Cards: 30px → 15px on mobile
-   - Maximizes usable screen space
-
+  - Body: 20px → 15px on mobile
+  - Cards: 30px → 15px on mobile
+  - Maximizes usable screen space
 4. **Typography Scaling**
-   - H1: 48px → 32px on mobile
-   - Metrics: 48px → 35.2px on mobile
-   - Appropriate for small screens
+  - H1: 48px → 32px on mobile
+  - Metrics: 48px → 35.2px on mobile
+  - Appropriate for small screens
 
 **Responsive Design Grade:** A+ (Exceptional)
 
@@ -8860,21 +9484,25 @@ Light Cycle Game
 ### **Content Hierarchy:**
 
 **Level 1: Application Context**
+
 - Page titles (PUT RIF TO WORK, ANALYTICS)
 - Subtitles (purpose explanation)
 - Navigation (page transitions)
 
 **Level 2: Section Context**
+
 - Card/component titles (RIF METRICS, USDRIF MINT/REDEEM)
 - Network badges (Mainnet/Testnet)
 - Section controls (filters, time periods)
 
 **Level 3: Data Details**
+
 - Metric values, transaction rows
 - Timestamps, addresses, amounts
 - Status indicators, labels
 
 **Level 4: Meta Information**
+
 - Last updated timestamps
 - Git hashes, deployment counts
 - Disclaimers, help text
@@ -8968,6 +9596,7 @@ Try Again or Back to Metrics
 ### **1. Visibility of System Status** (Grade: A+)
 
 **Excellent Implementation:**
+
 - ✅ Active filter buttons highlighted
 - ✅ Loading spinners on refresh buttons
 - ✅ Progress bars with phase labels and percentages
@@ -8984,12 +9613,14 @@ Try Again or Back to Metrics
 ### **2. Match Between System and Real World** (Grade: A)
 
 **Good Matches:**
+
 - ✅ "Mint" and "Redeem" (blockchain terminology)
 - ✅ Ethereum addresses in hex format
 - ✅ Timestamps in standard formats
 - ✅ Financial metrics with appropriate units
 
 **Minor Observations:**
+
 - Technical language appropriate for crypto-savvy users
 - Disclaimer uses clear plain language
 - Game uses recognizable TRON theme
@@ -9001,6 +9632,7 @@ Try Again or Back to Metrics
 ### **3. User Control and Freedom** (Grade: A+)
 
 **Excellent Freedom:**
+
 - ✅ Collapsible analyzers (expand/collapse as needed)
 - ✅ Filter controls (ALL, USDRIF, RIFPRO)
 - ✅ Time period selection (1, 7, 30, 90 days)
@@ -9016,6 +9648,7 @@ Try Again or Back to Metrics
 ### **4. Consistency and Standards** (Grade: A-)
 
 **Consistent Elements:**
+
 - ✅ TRON aesthetic throughout (98%)
 - ✅ Button styles uniform
 - ✅ Typography hierarchy consistent
@@ -9024,6 +9657,7 @@ Try Again or Back to Metrics
 - ✅ Filter left / Actions right (industry convention)
 
 **Inconsistent Elements:**
+
 - ❌ Network badges use Material Design colors (2%)
 - ⚠️ Emojis appear inconsistently (2 instances)
 
@@ -9034,6 +9668,7 @@ Try Again or Back to Metrics
 ### **5. Error Prevention** (Grade: A)
 
 **Prevention Mechanisms:**
+
 - ✅ Buttons disabled during loading (prevents double-submission)
 - ✅ Fixed widths prevent layout shifts
 - ✅ Input validation on game controls
@@ -9047,6 +9682,7 @@ Try Again or Back to Metrics
 ### **6. Recognition Rather Than Recall** (Grade: A+)
 
 **Memory Aids:**
+
 - ✅ Active filter state clearly visible
 - ✅ Sticky table headers (columns always labeled)
 - ✅ Summary footer provides context
@@ -9061,6 +9697,7 @@ Try Again or Back to Metrics
 ### **7. Flexibility and Efficiency of Use** (Grade: A+)
 
 **Efficient Patterns:**
+
 - ✅ One-click filter toggles
 - ✅ Keyboard shortcuts for game
 - ✅ Touch swipe gestures for mobile
@@ -9075,6 +9712,7 @@ Try Again or Back to Metrics
 ### **8. Aesthetic and Minimalist Design** (Grade: A+)
 
 **Minimalism Assessment:**
+
 - ✅ Clean layouts, no clutter
 - ✅ Information-dense without overwhelming
 - ✅ No unnecessary decoration (except minor emoji issue)
@@ -9089,6 +9727,7 @@ Try Again or Back to Metrics
 ### **9. Help Users Recognize, Diagnose, and Recover from Errors** (Grade: B+)
 
 **Error Handling:**
+
 - ✅ Error messages displayed clearly
 - ✅ Red error styling (magenta #ff0080)
 - ✅ "Try again" buttons on errors
@@ -9096,6 +9735,7 @@ Try Again or Back to Metrics
 - ✅ User-facing error messages (via userFacingError utility)
 
 **Opportunities:**
+
 - ⚠️ Error messages could be more specific
 - ⚠️ No "what went wrong and why" guidance
 - ⚠️ Could suggest recovery actions
@@ -9107,12 +9747,14 @@ Try Again or Back to Metrics
 ### **10. Help and Documentation** (Grade: B+)
 
 **Documentation Elements:**
+
 - ✅ Tooltips on metrics (with help icons)
 - ✅ Game controls instructions
 - ✅ Disclaimer provides context
 - ✅ Title attributes on elements
 
 **Opportunities:**
+
 - ⚠️ No tooltips on table headers
 - ⚠️ No help text for filters/controls
 - ⚠️ Could add "?" icons for technical terms
@@ -9126,38 +9768,34 @@ Try Again or Back to Metrics
 ### **Positive Changes Identified:**
 
 1. ✅ **Component Refactoring**
-   - Extracted `AnalyserShell` component
-   - Extracted `MetricsPage` component
-   - Improved code organization
-
+  - Extracted `AnalyserShell` component
+  - Extracted `MetricsPage` component
+  - Improved code organization
 2. ✅ **URL State Management**
-   - Analytics accepts `?analyser=usdrif&days=30` params
-   - Deep linking support
-   - Better shareability
-
+  - Analytics accepts `?analyser=usdrif&days=30` params
+  - Deep linking support
+  - Better shareability
 3. ✅ **Multiple Analyzers**
-   - USDRIF, USD Vault, BTC Vault
-   - Each collapsible independently
-   - Excellent information architecture
-
+  - USDRIF, USD Vault, BTC Vault
+  - Each collapsible independently
+  - Excellent information architecture
 4. ✅ **Disclaimer Added**
-   - Clear legal protection
-   - Appropriately subtle
-   - Consistent across pages
+  - Clear legal protection
+  - Appropriately subtle
+  - Consistent across pages
 
 ### **Concerning Changes:**
 
 1. ⚠️ **Emojis Added** (2 instances)
-   - `Deployments: {deploymentCount} 😅` (MetricsPage line 28)
-   - `Transaction analytics and insights... 😊` (Analytics line 31)
-   - **Issue:** Inconsistent with serious/professional TRON aesthetic
-   - **Severity:** LOW
-   - **Recommendation:** Remove emojis to maintain professional tone
-
+  - `Deployments: {deploymentCount} 😅` (MetricsPage line 28)
+  - `Transaction analytics and insights... 😊` (Analytics line 31)
+  - **Issue:** Inconsistent with serious/professional TRON aesthetic
+  - **Severity:** LOW
+  - **Recommendation:** Remove emojis to maintain professional tone
 2. ⚠️ **Network Badges Still Wrong**
-   - Green/orange Material Design colors
-   - Previously documented in detail
-   - Awaiting color fix
+  - Green/orange Material Design colors
+  - Previously documented in detail
+  - Awaiting color fix
 
 ---
 
@@ -9166,60 +9804,58 @@ Try Again or Back to Metrics
 ### **P1: MEDIUM-HIGH (Should Fix Soon)**
 
 1. **Network Badge Colors**
-   - **Issue:** Material Design green/orange instead of TRON cyan/magenta
-   - **Impact:** Breaks visual consistency
-   - **Effort:** 5 minutes (CSS only)
-   - **Status:** Documented in detail with implementation guide
+  - **Issue:** Material Design green/orange instead of TRON cyan/magenta
+  - **Impact:** Breaks visual consistency
+  - **Effort:** 5 minutes (CSS only)
+  - **Status:** Documented in detail with implementation guide
 
 ### **P2: LOW (Polish Items)**
 
-2. **Remove Emojis**
-   - **Issue:** 😊 in Analytics subtitle, 😅 in deployment count
-   - **Impact:** Slightly unprofessional for data dashboard
-   - **Effort:** 2 minutes
-   - **Fix:** Remove emojis from both locations
-
-3. **Enhanced Focus Indicators**
-   - **Issue:** Default browser focus rings
-   - **Impact:** Could be more on-brand
-   - **Effort:** 5 minutes
-   - **Fix:** Add `:focus-visible` with cyan glow
-
-4. **Table Column Tooltips**
-   - **Issue:** No help text for potentially ambiguous headers
-   - **Impact:** Minor usability enhancement
-   - **Effort:** 15 minutes
-   - **Fix:** Add "?" icons with explanations (if user feedback shows confusion)
-
-5. **ARIA Labels for Navigation**
-   - **Issue:** Links could have more descriptive labels
-   - **Impact:** Minor screen reader enhancement
-   - **Effort:** 5 minutes
-   - **Fix:** Add aria-labels (already documented)
+1. **Remove Emojis**
+  - **Issue:** 😊 in Analytics subtitle, 😅 in deployment count
+  - **Impact:** Slightly unprofessional for data dashboard
+  - **Effort:** 2 minutes
+  - **Fix:** Remove emojis from both locations
+2. **Enhanced Focus Indicators**
+  - **Issue:** Default browser focus rings
+  - **Impact:** Could be more on-brand
+  - **Effort:** 5 minutes
+  - **Fix:** Add `:focus-visible` with cyan glow
+3. **Table Column Tooltips**
+  - **Issue:** No help text for potentially ambiguous headers
+  - **Impact:** Minor usability enhancement
+  - **Effort:** 15 minutes
+  - **Fix:** Add "?" icons with explanations (if user feedback shows confusion)
+4. **ARIA Labels for Navigation**
+  - **Issue:** Links could have more descriptive labels
+  - **Impact:** Minor screen reader enhancement
+  - **Effort:** 5 minutes
+  - **Fix:** Add aria-labels (already documented)
 
 ### **P3: VERY LOW (Optional)**
 
-6. **Timestamp Format Humanization**
-   - **Issue:** Compact format (YYYYMMDD HH:MM:SS.cs)
-   - **Impact:** Minor readability enhancement
-   - **Effort:** 2 minutes
-   - **Fix:** Use ISO 8601 or human format
-
-7. **Game Control Visual Icons**
-   - **Issue:** Text-only control instructions
-   - **Impact:** Minor clarity enhancement
-   - **Effort:** 10 minutes
-   - **Fix:** Add keyboard icon graphics
+1. **Timestamp Format Humanization**
+  - **Issue:** Compact format (YYYYMMDD HH:MM:SS.cs)
+  - **Impact:** Minor readability enhancement
+  - **Effort:** 2 minutes
+  - **Fix:** Use ISO 8601 or human format
+2. **Game Control Visual Icons**
+  - **Issue:** Text-only control instructions
+  - **Impact:** Minor clarity enhancement
+  - **Effort:** 10 minutes
+  - **Fix:** Add keyboard icon graphics
 
 ---
 
 ## 🏆 **Page-by-Page Grades**
 
-| Page | Grade | Strengths | Issues |
-|------|-------|-----------|--------|
-| **Metrics Dashboard** | A | Excellent metrics display, clear hierarchy, strong TRON aesthetic | Emoji in deployment count |
-| **Analytics** | A- | Progressive disclosure, multiple analyzers, collapsible UI | Network badge colors, emoji in subtitle |
-| **Light Cycle Game** | A | Perfect TRON theme, dual input, engaging gameplay | Minor control instruction clarity |
+
+| Page                  | Grade | Strengths                                                         | Issues                                  |
+| --------------------- | ----- | ----------------------------------------------------------------- | --------------------------------------- |
+| **Metrics Dashboard** | A     | Excellent metrics display, clear hierarchy, strong TRON aesthetic | Emoji in deployment count               |
+| **Analytics**         | A-    | Progressive disclosure, multiple analyzers, collapsible UI        | Network badge colors, emoji in subtitle |
+| **Light Cycle Game**  | A     | Perfect TRON theme, dual input, engaging gameplay                 | Minor control instruction clarity       |
+
 
 **Overall Application Grade:** A- (Excellent)
 
@@ -9230,33 +9866,29 @@ Try Again or Back to Metrics
 ### **What Makes This Application Excellent:**
 
 1. **🎨 Strong Visual Identity**
-   - Cohesive TRON/Cyberpunk aesthetic
-   - Memorable brand presence
-   - Professional execution
-
+  - Cohesive TRON/Cyberpunk aesthetic
+  - Memorable brand presence
+  - Professional execution
 2. **📊 Excellent Data Presentation**
-   - Clear metric displays
-   - Well-designed tables
-   - Progressive disclosure for complexity
-   - Export functionality
-
+  - Clear metric displays
+  - Well-designed tables
+  - Progressive disclosure for complexity
+  - Export functionality
 3. **♿ Accessibility Foundation**
-   - WCAG 2.1 Level AA compliance
-   - Keyboard navigation
-   - Touch target compliance
-   - Reduced motion support
-
+  - WCAG 2.1 Level AA compliance
+  - Keyboard navigation
+  - Touch target compliance
+  - Reduced motion support
 4. **📱 Mobile-Optimized**
-   - Responsive across all devices
-   - iPhone 12 Pro confirmed working
-   - Touch-friendly interfaces
-   - Proper breakpoint coverage
-
+  - Responsive across all devices
+  - iPhone 12 Pro confirmed working
+  - Touch-friendly interfaces
+  - Proper breakpoint coverage
 5. **🏗️ Solid Architecture**
-   - Component reusability (AnalyserShell)
-   - Clean separation of concerns
-   - Maintainable codebase
-   - DRY principles
+  - Component reusability (AnalyserShell)
+  - Clean separation of concerns
+  - Maintainable codebase
+  - DRY principles
 
 ---
 
@@ -9265,29 +9897,34 @@ Try Again or Back to Metrics
 ### **Issues Requiring Attention:**
 
 **MEDIUM-HIGH Priority:**
+
 - 🔴 Network badges use wrong colors (Material Design vs TRON)
 
 **LOW Priority:**
+
 - ⚠️ Two emoji instances break professional tone
 - ⚠️ Minor accessibility enhancements available
 
 **VERY LOW Priority:**
+
 - Optional polish items (focus indicators, tooltips, timestamp formats)
 
 ---
 
 ## 📊 **Overall Assessment Scorecard**
 
-| Category | Grade | Score | Notes |
-|----------|-------|-------|-------|
-| **Visual Design** | A | 92% | Excellent TRON theme, minor badge issue |
-| **Information Architecture** | A+ | 98% | Outstanding organization |
-| **Accessibility** | A | 94% | Strong WCAG compliance |
-| **Responsive Design** | A+ | 98% | Excellent mobile support |
-| **Usability** | A+ | 96% | Intuitive, clear, efficient |
-| **User Flows** | A+ | 97% | Logical, friction-free |
-| **Code Quality** | A+ | 98% | Clean, maintainable, reusable |
-| **Professional Polish** | A- | 88% | Minor emoji/color issues |
+
+| Category                     | Grade | Score | Notes                                   |
+| ---------------------------- | ----- | ----- | --------------------------------------- |
+| **Visual Design**            | A     | 92%   | Excellent TRON theme, minor badge issue |
+| **Information Architecture** | A+    | 98%   | Outstanding organization                |
+| **Accessibility**            | A     | 94%   | Strong WCAG compliance                  |
+| **Responsive Design**        | A+    | 98%   | Excellent mobile support                |
+| **Usability**                | A+    | 96%   | Intuitive, clear, efficient             |
+| **User Flows**               | A+    | 97%   | Logical, friction-free                  |
+| **Code Quality**             | A+    | 98%   | Clean, maintainable, reusable           |
+| **Professional Polish**      | A-    | 88%   | Minor emoji/color issues                |
+
 
 **Overall Application Grade:** A- (91.375%)
 
@@ -9300,6 +9937,7 @@ Try Again or Back to Metrics
 **Answer:** ✅ **YES, with minor reservations**
 
 **Ready for Launch:**
+
 - ✅ Core functionality working
 - ✅ Responsive design excellent
 - ✅ Accessibility compliant
@@ -9307,11 +9945,13 @@ Try Again or Back to Metrics
 - ✅ Professional appearance (mostly)
 
 **Recommended Pre-Launch Fixes:**
+
 - 🔴 Fix network badge colors (5 minutes)
 - ⚠️ Remove emojis (2 minutes)
 - **Total:** 7 minutes to achieve A+ polish
 
 **Without Fixes:**
+
 - Application is **functional and usable**
 - Minor visual inconsistencies present
 - Professional enough for launch
@@ -9322,28 +9962,33 @@ Try Again or Back to Metrics
 ## 🎯 **Recommendations Priority Matrix**
 
 ### **High Impact, Low Effort (Do First):**
+
 1. Fix network badge colors → TRON cyan/magenta (5 min)
 2. Remove emojis from subtitle and deployment count (2 min)
 
 **Total Quick Wins:** 7 minutes → Moves grade from A- to A+
 
 ### **Medium Impact, Low Effort (Do If Time):**
-3. Add `:focus-visible` styles (5 min)
-4. Add ARIA labels to navigation (5 min)
+
+1. Add `:focus-visible` styles (5 min)
+2. Add ARIA labels to navigation (5 min)
 
 ### **Low Impact, Medium Effort (Optional):**
-5. Add table column tooltips (15 min)
-6. Enhance error messages with recovery guidance (10 min)
+
+1. Add table column tooltips (15 min)
+2. Enhance error messages with recovery guidance (10 min)
 
 ### **Very Low Priority (Future Enhancement):**
-7. Timestamp format humanization (2 min)
-8. Game control visual icons (10 min)
+
+1. Timestamp format humanization (2 min)
+2. Game control visual icons (10 min)
 
 ---
 
 ## 🎉 **Conclusion**
 
 The USDRIF Tracker is an **exceptionally well-designed application** that demonstrates:
+
 - Professional execution
 - Strong UX principles
 - Excellent accessibility
@@ -9359,13 +10004,15 @@ The USDRIF Tracker is an **exceptionally well-designed application** that demons
 ## 📝 **Next Actions for Coder Agent**
 
 ### **Recommended (7 minutes):**
+
 1. Replace network badge colors: green/orange → cyan/magenta
 2. Remove emoji from Analytics subtitle
 3. Remove emoji from deployment count
 
 ### **Optional (15 minutes):**
-4. Add `:focus-visible` styles for keyboard users
-5. Add ARIA labels to navigation links
+
+1. Add `:focus-visible` styles for keyboard users
+2. Add ARIA labels to navigation links
 
 **After These Fixes:** Application achieves A+ (Exceptional) grade.
 
@@ -9379,9 +10026,384 @@ The USDRIF Tracker is an **exceptionally well-designed application** that demons
 
 ---
 
+---
+
+# 🚨 **CRITICAL BUG: BTC Vault Table Overlapping Values**
+
+**Issue Type:** Layout Bug / Data Readability  
+**Severity:** HIGH (Critical usability issue)  
+**Date Reported:** January 24, 2026  
+**Affected Component:** `BTCVaultAnalyser.tsx` table  
+**User Report:** "we have this problem in BTC Vault testnet analyser overlapping values"
+
+---
+
+## 📸 **Visual Evidence**
+
+**Screenshot Analysis:**
+
+- ✅ Long numeric values overlapping with adjacent columns
+- ✅ "USD Equiv." values extending into User/Receiver columns
+- ✅ Receiver addresses overlapping with Epoch column
+- ✅ Text becoming unreadable due to collision
+
+---
+
+## 🔍 **Root Cause Analysis**
+
+### **The Problem:**
+
+The BTC Vault table has **10 columns**:
+
+1. Time (UTC)
+2. Status
+3. Type
+4. Amount (RBTC)
+5. Shares
+6. USD Equiv.
+7. User
+8. Receiver
+9. Epoch
+10. Block
+
+**BUT** the CSS (`MintRedeemAnalyser.css`) only defines column-specific widths for **7 columns**:
+
+- `:nth-child(1)` through `:nth-child(7)` have fixed widths
+- `:nth-child(8)`, `:nth-child(9)`, `:nth-child(10)` have **NO width constraints**
+
+### **Why This Happens:**
+
+The CSS was originally designed for the USDRIF Mint/Redeem table (7 columns):
+
+1. TIME
+2. STATUS
+3. ASSET
+4. TYPE
+5. AMOUNT
+6. RECEIVER
+7. BLOCK
+
+The BTC Vault table **reuses the same CSS classes** but has **3 additional columns** (Shares, USD Equiv., User) which shifts the column positions, leaving Receiver, Epoch, and Block unstyled.
+
+---
+
+## 🎨 **Impact on User Experience**
+
+**Severity: HIGH**
+
+1. **Data Unreadable** ❌
+  - Users cannot read overlapping values
+  - Critical information (USD amounts, addresses) obscured
+2. **Loss of Trust** ❌
+  - Overlapping text looks broken/unprofessional
+  - Users may question data accuracy
+3. **Functional Failure** ❌
+  - Cannot click on addresses/blocks hidden behind overlap
+  - Copy/paste compromised
+4. **Brand Damage** ❌
+  - Conflicts with the otherwise polished TRON aesthetic
+  - Inconsistent with high-quality execution elsewhere
+
+---
+
+## ✅ **Solution: Add BTC Vault-Specific Column Widths**
+
+### **Strategy:**
+
+Add CSS rules for columns 8, 9, and 10 to give them proper widths and prevent overflow.
+
+### **Implementation for Coder Agent:**
+
+**File:** `src/MintRedeemAnalyser.css`
+
+**Add these rules after line 731 (after the existing `:nth-child(7)` rules):**
+
+```css
+/* BTC Vault specific columns (10-column table) */
+/* Column 8: Receiver (BTC Vault) */
+.transactions-table th:nth-child(8),
+.transactions-table td:nth-child(8) {
+  max-width: 380px;      /* Allow reasonable address length */
+  width: auto;           /* Shrink to content but respect max */
+  word-break: break-all; /* Break long addresses */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Column 9: Epoch (BTC Vault) */
+.transactions-table th:nth-child(9),
+.transactions-table td:nth-child(9) {
+  width: 70px;           /* Fixed width for epoch numbers */
+  max-width: 70px;
+  min-width: 70px;
+  text-align: center;    /* Center epoch IDs */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Column 10: Block (BTC Vault) */
+.transactions-table th:nth-child(10),
+.transactions-table td:nth-child(10) {
+  width: 90px;           /* Fixed width for block numbers */
+  max-width: 90px;
+  min-width: 90px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+```
+
+### **Also Update Column 4, 5, 6, 7 Widths for BTC Vault Context:**
+
+The current columns 4-7 are styled for the 7-column USDRIF table, but they map to different semantic columns in the BTC Vault table. The widths might need adjustment:
+
+**Current mapping issue:**
+
+- BTC Vault column 4 (Amount RBTC) currently uses `:nth-child(4)` width: 70px ✅ OK
+- BTC Vault column 5 (Shares) currently uses `:nth-child(5)` width: 120px ✅ OK
+- BTC Vault column 6 (USD Equiv.) currently uses `:nth-child(6)` max-width: 420px ❌ TOO WIDE
+- BTC Vault column 7 (User) currently uses `:nth-child(7)` width: 90px ❌ TOO NARROW for addresses
+
+**Add these additional overrides:**
+
+```css
+/* Column 6: USD Equiv. (BTC Vault) - narrower than generic column 6 */
+.transactions-table th:nth-child(6),
+.transactions-table td:nth-child(6) {
+  width: 100px;          /* Fixed width for USD amounts */
+  max-width: 100px;
+  min-width: 100px;
+  text-align: right;     /* Right-align currency */
+  padding-right: 9px;
+}
+
+/* Column 7: User (BTC Vault) - wider than generic column 7 */
+.transactions-table th:nth-child(7),
+.transactions-table td:nth-child(7) {
+  max-width: 380px;      /* Allow reasonable address length */
+  width: auto;           /* Shrink to content but respect max */
+  word-break: break-all; /* Break long addresses */
+  padding-left: 8px;
+  padding-right: 8px;
+}
+```
+
+---
+
+## 🎯 **Better Solution: Table-Specific Classes**
+
+**Issue with current approach:** Both USDRIF and BTC Vault tables share the same `.transactions-table` class but have different column structures.
+
+**Better Architecture (Recommended for Coder Agent):**
+
+### **Option A: Add a wrapper class to distinguish tables**
+
+**In `BTCVaultAnalyser.tsx` (line 462):**
+
+Change:
+
+```tsx
+<div className="transactions-table-container">
+```
+
+To:
+
+```tsx
+<div className="transactions-table-container btc-vault-table">
+```
+
+**Then in CSS, scope the rules:**
+
+```css
+/* BTC Vault specific: 10-column table */
+.btc-vault-table .transactions-table th:nth-child(4),
+.btc-vault-table .transactions-table td:nth-child(4) {
+  text-align: right;
+  width: 110px;          /* Amount (RBTC) */
+  max-width: 110px;
+  min-width: 110px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(5),
+.btc-vault-table .transactions-table td:nth-child(5) {
+  text-align: right;
+  width: 110px;          /* Shares */
+  max-width: 110px;
+  min-width: 110px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(6),
+.btc-vault-table .transactions-table td:nth-child(6) {
+  text-align: right;
+  width: 100px;          /* USD Equiv. */
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(7),
+.btc-vault-table .transactions-table td:nth-child(7) {
+  max-width: 340px;      /* User */
+  width: auto;
+  word-break: break-all;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(8),
+.btc-vault-table .transactions-table td:nth-child(8) {
+  max-width: 340px;      /* Receiver */
+  width: auto;
+  word-break: break-all;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.btc-vault-table .transactions-table th:nth-child(9),
+.btc-vault-table .transactions-table td:nth-child(9) {
+  width: 70px;           /* Epoch */
+  max-width: 70px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.btc-vault-table .transactions-table th:nth-child(10),
+.btc-vault-table .transactions-table td:nth-child(10) {
+  width: 90px;           /* Block */
+  max-width: 90px;
+  min-width: 90px;
+}
+```
+
+This approach:
+
+- ✅ Prevents conflicts with USDRIF/Vault tables
+- ✅ Makes table styling explicit and maintainable
+- ✅ Allows each table to have optimal column widths
+- ✅ Easier to debug and modify
+
+---
+
+## 📱 **Mobile Responsive Considerations**
+
+**Also add mobile rules for BTC Vault columns:**
+
+```css
+@media (max-width: 430px) {
+  /* BTC Vault mobile: adjust column widths */
+  .btc-vault-table .transactions-table th:nth-child(7),
+  .btc-vault-table .transactions-table td:nth-child(7) {
+    width: 240px;        /* User - narrower on mobile */
+    max-width: 240px;
+    min-width: 240px;
+  }
+  
+  .btc-vault-table .transactions-table th:nth-child(8),
+  .btc-vault-table .transactions-table td:nth-child(8) {
+    width: 240px;        /* Receiver - narrower on mobile */
+    max-width: 240px;
+    min-width: 240px;
+  }
+}
+```
+
+---
+
+## 🎯 **Implementation Checklist for Coder Agent**
+
+### **Quick Fix (5 minutes):**
+
+1. ✅ Add `.btc-vault-table` class to the wrapper div in `BTCVaultAnalyser.tsx` line 462
+2. ✅ Add scoped CSS rules for `.btc-vault-table .transactions-table` columns 4-10 in `MintRedeemAnalyser.css`
+3. ✅ Add mobile responsive rules for BTC Vault table
+4. ✅ Test on desktop and mobile (iPhone 12 Pro viewport)
+
+### **Verification:**
+
+1. Load BTC Vault analyzer with transactions
+2. Verify no overlapping text in any column
+3. Verify addresses break properly (`word-break: break-all`)
+4. Verify numeric columns right-aligned
+5. Verify horizontal scroll works if table exceeds viewport
+6. Test on mobile (390px viewport)
+
+---
+
+## 📊 **Expected Outcome**
+
+**Before Fix:**
+
+- ❌ Overlapping values
+- ❌ Unreadable data
+- ❌ Broken layout
+- ❌ Unprofessional appearance
+
+**After Fix:**
+
+- ✅ All columns properly sized
+- ✅ No overlapping text
+- ✅ Data readable and clickable
+- ✅ Professional table layout
+- ✅ Consistent with TRON aesthetic
+
+---
+
+## 🎨 **UX Heuristics Violated by This Bug**
+
+### **1. Perceivability (WCAG 2.1)** ❌
+
+- Text overlapping makes content unreadable
+- Fails WCAG 1.3.1 (Info and Relationships)
+- Fails WCAG 1.4.8 (Visual Presentation)
+
+### **2. Nielsen Norman: Aesthetic and Minimalist Design** ❌
+
+- Overlapping text is visual clutter
+- Reduces signal-to-noise ratio
+
+### **3. Fitts's Law** ❌
+
+- Cannot click on elements hidden behind overlap
+- Reduces target area for interaction
+
+---
+
+## 🏆 **Priority Classification**
+
+**Priority:** HIGH (P0)  
+**Severity:** CRITICAL for BTC Vault feature  
+**User Impact:** Data completely unreadable  
+**Effort:** 5 minutes (CSS only)  
+**Blocker:** YES for BTC Vault production use
+
+**Recommendation:** 🔴 **FIX IMMEDIATELY** - This is a critical data readability issue
+
+---
+
+## 📝 **Summary for Coder Agent**
+
+### **The Fix:**
+
+1. Add `className="transactions-table-container btc-vault-table"` to BTCVaultAnalyser wrapper
+2. Add scoped CSS rules for `.btc-vault-table .transactions-table` columns 4-10
+3. Set proper widths: Amount (110px), Shares (110px), USD (100px), User/Receiver (340px max), Epoch (70px), Block (90px)
+4. Add mobile responsive rules (240px for address columns)
+
+**Estimated Time:** 5 minutes  
+**Files Changed:** 2 (BTCVaultAnalyser.tsx, MintRedeemAnalyser.css)  
+**Risk:** Low (scoped CSS change, no logic changes)
+
+---
+
+**Issue Reported:** January 24, 2026  
+**Reviewer:** UX Designer Agent  
+**Status:** 🔴 CRITICAL - Awaiting Implementation  
+**User Impact:** HIGH - Data unreadable in BTC Vault table
+
+---
+
 ## 🎨 **Quick Reference: Correct TRON Styles**
 
 ### **Mainnet Badge (Cyan Theme):**
+
 ```css
 .network-badge--mainnet {
   background: rgba(0, 255, 255, 0.08);
@@ -9399,6 +10421,7 @@ The USDRIF Tracker is an **exceptionally well-designed application** that demons
 ```
 
 ### **Testnet Badge (Magenta Theme):**
+
 ```css
 .network-badge--testnet {
   background: rgba(255, 0, 128, 0.08);
@@ -9416,6 +10439,7 @@ The USDRIF Tracker is an **exceptionally well-designed application** that demons
 ```
 
 ### **Base Badge:**
+
 ```css
 .network-badge {
   padding: 7px 16px;
@@ -9428,6 +10452,7 @@ The USDRIF Tracker is an **exceptionally well-designed application** that demons
 ```
 
 **Key Points:**
+
 - 🎯 Use TRON colors: Cyan (#00ffff) for mainnet, Magenta (#ff0080) for testnet
 - 🎯 Transparent backgrounds with subtle rgba tints
 - 🎯 2px glowing borders with box-shadows
@@ -9453,6 +10478,7 @@ Component Header Layout:
 ```
 
 **Badge Characteristics:**
+
 - ✅ Single inline `<span>` element (no wrappers)
 - ✅ Transparent background with cyan/magenta tint
 - ✅ 2px glowing border
@@ -9473,12 +10499,14 @@ Component Header Layout:
 **Why did this happen?**
 
 The current implementation appears to have:
+
 1. Imported Material Design badge styles (green/orange, solid fills)
 2. Added play button functionality for unknown reason
 3. Wrapped everything in containers (possibly for the play button logic)
 4. Created a multi-layer component instead of a simple badge
 
 **What should have happened:**
+
 - Simple inline `<span>` with TRON-themed CSS
 - No additional logic or containers
 - Just a visual indicator, not an interactive component (unless explicitly needed)
@@ -9490,19 +10518,17 @@ The current implementation appears to have:
 Before implementing, determine:
 
 1. **What are the play buttons for?**
-   - If they're collapse/expand controls → Move them separate from badge, use existing collapse-toggle pattern
-   - If they're decorative → Remove them entirely
-   - If they have another purpose → Clarify and implement properly
-
+  - If they're collapse/expand controls → Move them separate from badge, use existing collapse-toggle pattern
+  - If they're decorative → Remove them entirely
+  - If they have another purpose → Clarify and implement properly
 2. **Why are there outer containers?**
-   - If they're for layout → Remove them, use simple inline badge
-   - If they're for interaction → Separate interaction from badge visual
-   - If they're accidental → Remove them
-
+  - If they're for layout → Remove them, use simple inline badge
+  - If they're for interaction → Separate interaction from badge visual
+  - If they're accidental → Remove them
 3. **What's the intended final layout?**
-   - Badge should be a simple inline element next to the heading
-   - No wrappers, no extra boxes, no play icons
-   - Clean and minimal
+  - Badge should be a simple inline element next to the heading
+  - No wrappers, no extra boxes, no play icons
+  - Clean and minimal
 
 **Recommendation:** Remove all the complexity. Start fresh with a simple `<span>` badge using TRON CSS.
 
@@ -9521,6 +10547,7 @@ Before implementing, determine:
 ## 🚨 **VISUAL EVIDENCE SUMMARY**
 
 **What the Screenshot Shows:**
+
 1. ✅ **Solid green badges** with white text (Material Design #00c853)
 2. ✅ **Solid orange badge** with white text (Material Design #ff9800)
 3. ✅ **Text truncation** - "ROOTSTOCK MAI..." (cuts off "NNET") and "ROOTSTOCK TES..." (cuts off "TNET")

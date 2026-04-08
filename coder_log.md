@@ -1,8 +1,52 @@
 # Coder Log - BTC Vault Analysers Implementation
 
-**Last updated:** March 26, 2026  
+**Last updated:** 2026-03-27 10:30 GMT  
 
-**Date**: January 24, 2026  
+---
+
+## Running log (newest first)
+
+---
+
+**2026-03-27 10:30 GMT**
+
+**BTC Vault analyser (`BTCVaultAnalyser.tsx`) — QA UI findings:** Combined Blockscout **`decoded.parameters`** with **`ethers.Interface.parseLog`** using **`BTC_VAULT_ABI`** (`buildParamMap`). **Amount:** `pickUint` aliases `amount` / `assets` / `value`. **User:** `pickAddr` order `user` → `owner` → `account` → `caller` → `sender`, then `receiver`; empty → **—** in table. **Shares:** new table column + Excel (order: Amount, Shares, USD, User, …). `QA_log.md` section marked addressed.
+
+---
+
+**2026-03-27 10:17 GMT**
+
+**Tests — `useTokenData` + `blockscout`:** `src/hooks/useTokenData.test.ts` (`renderHook`: happy path with mocked `ethers` / `history` / long `REFRESH_INTERVAL`; RPC-unreachable path → user-facing error). `src/api/blockscout.test.ts` — `fetchLogsV1` validation, success JSON, “no logs” empty, API error, non-JSON; `fetchLogsV2` client block filter, empty page, HTTP error. **Suite:** 28 tests; `npm run build` OK. Note: Blockscout tests exercise shared rate limiter + real-ish delays (~3.2s file).
+
+---
+
+**2026-03-27 10:14 GMT**
+
+**Complexity review** (`usdriftracker`, TS/TSX only; `agent-kit` excluded). Full picture: LOC sums + branch **proxy** (`rg` on leading `if` / `for` / `while` / `switch` / `catch` — **not** cyclomatic complexity; no ESLint `complexity` rule in repo).
+
+| Area | Approx. LOC | Note |
+|------|-------------|------|
+| `src/` | ~5,330 | App, pipelines, hooks, components |
+| `api/` | ~1,560 | Vercel/server routes |
+| Repo root `*.ts` | ~3,330 | Maintenance scripts, `vite.config`, `middleware` |
+| **Total** | **~10,230** | |
+
+- **Tests:** 5 test files vs 33 non-test `src/` modules — tests cluster on `mintRedeem`, `vaultDepositWithdraw`, `config`, `App`, `ErrorBoundary`.
+- **Top LOC:** `track-mint-redeem-enhanced.ts` (~798) → `fetchMintRedeemTransactions.ts` (~717) → `LightCycleGame.tsx` (~569) → `useTokenData.ts` (~460) → `api/scores.ts` (~443) → `blockscout.ts` (~349) → `api/rpc.ts` (~342) → `fetchVaultDepositWithdrawTransactions.ts` (~279).
+- **Branch-proxy signal:** densest core modules → mint fetch, `useTokenData`, `blockscout`, vault fetch; `LightCycleGame` = many lines, fewer branch-like lines per 100 LOC.
+- **Risks:** ~⅓ of codebase is **root scripts** (parallel semantics to app, drift); **Blockscout** hub couples v1/v2 + rate limit — high blast radius; **single huge** mint pipeline still hard to hold in head.
+
+**Next (from review):** ESLint complexity + `max-lines-per-function`; folder or deprecate orphan scripts; **`BTCVaultAnalyser`** pipeline extract + Vitest; split mint fetch into named phase helpers; extend tests for `useTokenData` + `blockscout`.
+
+---
+
+**2026-03-27 10:13 GMT**
+
+**Log updates:** Add new notes **here**, **above** the next `---` divider (prepend only — **do not** append to the end of the file). Each entry starts with **`YYYY-MM-DD HH:MM TZ`** in bold, then bullets or paragraphs. Separate **every** entry with a full-width horizontal rule **`---`** above and below the timestamp block so scans stay readable.
+
+---
+
+**Date** (planning baseline): January 24, 2026  
 **Status**: Planning Complete, Ready for Implementation  
 **Network**: RSK Testnet
 
@@ -1540,6 +1584,6 @@ interface BTCVaultTransaction {
 
 ---
 
-**Last Updated**: March 26, 2026  
+**Last Updated** (footer — prefer **Running log** at top for session history): 2026-03-27 10:30 GMT  
 **Status**: Ready for Implementation  
 **Model**: composer-1
