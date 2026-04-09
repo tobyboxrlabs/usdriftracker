@@ -1,7 +1,7 @@
 /**
  * Shared RPC client for JSON-RPC (Rootstock).
- * Uses proxy in production for CORS; direct endpoints in dev.
- * Used by MintRedeemAnalyser and VaultDepositWithdrawAnalyser.
+ * In the browser, uses same-origin `/api/rpc` first (Vite dev middleware or Vercel) so RSK nodes
+ * are not called directly from localhost (they block CORS). Vitest uses direct endpoints only.
  */
 import { CONFIG } from '../config'
 import { isTransientHttpStatus, isTransientNetworkError, sleep } from './asyncRetry'
@@ -31,15 +31,14 @@ export async function rpcCall<T = unknown>(
           'https://rsk.publicnode.com',
         ]
 
-  const isDev = import.meta.env.DEV
-  const endpointsToTry = isDev
-    ? [primaryRpcEndpoint, ...fallbackEndpoints]
-    : [
-        `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
-        ...fallbackEndpoints.map((ep) => `/api/rpc?target=${encodeURIComponent(ep)}`),
-        primaryRpcEndpoint,
-        ...fallbackEndpoints,
-      ]
+  const useSameOriginRpcProxy = typeof window !== 'undefined' && !import.meta.env.VITEST
+  const proxyUrls = [
+    `/api/rpc?target=${encodeURIComponent(primaryRpcEndpoint)}`,
+    ...fallbackEndpoints.map((ep) => `/api/rpc?target=${encodeURIComponent(ep)}`),
+  ]
+  const directUrls = [primaryRpcEndpoint, ...fallbackEndpoints]
+  /** Browser cannot call whitelisted RSK URLs directly (no CORS); never fall back to direct there. */
+  const endpointsToTry = useSameOriginRpcProxy ? proxyUrls : directUrls
 
   let lastError: Error | null = null
 
@@ -70,7 +69,9 @@ export async function rpcCall<T = unknown>(
         }
 
         if (response.status === 404 && !isDirectRpc) {
-          lastError = new Error("RPC proxy unavailable (run 'npm run dev' for vercel dev with API)")
+          lastError = new Error(
+            'RPC proxy returned 404 at /api/rpc. Use `npm run dev` or `npm run preview` (both wire /api/rpc locally), or `npm run dev:vercel` for the API routes.'
+          )
           break endpointAttempts
         }
 

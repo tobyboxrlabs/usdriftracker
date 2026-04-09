@@ -1,17 +1,14 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { AnalyserShell } from './components/AnalyserShell'
 import { AddressLinkWithRns } from './components/AddressLinkWithRns'
 import { CONFIG } from './config'
 import { useRnsReverseLookup } from './hooks/useRnsReverseLookup'
+import { useCollapsibleTransactionAnalyser } from './hooks/useCollapsibleTransactionAnalyser'
 import { formatAmountDisplay } from './utils/amount'
 import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
 import { logger } from './utils/logger'
-import { userFacingError } from './utils/userFacingError'
-import {
-  fetchMintRedeemTransactions,
-  type MintRedeemProgress,
-} from './mintRedeem/fetchMintRedeemTransactions'
+import { fetchMintRedeemTransactions } from './mintRedeem/fetchMintRedeemTransactions'
 import type { MintRedeemTransaction } from './mintRedeem/types'
 import './MintRedeemAnalyser.css'
 
@@ -24,15 +21,32 @@ export default function MintRedeemAnalyser({
   initialExpanded,
   initialDays,
 }: MintRedeemAnalyserProps = {}) {
-  const [transactions, setTransactions] = useState<MintRedeemTransaction[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [days, setDays] = useState(initialDays ?? 1)
   const [tokenFilter, setTokenFilter] = useState<'USDRIF' | 'RifPro' | 'All'>('All')
-  const [loadingProgress, setLoadingProgress] = useState<MintRedeemProgress | null>(null)
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
-  const progressTimeoutRef = useRef<number | null>(null)
+
+  const fetchRecentTxs = useCallback(
+    (days: number, onProgress?: Parameters<typeof fetchMintRedeemTransactions>[1]) =>
+      fetchMintRedeemTransactions(days, onProgress),
+    []
+  )
+
+  const {
+    transactions,
+    loading,
+    error,
+    days,
+    setDays,
+    loadingProgress,
+    lastUpdated,
+    isCollapsed,
+    setIsCollapsed,
+    fetchTransactions,
+  } = useCollapsibleTransactionAnalyser<MintRedeemTransaction>({
+    initialExpanded,
+    initialDays,
+    defaultDays: 1,
+    fetchRecentTxs,
+    onFetchError: (err) => logger.mintRedeem.error('Error fetching mint/redeem transactions:', err),
+  })
 
   const addressesForRns = useMemo(() => transactions.map((tx) => tx.receiver), [transactions])
   const rnsLabels = useRnsReverseLookup(
@@ -43,40 +57,6 @@ export default function MintRedeemAnalyser({
     !isCollapsed
   )
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    setLoadingProgress(null)
-
-    try {
-      const { recentTxs } = await fetchMintRedeemTransactions(days, setLoadingProgress)
-      setTransactions(recentTxs)
-      setLastUpdated(new Date())
-    } catch (err) {
-      setError(userFacingError(err))
-      logger.mintRedeem.error('Error fetching mint/redeem transactions:', err)
-    } finally {
-      setLoading(false)
-      if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current)
-      progressTimeoutRef.current = window.setTimeout(() => setLoadingProgress(null), 500)
-    }
-  }, [days])
-
-  useEffect(() => {
-    if (!isCollapsed) {
-      fetchTransactions()
-    }
-  }, [fetchTransactions, isCollapsed])
-
-  useEffect(() => {
-    return () => {
-      if (progressTimeoutRef.current) {
-        clearTimeout(progressTimeoutRef.current)
-        progressTimeoutRef.current = null
-      }
-    }
-  }, [])
-
   const exportToExcel = useCallback((txsToExport: MintRedeemTransaction[]) => {
     try {
       const wb = XLSX.utils.book_new()
@@ -84,11 +64,11 @@ export default function MintRedeemAnalyser({
       const excelData = txsToExport.map((tx) => ({
         'Time (UTC)': tx.time.toISOString().replace('T', ' ').substring(0, 19),
         'TX Hash': tx.hash,
-        'Status': tx.status,
-        'Asset': tx.type.includes('USDRIF') ? 'USDRIF' : 'RifPro',
-        'Type': tx.type.includes('Mint') ? 'Mint' : 'Redeem',
+        Status: tx.status,
+        Asset: tx.type.includes('USDRIF') ? 'USDRIF' : 'RifPro',
+        Type: tx.type.includes('Mint') ? 'Mint' : 'Redeem',
         'Amount Minted/Redeemed': tx.amountMintedRedeemed,
-        'Receiver': tx.receiver,
+        Receiver: tx.receiver,
         'Block Number': tx.blockNumber,
       }))
 
@@ -125,11 +105,11 @@ export default function MintRedeemAnalyser({
       const summaryStartRow = excelData.length + 3
       const summaryData = [
         {},
-        { 'Time (UTC)': 'Total Transactions:', 'Status': txsToExport.length },
-        { 'Time (UTC)': 'Mints:', 'Status': txsToExport.filter((tx) => tx.type.includes('Mint')).length },
+        { 'Time (UTC)': 'Total Transactions:', Status: txsToExport.length },
+        { 'Time (UTC)': 'Mints:', Status: txsToExport.filter((tx) => tx.type.includes('Mint')).length },
         {
           'Time (UTC)': 'Redeems:',
-          'Status': txsToExport.filter((tx) => tx.type.includes('Redeem')).length,
+          Status: txsToExport.filter((tx) => tx.type.includes('Redeem')).length,
         },
       ]
 
@@ -140,8 +120,8 @@ export default function MintRedeemAnalyser({
 
       const filename = generateDateFilename('usdrif_txs')
       writeExcelWorkbook(wb, filename)
-    } catch (error) {
-      logger.mintRedeem.error('Error exporting to Excel:', error)
+    } catch (e) {
+      logger.mintRedeem.error('Error exporting to Excel:', e)
       alert('Failed to export to Excel. Please try again.')
     }
   }, [])
@@ -186,9 +166,7 @@ export default function MintRedeemAnalyser({
           className="export-button"
           onClick={() =>
             exportToExcel(
-              transactions.filter((tx) =>
-                tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)
-              )
+              transactions.filter((tx) => (tokenFilter === 'All' ? true : tx.type.includes(tokenFilter)))
             )
           }
           disabled={loading}
@@ -200,15 +178,12 @@ export default function MintRedeemAnalyser({
   )
 
   const filteredTransactions =
-    tokenFilter === 'All'
-      ? transactions
-      : transactions.filter((tx) => tx.type.includes(tokenFilter))
+    tokenFilter === 'All' ? transactions : transactions.filter((tx) => tx.type.includes(tokenFilter))
 
   const tableContent =
     filteredTransactions.length === 0 ? (
       <div className="no-data" role="status" aria-live="polite">
-        No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected
-        filter.
+        No {tokenFilter === 'All' ? '' : tokenFilter + ' '}transactions found with the selected filter.
         <br />
         <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
           Try selecting a different time period or filter option.
@@ -246,9 +221,7 @@ export default function MintRedeemAnalyser({
                 <td className={tx.type.includes('Mint') ? 'type-mint' : 'type-redeem'}>
                   {tx.type.includes('Mint') ? 'Mint' : 'Redeem'}
                 </td>
-                <td title={tx.amountMintedRedeemed}>
-                  {formatAmountDisplay(tx.amountMintedRedeemed, 2)}
-                </td>
+                <td title={tx.amountMintedRedeemed}>{formatAmountDisplay(tx.amountMintedRedeemed, 2)}</td>
                 <td className="address-cell">
                   <AddressLinkWithRns
                     href={`https://rootstock.blockscout.com/address/${tx.receiver}`}
@@ -279,8 +252,8 @@ export default function MintRedeemAnalyser({
               {filteredTransactions.filter((tx) => tx.type.includes('Redeem')).length}
               {tokenFilter === 'All' && (
                 <>
-                  , USDRIF: {filteredTransactions.filter((tx) => tx.type.includes('USDRIF')).length}{' '}
-                  | RifPro: {filteredTransactions.filter((tx) => tx.type.includes('RifPro')).length}
+                  , USDRIF: {filteredTransactions.filter((tx) => tx.type.includes('USDRIF')).length} | RifPro:{' '}
+                  {filteredTransactions.filter((tx) => tx.type.includes('RifPro')).length}
                 </>
               )}
               {(() => {

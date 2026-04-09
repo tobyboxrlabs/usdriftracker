@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly DEV?: boolean
+  /** True when running under Vitest (keeps RPC direct in tests). */
+  readonly VITEST?: boolean
   readonly MODE?: string
   readonly PROD?: boolean
   readonly SSR?: boolean

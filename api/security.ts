@@ -22,13 +22,13 @@ function getAllowedOrigins(): string[] {
   // REQUIRE explicit configuration - NEVER allow wildcard defaults
   if (!envOrigins) {
     if (process.env.NODE_ENV === 'development') {
-      // Development: allow only localhost variants (secure default)
-      return [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173',
-      ]
+      // Development: localhost / 127.0.0.1 on common Vite + Vercel dev ports (5174+ when 5173 is taken)
+      const ports = [3000, 5173, 5174, 5175, 5176, 4173, 4174, 8080]
+      const origins: string[] = []
+      for (const port of ports) {
+        origins.push(`http://localhost:${port}`, `http://127.0.0.1:${port}`)
+      }
+      return origins
     } else {
       // Production: block all CORS unless explicitly configured
       console.warn('[security] ALLOWED_ORIGINS not configured - CORS disabled')

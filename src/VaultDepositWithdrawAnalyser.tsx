@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import * as XLSX from 'xlsx'
 import { AnalyserShell } from './components/AnalyserShell'
 import { AddressLinkWithRns } from './components/AddressLinkWithRns'
 import { CONFIG } from './config'
 import { useRnsReverseLookup } from './hooks/useRnsReverseLookup'
+import { useCollapsibleTransactionAnalyser } from './hooks/useCollapsibleTransactionAnalyser'
 import { formatAmountDisplay } from './utils/amount'
 import { generateDateFilename, writeExcelWorkbook } from './utils/exportExcel'
 import { logger } from './utils/logger'
-import { userFacingError } from './utils/userFacingError'
 import { fetchVaultDepositWithdrawTransactions } from './vaultDepositWithdraw/fetchVaultDepositWithdrawTransactions'
 import type { VaultTransaction } from './vaultDepositWithdraw/types'
 import './MintRedeemAnalyser.css'
@@ -21,16 +21,30 @@ export default function VaultDepositWithdrawAnalyser({
   initialExpanded,
   initialDays,
 }: VaultDepositWithdrawAnalyserProps = {}) {
-  const [transactions, setTransactions] = useState<VaultTransaction[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [days, setDays] = useState(initialDays ?? 1)
-  const [loadingProgress, setLoadingProgress] = useState<{ current: number; total: number; phase: string } | null>(
-    null
+  const fetchRecentTxs = useCallback(
+    (days: number, onProgress?: Parameters<typeof fetchVaultDepositWithdrawTransactions>[1]) =>
+      fetchVaultDepositWithdrawTransactions(days, onProgress),
+    []
   )
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isCollapsed, setIsCollapsed] = useState(!(initialExpanded ?? false))
-  const progressTimeoutRef = useRef<number | null>(null)
+
+  const {
+    transactions,
+    loading,
+    error,
+    days,
+    setDays,
+    loadingProgress,
+    lastUpdated,
+    isCollapsed,
+    setIsCollapsed,
+    fetchTransactions,
+  } = useCollapsibleTransactionAnalyser<VaultTransaction>({
+    initialExpanded,
+    initialDays,
+    defaultDays: 1,
+    fetchRecentTxs,
+    onFetchError: (err) => logger.vault.error('Error fetching vault transactions:', err),
+  })
 
   const addressesForRns = useMemo(() => transactions.map((tx) => tx.receiver), [transactions])
   const rnsLabels = useRnsReverseLookup(
@@ -41,40 +55,6 @@ export default function VaultDepositWithdrawAnalyser({
     !isCollapsed
   )
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    setLoadingProgress(null)
-
-    try {
-      const { recentTxs } = await fetchVaultDepositWithdrawTransactions(days, setLoadingProgress)
-      setTransactions(recentTxs)
-      setLastUpdated(new Date())
-    } catch (err) {
-      setError(userFacingError(err))
-      logger.vault.error('Error fetching vault transactions:', err)
-    } finally {
-      setLoading(false)
-      if (progressTimeoutRef.current) clearTimeout(progressTimeoutRef.current)
-      progressTimeoutRef.current = window.setTimeout(() => setLoadingProgress(null), 500)
-    }
-  }, [days])
-
-  useEffect(() => {
-    if (!isCollapsed) {
-      fetchTransactions()
-    }
-  }, [fetchTransactions, isCollapsed])
-
-  useEffect(() => {
-    return () => {
-      if (progressTimeoutRef.current) {
-        clearTimeout(progressTimeoutRef.current)
-        progressTimeoutRef.current = null
-      }
-    }
-  }, [])
-
   const exportToExcel = useCallback((txsToExport: VaultTransaction[]) => {
     try {
       const wb = XLSX.utils.book_new()
@@ -82,11 +62,11 @@ export default function VaultDepositWithdrawAnalyser({
       const excelData = txsToExport.map((tx) => ({
         'Time (UTC)': tx.time.toISOString().replace('T', ' ').substring(0, 19),
         'TX Hash': tx.hash,
-        'Status': tx.status,
-        'Asset': 'USDRIF',
-        'Type': tx.type,
-        'Amount': tx.amount,
-        'Receiver': tx.receiver,
+        Status: tx.status,
+        Asset: 'USDRIF',
+        Type: tx.type,
+        Amount: tx.amount,
+        Receiver: tx.receiver,
         'Block Number': tx.blockNumber,
       }))
 
@@ -122,9 +102,9 @@ export default function VaultDepositWithdrawAnalyser({
       const summaryStartRow = excelData.length + 3
       const summaryData = [
         {},
-        { 'Time (UTC)': 'Total Transactions:', 'Status': txsToExport.length },
-        { 'Time (UTC)': 'Deposits:', 'Status': txsToExport.filter((tx) => tx.type === 'Deposit').length },
-        { 'Time (UTC)': 'Withdrawals:', 'Status': txsToExport.filter((tx) => tx.type === 'Withdraw').length },
+        { 'Time (UTC)': 'Total Transactions:', Status: txsToExport.length },
+        { 'Time (UTC)': 'Deposits:', Status: txsToExport.filter((tx) => tx.type === 'Deposit').length },
+        { 'Time (UTC)': 'Withdrawals:', Status: txsToExport.filter((tx) => tx.type === 'Withdraw').length },
       ]
 
       XLSX.utils.sheet_add_json(ws, summaryData, { origin: `A${summaryStartRow}`, skipHeader: true })
@@ -134,8 +114,8 @@ export default function VaultDepositWithdrawAnalyser({
 
       const filename = generateDateFilename('usd_vault_txs')
       writeExcelWorkbook(wb, filename)
-    } catch (error) {
-      logger.vault.error('Error exporting to Excel:', error)
+    } catch (e) {
+      logger.vault.error('Error exporting to Excel:', e)
       alert('Failed to export to Excel. Please try again.')
     }
   }, [])
@@ -229,12 +209,17 @@ export default function VaultDepositWithdrawAnalyser({
         <div className="transactions-summary">
           <div className="summary-row">
             <p>
-              Total Transactions: {transactions.length}, Deposits: {transactions.filter((tx) => tx.type === 'Deposit').length} | Withdrawals:{' '}
+              Total Transactions: {transactions.length}, Deposits:{' '}
+              {transactions.filter((tx) => tx.type === 'Deposit').length} | Withdrawals:{' '}
               {transactions.filter((tx) => tx.type === 'Withdraw').length}
               {(() => {
-                const depositTotal = transactions.filter((tx) => tx.type === 'Deposit').reduce((sum, tx) => sum + parseFloat(tx.amount || '0'), 0)
+                const depositTotal = transactions
+                  .filter((tx) => tx.type === 'Deposit')
+                  .reduce((sum, tx) => sum + parseFloat(tx.amount || '0'), 0)
 
-                const withdrawalTotal = transactions.filter((tx) => tx.type === 'Withdraw').reduce((sum, tx) => sum + parseFloat(tx.amount || '0'), 0)
+                const withdrawalTotal = transactions
+                  .filter((tx) => tx.type === 'Withdraw')
+                  .reduce((sum, tx) => sum + parseFloat(tx.amount || '0'), 0)
 
                 return (
                   <>

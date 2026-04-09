@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
+import { devRpcProxyPlugin } from './vite/devRpcProxyPlugin'
 
 /**
  * Get git commit hash
@@ -24,6 +25,7 @@ function getGitCommitHash(): string {
 
 export default defineConfig({
   plugins: [
+    devRpcProxyPlugin(),
     react(),
     {
       name: 'inject-git-hash',
@@ -37,17 +39,8 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_GIT_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
   },
-  // Note: When using 'vercel dev', it handles API routes automatically
-  // This proxy is only needed if using 'vite dev' separately
-  // server: {
-  //   proxy: {
-  //     '/api': {
-  //       target: 'http://localhost:3000',
-  //       changeOrigin: true,
-  //       secure: false,
-  //     },
-  //   },
-  // },
+  // Same-origin /api/rpc during `npm run dev` is implemented by devRpcProxyPlugin (CORS-safe).
+  // `vercel dev` still serves api/rpc.ts for `/api/rpc`.
   // @ts-expect-error - vitest extends vite config with test property
   test: {
     globals: true,
