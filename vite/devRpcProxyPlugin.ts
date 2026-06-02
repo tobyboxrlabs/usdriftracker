@@ -48,9 +48,36 @@ async function proxyRpcPost(req: IncomingMessage, res: ServerResponse): Promise<
   res.end(outText)
 }
 
+/** Same shape as api/analytics.ts when VERCEL_API_TOKEN is unset. */
+const LOCAL_ANALYTICS_STUB = {
+  totalDeployments: 0,
+  latestDeployment: null,
+  message: 'Analytics not configured',
+} as const
+
 function attachDevRpcProxy(middlewares: Connect.Server) {
   middlewares.use((req, res, next) => {
     const url = req.url ?? ''
+    const pathname = url.split('?')[0]
+
+    if (pathname === '/api/analytics') {
+      if (req.method === 'OPTIONS') {
+        res.statusCode = 200
+        res.end()
+        return
+      }
+      if (req.method !== 'GET') {
+        res.statusCode = 405
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ error: 'Method not allowed' }))
+        return
+      }
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(LOCAL_ANALYTICS_STUB))
+      return
+    }
+
     if (!url.startsWith('/api/rpc')) {
       next()
       return
@@ -80,7 +107,8 @@ function attachDevRpcProxy(middlewares: Connect.Server) {
 }
 
 /**
- * Same-origin `/api/rpc` for local Vite so the browser never calls RSK nodes directly (CORS).
+ * Same-origin `/api/rpc` and stub `/api/analytics` for local Vite so the browser never
+ * hits RSK directly (CORS) and preview does not fall through to SPA `index.html`.
  * Registered for **`vite dev`** and **`vite preview`** (`configurePreviewServer`).
  */
 export function devRpcProxyPlugin(): Plugin {

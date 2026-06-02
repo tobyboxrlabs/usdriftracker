@@ -163,10 +163,29 @@ export function MetricsPage({ deploymentCount }: MetricsPageProps) {
               <MetricDisplay
                 label="USDRIF Mintable"
                 value={tokenData.formattedMaxMintable}
+                secondaryValue={tokenData.formattedMaxMintableOnChain}
+                secondaryLabel="Single call"
+                formatOptions={{ maximumFractionDigits: 0 }}
+                secondaryFormatOptions={{ maximumFractionDigits: 0 }}
                 unit="USD"
                 isRefreshing={refreshingMetrics.has(METRIC_KEYS.MAX_MINTABLE)}
                 history={history.maxMintable}
-                helpText="Calculated using: (Total RIF Collateral ÷ Coverage Ratio) × RIF Price - Already Minted USDRIF. Coverage ratio sourced from MoC V2 Core calcCtargemaCA() (~5.5). RIF price from MoC price feed for calculation."
+                helpTooltipWide
+                helpText={`HAND-ROLLED (main number)
+MoC RIF proxy:
+0xA27024Ed70035E46dba712609fc2Afa1c97aA36A
+
+Getters:
+nACcb, getCtargemaCA, getLckAC,
+getCtargemaTP(USDRIF), getPACtp(USDRIF)
+
+Formula:
+(nACcb×1e18 − ctargemaCA×lckAC) × pACtp
+÷ ((ctargemaTP − 1) × 1e18)
+
+SINGLE CALL (smaller line)
+getTPAvailableToMint(USDRIF) on the same proxy.
+Includes multi-collateral guard; should match hand-rolled.`}
               />
             </div>
           )}

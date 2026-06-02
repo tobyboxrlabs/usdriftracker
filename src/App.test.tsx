@@ -21,7 +21,12 @@ vi.mock('ethers', async () => {
     totalSupply: vi.fn().mockResolvedValue(1000n * 10n ** 18n),
     read: vi.fn().mockResolvedValue(41n * 10n ** 16n), // 0.41
     getTotalACavailable: vi.fn().mockResolvedValue(212n * 10n ** 24n),
-    calcCtargemaCA: vi.fn().mockResolvedValue(55n * 10n ** 17n), // 5.5
+    nACcb: vi.fn().mockResolvedValue(308n * 10n ** 24n),
+    getCtargemaCA: vi.fn().mockResolvedValue(997n * 10n ** 16n),
+    getLckAC: vi.fn().mockResolvedValue(26n * 10n ** 24n),
+    getCtargemaTP: vi.fn().mockResolvedValue(997n * 10n ** 16n),
+    getPACtp: vi.fn().mockResolvedValue(86n * 10n ** 15n),
+    getTPAvailableToMint: vi.fn().mockResolvedValue(447n * 10n ** 18n),
   }
 
   return {

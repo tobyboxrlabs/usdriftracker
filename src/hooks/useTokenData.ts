@@ -67,6 +67,9 @@ export function useTokenData() {
         formattedRifCollateral: snapshot.formattedRifCollateral ?? prev.formattedRifCollateral,
         maxMintable: snapshot.maxMintable ?? prev.maxMintable,
         formattedMaxMintable: snapshot.formattedMaxMintable ?? prev.formattedMaxMintable,
+        maxMintableOnChain: snapshot.maxMintableOnChain ?? prev.maxMintableOnChain,
+        formattedMaxMintableOnChain:
+          snapshot.formattedMaxMintableOnChain ?? prev.formattedMaxMintableOnChain,
         symbol: snapshot.symbol ?? prev.symbol,
         name: snapshot.name ?? prev.name,
         loading: false,

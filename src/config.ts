@@ -112,12 +112,16 @@ export const PRICE_FEED_ABI = [
   'function peek() view returns (bytes32, bool)',
 ] as const
 
-// MoC Core V2 ABI (for RIF collateral)
+// MoC RIF bucket proxy (MocRif / post V3 multi-collateral)
 export const MOC_CORE_ABI = [
   'function getTotalACavailable() view returns (uint256)',
   'function getLckAC() view returns (uint256)',
+  'function nACcb() view returns (uint256)',
   'function acToken() view returns (address)',
-  'function calcCtargemaCA() view returns (uint256)',
+  'function getCtargemaCA() view returns (uint256)',
+  'function getCtargemaTP(address tpToken) view returns (uint256)',
+  'function getPACtp(address tpToken) view returns (uint256)',
+  'function getTPAvailableToMint(address tpToken) view returns (uint256)',
   'function getCglb() view returns (uint256)',
 ] as const
 

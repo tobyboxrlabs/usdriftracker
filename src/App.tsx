@@ -47,8 +47,9 @@ function App() {
             logger.app.warn('Response missing totalDeployments field:', data)
           }
         } else {
-          const text = await response.text()
-          logger.app.error('Unexpected content type. Response:', text.substring(0, 200))
+          logger.app.debug(
+            'Deployment count unavailable (non-JSON response; use vite preview/dev or Vercel for /api/analytics)'
+          )
         }
       } else {
         logger.app.error('Failed to fetch deployment count:', response.status, response.statusText)

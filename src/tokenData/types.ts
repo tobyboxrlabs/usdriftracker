@@ -13,6 +13,9 @@ export interface TokenData {
   formattedRifCollateral: string | null
   maxMintable: string | null
   formattedMaxMintable: string | null
+  /** Canonical on-chain mintable via getTPAvailableToMint(USDRIF). */
+  maxMintableOnChain: string | null
+  formattedMaxMintableOnChain: string | null
   symbol: string
   name: string
   loading: boolean
@@ -35,6 +38,8 @@ export const INITIAL_TOKEN_DATA: TokenData = {
   formattedRifCollateral: null,
   maxMintable: null,
   formattedMaxMintable: null,
+  maxMintableOnChain: null,
+  formattedMaxMintableOnChain: null,
   symbol: 'USDRIF',
   name: 'USDRIF',
   loading: true,

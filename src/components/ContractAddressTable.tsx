@@ -1,4 +1,5 @@
 import { CONFIG } from '../config'
+import { ROC_MOC_GLOSSARY } from '../content/rocMocGlossary'
 
 const RIF_TOKEN_ADDRESS = '0x2AcC95758f8b5F583470ba265EB685a8F45fC9D5'
 const BLOCKSCOUT_BASE = 'https://rootstock.blockscout.com/address'
@@ -37,6 +38,24 @@ export function ContractAddressTable() {
                   <code>{address}</code>
                 </a>
               </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3 className="footer-title footer-glossary-title">RoC / MoC Glossary</h3>
+      <table className="address-table glossary-table">
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ROC_MOC_GLOSSARY.map(({ term, description }) => (
+            <tr key={term}>
+              <td>{term}</td>
+              <td className="glossary-description">{description}</td>
             </tr>
           ))}
         </tbody>

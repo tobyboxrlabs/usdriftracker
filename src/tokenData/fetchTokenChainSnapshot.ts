@@ -3,6 +3,7 @@ import { CONFIG, ERC20_ABI, PRICE_FEED_ABI, MOC_CORE_ABI, STANDARD_DECIMALS } fr
 import { saveMetricHistory, getMetricHistory } from '../history'
 import { formatAmount as formatAmountUtil } from '../utils/amount'
 import { logger } from '../utils/logger'
+import { calcHandRolledUsdrifMintable } from './calcUsdrifMintable'
 import type { TokenData } from './types'
 
 type Snapshot = Omit<TokenData, 'loading' | 'error' | 'lastUpdated'>
@@ -82,15 +83,6 @@ export async function fetchTokenChainSnapshot(
     18
   )
 
-  const rifPriceMocResult = await queryOptionalMetric(
-    provider,
-    getChecksummedAddress,
-    CONFIG.RIF_PRICE_FEED_MOC,
-    PRICE_FEED_ABI,
-    async (contract) => await contract.read(),
-    STANDARD_DECIMALS
-  )
-
   const rifCollateralResult = await queryOptionalMetric(
     provider,
     getChecksummedAddress,
@@ -102,33 +94,30 @@ export async function fetchTokenChainSnapshot(
 
   let maxMintable: bigint | null = null
   let formattedMaxMintable: string | null = null
+  let maxMintableOnChain: bigint | null = null
+  let formattedMaxMintableOnChain: string | null = null
 
-  if (rifCollateralResult && rifPriceMocResult && formattedMinted) {
-    try {
-      const targetCoverageResult = await queryOptionalMetric(
-        provider,
-        getChecksummedAddress,
-        CONFIG.MOC_V2_CORE,
-        MOC_CORE_ABI,
-        async (contract) => await contract.calcCtargemaCA(),
-        STANDARD_DECIMALS
-      )
+  try {
+    const mocAddress = getChecksummedAddress(CONFIG.MOC_V2_CORE)
+    const usdrifAddress = getChecksummedAddress(CONFIG.USDRIF_ADDRESS)
+    const moc = new ethers.Contract(mocAddress, MOC_CORE_ABI, provider)
 
-      if (targetCoverageResult) {
-        const totalRifCollateral = rifCollateralResult.raw
-        const coverageRatio = targetCoverageResult.raw
-        const rifPrice = rifPriceMocResult.raw
-        const mintedUsdrif = USDRIFSupply
+    const [nACcb, ctargemaCA, lckAC, ctargemaTP, pACtp, onChainMintable] = await Promise.all([
+      moc.nACcb() as Promise<bigint>,
+      moc.getCtargemaCA() as Promise<bigint>,
+      moc.getLckAC() as Promise<bigint>,
+      moc.getCtargemaTP(usdrifAddress) as Promise<bigint>,
+      moc.getPACtp(usdrifAddress) as Promise<bigint>,
+      moc.getTPAvailableToMint(usdrifAddress) as Promise<bigint>,
+    ])
 
-        const usdEquivRatioDRif = (totalRifCollateral * rifPrice) / coverageRatio
-        const mintableUsdrif = usdEquivRatioDRif > mintedUsdrif ? usdEquivRatioDRif - mintedUsdrif : 0n
-
-        maxMintable = mintableUsdrif
-        formattedMaxMintable = formatAmountUtil(mintableUsdrif, STANDARD_DECIMALS)
-      }
-    } catch {
-      logger.tokenData.warn('Failed to calculate USDRIF Mintable')
-    }
+    const handMintable = calcHandRolledUsdrifMintable(nACcb, ctargemaCA, lckAC, ctargemaTP, pACtp)
+    maxMintable = handMintable
+    formattedMaxMintable = formatAmountUtil(handMintable, STANDARD_DECIMALS)
+    maxMintableOnChain = onChainMintable
+    formattedMaxMintableOnChain = formatAmountUtil(onChainMintable, STANDARD_DECIMALS)
+  } catch (error) {
+    logger.tokenData.warn('Failed to fetch USDRIF mintable metrics:', error)
   }
 
   const metricKeys = {
@@ -173,6 +162,8 @@ export async function fetchTokenChainSnapshot(
     formattedRifCollateral: rifCollateralResult?.formatted ?? null,
     maxMintable: maxMintable != null ? maxMintable.toString() : null,
     formattedMaxMintable,
+    maxMintableOnChain: maxMintableOnChain != null ? maxMintableOnChain.toString() : null,
+    formattedMaxMintableOnChain,
     symbol: symbol ?? 'USDRIF',
     name: name ?? 'USDRIF',
   }

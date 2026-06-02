@@ -24,7 +24,7 @@ const MOC_CORE_ABI = [
   'function getTotalACavailable() view returns (uint256)',
   'function getLckAC() view returns (uint256)',
   'function acToken() view returns (address)',
-  'function calcCtargemaCA() view returns (uint256)',
+  'function getCtargemaCA() view returns (uint256)',
   'function getCglb() view returns (uint256)',
 ] as const
 
@@ -81,7 +81,7 @@ async function calculateMintable() {
     const targetCoverageResult = await queryMetric(
       MOC_V2_CORE,
       MOC_CORE_ABI,
-      async (contract) => await contract.calcCtargemaCA(),
+      async (contract) => await contract.getCtargemaCA(),
       18
     )
     const coverageRatio = parseFloat(targetCoverageResult.formatted)
